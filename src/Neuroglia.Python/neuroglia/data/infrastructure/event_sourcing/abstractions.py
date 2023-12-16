@@ -72,8 +72,13 @@ class StreamReadDirection(Enum):
     FORWARDS=0,
     ''' Indicates a forwards direction '''
     BACKWARDS=1
-    ''' Indicates a backwards direction '''
+    ''' Indicates a backwards direction ''' 
 
+@dataclass
+class EventStoreOptions:
+
+    database_name: str
+    ''' Gets/sets the name of the database to use, if any '''
 
 class EventStore(ABC):
     ''' Defines the fundamentals of a service used to append and subscribe to sourced events '''
@@ -91,7 +96,14 @@ class EventStore(ABC):
     @abstractmethod
     def read(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
         ''' Reads recorded events from the specified stream '''
-        raise NotImplementedError();   
+        raise NotImplementedError()
+
+    def observe(self, stream_id: Optional[str], consumer_group: Optional[str] = None, offset: Optional[int]= None):
+        ''' 
+        Creates a new observable used to stream events published by the event store.
+        Typically, this is used by some kind of reconciliation mechanism to consume domain events then publish them to their related handlers, if any.
+        '''
+        raise NotImplementedError()
 
 
 class Aggregator:
