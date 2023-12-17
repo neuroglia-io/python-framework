@@ -36,6 +36,7 @@
     <Folder Include="tests\" />
     <Folder Include="tests\cases\" />
     <Folder Include="tests\data\" />
+    <Folder Include="tests\services\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\neuroglia\core\operation_result.py" />
@@ -61,7 +62,9 @@
     <Compile Include="src\neuroglia\serialization\__init__.py" />
     <Compile Include="src\neuroglia\__init__.py" />
     <Compile Include="tests\cases\test_event_sourcing_repository.py" />
+    <Compile Include="tests\cases\test_service_provider.py" />
     <Compile Include="tests\data\user.py" />
+    <Compile Include="tests\services\services.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
