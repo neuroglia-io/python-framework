@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Neuroglia.Python", "src\Neuroglia.Python\Neuroglia.Python.pyproj", "{FC092444-9B0A-459E-BC9C-1E5C9F9F4741}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Neuroglia.Python", "Neuroglia.Python.pyproj", "{FC092444-9B0A-459E-BC9C-1E5C9F9F4741}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B23120BE-367C-4458-920B-F1644B45E35A}"
 EndProject
