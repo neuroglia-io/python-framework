@@ -5,13 +5,6 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Neuroglia.Python", "Neuroglia.Python.pyproj", "{FC092444-9B0A-459E-BC9C-1E5C9F9F4741}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B23120BE-367C-4458-920B-F1644B45E35A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DC48F7DB-DCA8-4254-8532-871C506C8250}"
-	ProjectSection(SolutionItems) = preProject
-		pytest.ini = pytest.ini
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,9 +16,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{FC092444-9B0A-459E-BC9C-1E5C9F9F4741} = {B23120BE-367C-4458-920B-F1644B45E35A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A1C81FED-BBE1-4420-852A-DD54BB3D32BD}

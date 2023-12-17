@@ -3,7 +3,7 @@ from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.data.abstractions import TEntity, TKey
     
 class MemoryRepository(Repository[TEntity, TKey]):
-    
+   
     entities: dict = {}
 
     def get(self, id: TKey) -> Optional[TEntity]:

@@ -32,11 +32,10 @@
     <Folder Include="src\neuroglia\mediation\" />
     <Folder Include="src\neuroglia\core\" />
     <Folder Include="src\neuroglia\dependency_injection\" />
+    <Folder Include="src\neuroglia\integration\" />
     <Folder Include="src\neuroglia\serialization\" />
     <Folder Include="tests\" />
     <Folder Include="tests\cases\" />
-    <Folder Include="tests\data\" />
-    <Folder Include="tests\services\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\neuroglia\core\operation_result.py" />
@@ -56,15 +55,20 @@
     <Compile Include="src\neuroglia\data\infrastructure\__init__.py" />
     <Compile Include="src\neuroglia\dependency_injection\service_provider.py" />
     <Compile Include="src\neuroglia\dependency_injection\__init__.py" />
-    <Compile Include="src\neuroglia\mediation\abstractions.py" />
+    <Compile Include="src\neuroglia\integration\models.py" />
+    <Compile Include="src\neuroglia\mediation\mediator.py" />
     <Compile Include="src\neuroglia\mediation\__init__.py" />
     <Compile Include="src\neuroglia\serialization\json.py" />
     <Compile Include="src\neuroglia\serialization\__init__.py" />
     <Compile Include="src\neuroglia\__init__.py" />
     <Compile Include="tests\cases\test_event_sourcing_repository.py" />
+    <Compile Include="tests\cases\test_mediator.py" />
     <Compile Include="tests\cases\test_service_provider.py" />
-    <Compile Include="tests\data\user.py" />
-    <Compile Include="tests\services\services.py" />
+    <Compile Include="tests\data.py" />
+    <Compile Include="tests\services.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="pytest.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

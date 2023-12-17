@@ -2,7 +2,7 @@ from abc import ABC, abstractclassmethod
 from contextlib import contextmanager
 from enum import Enum
 import inspect
-from typing import Callable, ForwardRef, List, Optional, Type, Dict
+from typing import Callable, ForwardRef, List, Optional, Type, Dict, get_type_hints
 
 class ServiceLifetime(Enum):
     '''Enumerates all supported service lifetimes.'''
@@ -77,6 +77,7 @@ class ServiceScope(IServiceScope, IServiceProvider):
     def get_service_provider(self) -> IServiceProvider: return self
 
     def get_service(self, type: Type) -> Optional[any]:
+        if type == IServiceProvider: return self
         realized_services = self._realized_scoped_services.get(type)
         realized_service = self._root_service_provider.get_service(type) if realized_services is None else realized_services[0]
         if realized_service is not None: return realized_service
@@ -90,6 +91,7 @@ class ServiceScope(IServiceScope, IServiceProvider):
         return service
     
     def get_services(self, type: Type) -> List:
+        if type == IServiceProvider: return [ self ]
         service_descriptors = [descriptor for descriptor in self._scoped_service_descriptors if descriptor.service_type == type]
         realized_services = self._realized_scoped_services.get(type)
         if realized_services is None: realized_services = List()
@@ -138,10 +140,12 @@ class ServiceProvider(IServiceProvider):
     ''' Gets a type/list mapping containing all services that have already been built/resolved '''
     
     def get_service(self, type: Type) -> Optional[any]:
+        if type == IServiceProvider: return self
         realized_services = self._realized_services.get(type)
         if realized_services is not None: return realized_services[0]
-        descriptor = next(descriptor for descriptor in self._service_descriptors if descriptor.service_type == type)
-        if descriptor is None: return None;
+        if len(self._service_descriptors) < 1: return None
+        descriptor = next((descriptor for descriptor in self._service_descriptors if descriptor.service_type == type), None)
+        if descriptor is None: return None
         return self._build_service(descriptor)
     
     def get_required_service(self, type: Type) -> any:
@@ -150,12 +154,14 @@ class ServiceProvider(IServiceProvider):
         return service
     
     def get_services(self, type: Type) -> List:
+        if type == IServiceProvider: return [ self ]
         service_descriptors = [descriptor for descriptor in self._service_descriptors if descriptor.service_type == type]
         realized_services = self._realized_services.get(type)
-        if realized_services is None: realized_services = List()
+        if realized_services is None: realized_services = list()
         for descriptor in service_descriptors:
-            if any(type(service) == descriptor.service_type for service in realized_services): continue
-            realized_services.append(self._build_service(descriptor))
+            implementation_type = descriptor.get_implementation_type()
+            realized_service = next((service for service in realized_services if isinstance(service, implementation_type)), None)          
+            if realized_service is None: realized_services.append(self._build_service(descriptor))
         return realized_services
         
     def _build_service(self, service_descriptor: ServiceDescriptor) -> any:
@@ -173,7 +179,7 @@ class ServiceProvider(IServiceProvider):
             service = service_descriptor.implementation_type(**args)
         if service_descriptor.lifetime != ServiceLifetime.TRANSIENT:
             realized_services = self._realized_services.get(service_descriptor.service_type)
-            if realized_services is None: self._realized_services[service_descriptor.service_type] = { service }
+            if realized_services is None: self._realized_services[service_descriptor.service_type] = [ service ]
             else: realized_services.append(service)
         return service
     
@@ -214,6 +220,15 @@ class ServiceDescriptor:
     
     lifetime: ServiceLifetime = ServiceLifetime.SINGLETON
     ''' Gets the service's lifetime. Defaults to 'SINGLETON' '''
+    
+    def get_implementation_type(self) -> Type:
+        ''' Gets the service's implementation type '''
+        if self.implementation_type is not None: return self.implementation_type
+        return_type = inspect.signature(self.implementation_factory).return_annotation if self.implementation_factory != None else None
+        if return_type is None and self.implementation_factory != None:
+            if self.implementation_type is None: raise Exception(f"Failed to determine the return type of the implementation factory configured for service of type '{self.service_type.__name__}'. Either specify the implementation type, or use a function instead of a lambda as factory callable.")
+            else: return_type = self.implementation_type
+        return type(self.singleton) if self.singleton is not None else inspect.signature(self.implementation_factory).return_annotation
 
 
 ServiceCollection = ForwardRef("ServiceCollection")

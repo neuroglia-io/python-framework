@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from typing import Optional
 from multipledispatch import dispatch
 import uuid
 from neuroglia.data.abstractions import DomainEvent, AggregateRoot, AggregateState
+from neuroglia.mediation.mediator import Command
 
 
 class UserCreatedDomainEventV1(DomainEvent[str]):
@@ -52,3 +54,17 @@ class User(AggregateRoot[UserStateV1, str]):
         
     def set_email(self, email: str):
         self.state.on(self.register_event(UserEmailChangedDomainEventV1(self.id, email)))
+       
+@dataclass
+class UserDto:
+    
+    id: str
+    
+    name: str
+    
+    email: str
+
+@dataclass
+class GreetCommand(Command):
+        
+    greetings: str

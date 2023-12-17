@@ -1,7 +1,7 @@
 from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventRecord, EventStoreOptions
 from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository import EventSourcingRepository
 from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore
-from tests.data.user import User
+from tests.data import User
 
 def on_event_recorded(e : EventRecord):
     
