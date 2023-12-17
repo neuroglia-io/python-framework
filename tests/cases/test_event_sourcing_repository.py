@@ -1,9 +1,8 @@
-import threading
-from neuroglia.infrastructure.event_sourcing.abstractions import Aggregator, EventRecord, EventStoreOptions
-from neuroglia.infrastructure.event_sourcing.event_sourcing_repository import EventSourcingRepository, EventSourcingRepositoryOptions
-from neuroglia.infrastructure.event_sourcing.event_store.event_store import ESEventStore
-from neuroglia.tests.data.user import User, UserCreatedDomainEventV1
-from rx import operators as ops
+from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventRecord, EventStoreOptions
+from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository import EventSourcingRepository
+from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore
+from tests.data.user import User
+
 def on_event_recorded(e : EventRecord):
     
     pass

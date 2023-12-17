@@ -1,6 +1,5 @@
-import inspect
 import json
-from typing import Dict, List, Optional, Type
+from typing import Optional, Type
 
 class JsonSerializer:
     ''' Represents the service used to serialize/deserialize to/from JSON '''    

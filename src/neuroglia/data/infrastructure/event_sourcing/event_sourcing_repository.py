@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Generic, Optional
-from neuroglia.infrastructure.abstractions import Repository
+from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.data.abstractions import DomainEvent, TAggregate, TKey
-from neuroglia.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventStore, EventStoreOptions, StreamReadDirection
+from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventStore, EventStoreOptions, StreamReadDirection
 
 
 @dataclass

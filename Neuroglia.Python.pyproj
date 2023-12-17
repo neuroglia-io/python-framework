@@ -11,6 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Neuroglia.Python</Name>
     <RootNamespace>Neuroglia.Python</RootNamespace>
+    <TestFramework>Pytest</TestFramework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

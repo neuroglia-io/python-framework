@@ -1,4 +1,3 @@
-from collections import defaultdict
 import dataclasses
 from typing import Optional
 

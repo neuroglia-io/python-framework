@@ -1,5 +1,5 @@
 from typing import Optional
-from neuroglia.infrastructure.abstractions import Repository
+from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.data.abstractions import TEntity, TKey
     
 class MemoryRepository(Repository[TEntity, TKey]):

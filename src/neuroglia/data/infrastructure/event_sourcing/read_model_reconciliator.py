@@ -1,4 +1,4 @@
-from neuroglia.infrastructure.event_sourcing.abstractions import EventRecord, EventStore, EventStoreOptions
+from neuroglia.data.infrastructure.event_sourcing.abstractions import EventRecord, EventStore, EventStoreOptions
 
 class ReadModelConciliationOptions:
     ''' Represents the options used to configure the application's read model reconciliation features '''

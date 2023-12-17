@@ -1,20 +1,15 @@
-import asyncio
 import inspect
 import json
-from re import sub
 import sys
-from threading import Thread
 import threading
 from typing import Dict, List, Optional
 from neuroglia.data.abstractions import DomainEvent
-from neuroglia.infrastructure.event_sourcing.abstractions import EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamReadDirection
+from neuroglia.data.infrastructure.event_sourcing.abstractions import EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamReadDirection
 from neuroglia.serialization.json import JsonSerializer
 from esdbclient import EventStoreDBClient, NewEvent, StreamState, RecordedEvent
 from esdbclient.exceptions import AlreadyExists
-import rx
 from rx import Observable
 from rx.subject import Subject
-from rx import operators as ops
 
 
 class ESEventStore(EventStore):
