@@ -4,7 +4,7 @@ import sys
 import threading
 from typing import Dict, List, Optional
 from neuroglia.data.abstractions import DomainEvent
-from neuroglia.data.infrastructure.event_sourcing.abstractions import EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamReadDirection
+from neuroglia.data.infrastructure.event_sourcing.abstractions import EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamDescriptor, StreamReadDirection
 from neuroglia.serialization.json import JsonSerializer
 from esdbclient import EventStoreDBClient, NewEvent, StreamState, RecordedEvent
 from esdbclient.exceptions import AlreadyExists
@@ -29,7 +29,10 @@ class ESEventStore(EventStore):
     def __init__(self, options: EventStoreOptions):
         self._options = options
 
-    def append(self, streamId: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
+    def contains(self, stream_id: str) -> bool: return self.get(stream_id) != None
+
+    def append(self, stream_id: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
+        stream_name = self._get_stream_name(stream_id)
         stream_state = StreamState.NO_STREAM if expectedVersion is None else expectedVersion
         formatted_events = [NewEvent
         (
@@ -38,14 +41,38 @@ class ESEventStore(EventStore):
             metadata = json.dumps(self._build_event_metadata(e.data, e.metadata), default=str).encode(self._default_encoding)
         ) 
         for e in events]
-        self._eventstore_client.append_to_stream(stream_name = streamId, current_version = stream_state, events = formatted_events)
+        self._eventstore_client.append_to_stream(stream_name = stream_name, current_version = stream_state, events = formatted_events)
 
-    def get(self, stream_id: str):
-        raise NotImplementedError()
+    def get(self, stream_id: str) -> Optional[StreamDescriptor] :
+        stream_name = self._get_stream_name(stream_id)
+        metadata, metadata_version = self._eventstore_client.get_stream_metadata(stream_name)
+        if metadata_version == StreamState.NO_STREAM: return None        
+        truncate_before = metadata.get('$tb')
+        offset = 0 if truncate_before is None else truncate_before
+        read_response = self._eventstore_client.read_stream(
+            stream_name = stream_name, 
+            stream_position = offset,
+            backwards = False,
+            resolve_links = True,
+            limit = 1
+        )
+        recorded_events = tuple(read_response)
+        first_event = recorded_events[0]
+        read_response = self._eventstore_client.read_stream(
+            stream_name = stream_name, 
+            stream_position = offset,
+            backwards = True,
+            resolve_links = True,
+            limit = 1
+        )
+        recorded_events = tuple(read_response)
+        last_event = recorded_events[0]
+        return StreamDescriptor(stream_id, last_event.stream_position, None, None) #todo: esdbclient does not provide timestamps
     
     def read(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
+        stream_name = self._get_stream_name(stream_id)
         read_response = self._eventstore_client.read_stream(
-            stream_name = stream_id, 
+            stream_name = stream_name, 
             stream_position = offset,
             backwards = True if read_direction == StreamReadDirection.BACKWARDS else False,
             resolve_links = True,
@@ -97,6 +124,7 @@ class ESEventStore(EventStore):
     ''' Converts the specified stream id to a qualified stream id, which is prefixed with the current database name, if any '''
     
     def consume_events_async(self, subject: Subject, subscription):
+        ''' Asynchronously enumerate events returned by a subscription '''
         for e in subscription: subject.on_next(e)
         subject.on_completed()  
              

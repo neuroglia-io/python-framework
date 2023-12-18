@@ -42,6 +42,9 @@ class GreetCommandHandler(CommandHandler[GreetCommand, OperationResult[str]]):
     
 class UserCreatedDomainEventV1Handler(DomainEventHandler[UserCreatedDomainEventV1]):
 
+    def __init__(self, users: Repository[UserDto, str]):
+        self.users = users
+
     users : Repository[UserDto, str]
 
     def handle(self, e : UserCreatedDomainEventV1):

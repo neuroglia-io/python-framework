@@ -3,42 +3,43 @@ from dataclasses import dataclass
 import datetime
 from enum import Enum
 from typing import List, Optional, Type
+from xmlrpc.client import datetime
 
 from neuroglia.data.abstractions import AggregateRoot, DomainEvent
 
+@dataclass
+class StreamDescriptor:
+    ''' Represents a class used to describe a stream of recorded events '''
+    
+    id : str
+    ''' Gets the stream's id '''
+
+    length: int
+    ''' Gets the stream's length '''
+    
+    first_event_at: Optional[datetime]
+    ''' Gets the date and time at which the first event, if any, has been recorded to the stream '''
+    
+    last_event_at: Optional[datetime]
+    ''' Gets the date and time at which the last event, if any, has been recorded to the stream '''
+
+@dataclass
 class EventDescriptor:
     ''' Represents a class used to describe an event to record '''
-    
-    def __init__(self, type: str, data: Optional[any], metadata: Optional[any] = None):
-        self.type = type
-        self.data = data
-        self.metadata = metadata
-
+   
     type: str
     ''' Gets the type of the event to record '''
     
-    data : any
+    data : Optional[any]
     ''' Gets the data of the event to record '''
     
-    metadata: any
+    metadata: Optional[any]
     ''' Gets the metadata of the event to record, if any '''
 
-
+@dataclass
 class EventRecord:
     ''' Represents a recorded event '''
-   
-    def __init__(self, stream_id: str, id: str, offset: int, position: int, timestamp: datetime, type: str, data: Optional[any] = None, metadata: Optional[any] = None, replayed: bool = False):
-        ''' Initializes a new event record '''
-        self.stream_id = stream_id
-        self.id = id
-        self.offset = offset
-        self.position = position
-        self.timestamp = timestamp
-        self.type = type
-        self.data = data
-        self.metadata = metadata
-        self.replayed = replayed
-
+  
     stream_id: str
     ''' Gets the id of the stream the recorded event belongs to '''
     
@@ -57,13 +58,13 @@ class EventRecord:
     type: str
     ''' Gets the type of the recorded event. Should be a non-versioned reverse uri made out alphanumeric, '-' and '.' characters '''
     
-    data: Optional[any]
+    data: Optional[any] = None
     ''' Gets the recorded event's data, if any '''
     
-    metadadata: Optional[any]
+    metadadata: Optional[any]= None
     ''' Gets the recorded event's metadadata, if any '''
     
-    replayed: bool
+    replayed: bool = False
     ''' Gets a boolean indicating whether or not the recorded event is being replayed to its consumer/consumer group '''
     
 
@@ -83,6 +84,11 @@ class EventStoreOptions:
 class EventStore(ABC):
     ''' Defines the fundamentals of a service used to append and subscribe to sourced events '''
     
+    @abstractmethod
+    def contains(self, stream_id: str) -> bool:
+        ''' Determines whether or not the event store contains a stream with the specified id '''
+        raise NotImplementedError()
+
     @abstractmethod
     def append(self, streamId: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
         ''' Appends a list of events to the specified stream '''

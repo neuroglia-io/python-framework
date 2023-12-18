@@ -6,6 +6,11 @@ class Repository(Generic[TEntity, TKey], ABC):
     ''' Defines the fundamentals of a repository '''
 
     @abstractmethod
+    def contains(self, id: TKey) -> bool:
+        ''' Determines whether or not the repository contains an entity with the specified id '''
+        raise NotImplementedError()
+
+    @abstractmethod
     def get(self, id: TKey) -> Optional[TEntity]:
         ''' Gets the entity with the specified id, if any '''
         raise NotImplementedError()

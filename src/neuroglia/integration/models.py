@@ -15,6 +15,3 @@ class IntegrationEvent(Generic[TKey], ABC):
     
     aggregate_id: TKey
     ''' Gets the id of the aggregate that has produced the integration event '''
-    
-    aggregate_version: int
-    ''' Gets the version of the aggregate's state, after reducing the integration event '''

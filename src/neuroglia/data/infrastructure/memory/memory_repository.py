@@ -6,6 +6,9 @@ class MemoryRepository(Repository[TEntity, TKey]):
    
     entities: dict = {}
 
+    def contains(self, id: TKey) -> bool:
+        return self.entities.get(id) is not None
+
     def get(self, id: TKey) -> Optional[TEntity]:
         return self.entities[id];
 

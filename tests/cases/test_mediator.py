@@ -5,7 +5,7 @@ from neuroglia.data.infrastructure.memory.memory_repository import MemoryReposit
 from neuroglia.dependency_injection.service_provider import ServiceCollection
 from neuroglia.mediation.mediator import Mediator, NotificationHandler, RequestHandler
 from tests.data import GreetCommand, UserCreatedDomainEventV1, UserDto
-from tests.services import GreetCommandHandler
+from tests.services import GreetCommandHandler, UserCreatedDomainEventV1Handler
 
 
 class TestMediator:
@@ -33,7 +33,7 @@ class TestMediator:
         services = ServiceCollection()
         services.add_singleton(Mediator, Mediator)
         services.add_singleton(Repository[UserDto, str], singleton = MemoryRepository[UserDto, str]())
-        services.add_singleton(NotificationHandler, GreetCommandHandler)
+        services.add_singleton(NotificationHandler, UserCreatedDomainEventV1Handler)
         service_provider = services.build()
         mediator : Mediator = service_provider.get_service(Mediator)
         repository : Repository[UserDto, str] = service_provider.get_service(Repository[UserDto, str])

@@ -29,6 +29,8 @@ class EventSourcingRepository(Generic[TAggregate, TKey], Repository[TAggregate, 
     _aggregator : Aggregator
     ''' Gets the underlying event store '''
 
+    def contains(self, id: TKey) -> bool: return self._eventstore.contains_stream(self._build_stream_id_for(id))
+
     def get(self, id: TKey) -> Optional[TAggregate]:
         ''' Gets the aggregate with the specified id, if any '''
         stream_id = self._build_stream_id_for(id)
