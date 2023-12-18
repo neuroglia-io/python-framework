@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Generic, Optional, List
 from pymongo.database import Database
 from neuroglia.data.infrastructure.abstractions import QueryableRepository
-from neuroglia.data.abstractions import AggregateRoot, TEntity, TKey, VersionedState
+from neuroglia.data.abstractions import TEntity, TKey, VersionedState
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
