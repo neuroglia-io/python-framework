@@ -85,26 +85,26 @@ class EventStore(ABC):
     ''' Defines the fundamentals of a service used to append and subscribe to sourced events '''
     
     @abstractmethod
-    def contains(self, stream_id: str) -> bool:
+    async def contains_async(self, stream_id: str) -> bool:
         ''' Determines whether or not the event store contains a stream with the specified id '''
         raise NotImplementedError()
 
     @abstractmethod
-    def append(self, streamId: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
+    async def append_async(self, streamId: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
         ''' Appends a list of events to the specified stream '''
         raise NotImplementedError()
 
     @abstractmethod
-    def get(self, stream_id: str):
+    async def get_async(self, stream_id: str):
         ''' Gets information about the specified stream '''
         raise NotImplementedError()
     
     @abstractmethod
-    def read(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
+    async def read_async(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
         ''' Reads recorded events from the specified stream '''
         raise NotImplementedError()
 
-    def observe(self, stream_id: Optional[str], consumer_group: Optional[str] = None, offset: Optional[int]= None):
+    async def observe_async(self, stream_id: Optional[str], consumer_group: Optional[str] = None, offset: Optional[int]= None):
         ''' 
         Creates a new observable used to stream events published by the event store.
         Typically, this is used by some kind of reconciliation mechanism to consume domain events then publish them to their related handlers, if any.

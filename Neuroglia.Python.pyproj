@@ -4,14 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fc092444-9b0a-459e-bc9c-1e5c9f9f4741</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\neuroglia\data\queries\queryable.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <StartupFile>samples\openbank\api\main.py</StartupFile>
+    <SearchPath>src</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Neuroglia.Python</Name>
     <RootNamespace>Neuroglia.Python</RootNamespace>
     <TestFramework>Pytest</TestFramework>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +22,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="samples\" />
+    <Folder Include="samples\openbank\" />
+    <Folder Include="samples\openbank\api\" />
+    <Folder Include="samples\openbank\application\" />
+    <Folder Include="samples\openbank\domain\" />
+    <Folder Include="samples\openbank\domain\models\" />
+    <Folder Include="samples\openbank\integration\" />
     <Folder Include="src\" />
     <Folder Include="src\neuroglia\data\" />
     <Folder Include="src\neuroglia\" />
@@ -31,15 +38,28 @@
     <Folder Include="src\neuroglia\data\infrastructure\memory\" />
     <Folder Include="src\neuroglia\data\infrastructure\mongo\" />
     <Folder Include="src\neuroglia\data\queries\" />
+    <Folder Include="src\neuroglia\eventing\cloud_events\" />
     <Folder Include="src\neuroglia\mediation\" />
     <Folder Include="src\neuroglia\core\" />
     <Folder Include="src\neuroglia\dependency_injection\" />
     <Folder Include="src\neuroglia\integration\" />
+    <Folder Include="src\neuroglia\expressions\" />
+    <Folder Include="src\neuroglia\eventing\" />
+    <Folder Include="src\neuroglia\hosting\" />
+    <Folder Include="src\neuroglia\mvc\" />
+    <Folder Include="src\neuroglia\mapping\" />
     <Folder Include="src\neuroglia\serialization\" />
     <Folder Include="tests\" />
     <Folder Include="tests\cases\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="samples\openbank\api\controllers.py" />
+    <Compile Include="samples\openbank\api\main.py" />
+    <Compile Include="samples\openbank\application\queries.py" />
+    <Compile Include="samples\openbank\domain\models\address.py" />
+    <Compile Include="samples\openbank\domain\models\bank_account.py" />
+    <Compile Include="samples\openbank\domain\models\person.py" />
+    <Compile Include="samples\openbank\integration\models.py" />
     <Compile Include="src\neuroglia\core\operation_result.py" />
     <Compile Include="src\neuroglia\core\problem_details.py" />
     <Compile Include="src\neuroglia\core\__init__.py" />
@@ -60,14 +80,23 @@
     <Compile Include="src\neuroglia\data\infrastructure\__init__.py" />
     <Compile Include="src\neuroglia\dependency_injection\service_provider.py" />
     <Compile Include="src\neuroglia\dependency_injection\__init__.py" />
+    <Compile Include="src\neuroglia\eventing\cloud_events\abstractions.py" />
+    <Compile Include="src\neuroglia\eventing\cloud_events\__init__.py" />
+    <Compile Include="src\neuroglia\expressions\javascript_expression_translator.py" />
+    <Compile Include="src\neuroglia\expressions\__init__.py" />
+    <Compile Include="src\neuroglia\hosting\abstractions.py" />
+    <Compile Include="src\neuroglia\hosting\web.py" />
+    <Compile Include="src\neuroglia\hosting\__init__.py" />
     <Compile Include="src\neuroglia\integration\models.py" />
+    <Compile Include="src\neuroglia\integration\__init__.py" />
+    <Compile Include="src\neuroglia\mapping\mapper.py" />
+    <Compile Include="src\neuroglia\mapping\__init__.py" />
     <Compile Include="src\neuroglia\mediation\mediator.py" />
     <Compile Include="src\neuroglia\mediation\__init__.py" />
+    <Compile Include="src\neuroglia\mvc\controller_base.py" />
+    <Compile Include="src\neuroglia\mvc\__init__.py" />
     <Compile Include="src\neuroglia\serialization\json.py" />
     <Compile Include="src\neuroglia\serialization\__init__.py" />
-    <Compile Include="src\neuroglia\to_remove - Copy - Copy.py" />
-    <Compile Include="src\neuroglia\to_remove - Copy.py" />
-    <Compile Include="src\neuroglia\to_remove.py" />
     <Compile Include="src\neuroglia\__init__.py" />
     <Compile Include="tests\cases\test_event_sourcing_repository.py" />
     <Compile Include="tests\cases\test_mediator.py" />
@@ -78,6 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="pytest.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.12" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

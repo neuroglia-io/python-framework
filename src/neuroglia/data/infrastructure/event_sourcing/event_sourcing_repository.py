@@ -29,36 +29,36 @@ class EventSourcingRepository(Generic[TAggregate, TKey], Repository[TAggregate, 
     _aggregator : Aggregator
     ''' Gets the underlying event store '''
 
-    def contains(self, id: TKey) -> bool: return self._eventstore.contains_stream(self._build_stream_id_for(id))
+    async def contains_async(self, id: TKey) -> bool: return self._eventstore.contains_stream(self._build_stream_id_for(id))
 
-    def get(self, id: TKey) -> Optional[TAggregate]:
+    async def get_async(self, id: TKey) -> Optional[TAggregate]:
         ''' Gets the aggregate with the specified id, if any '''
         stream_id = self._build_stream_id_for(id)
-        events = self._eventstore.read(stream_id, StreamReadDirection.FORWARDS, 0)
+        events = await self._eventstore.read_async(stream_id, StreamReadDirection.FORWARDS, 0)
         return self._aggregator.aggregate(events, self.__orig_class__.__args__[0])
         
-    def add(self, aggregate: TAggregate) -> TAggregate:
+    async def add_async(self, aggregate: TAggregate) -> TAggregate:
         ''' Adds and persists the specified aggregate '''
         stream_id = self._build_stream_id_for(aggregate.id())
         events = aggregate._pending_events
         if len(events) < 1 : raise Exception()
         encoded_events = [self._encode_event(e) for e in events] 
-        self._eventstore.append(stream_id, encoded_events)
+        await self._eventstore.append_async(stream_id, encoded_events)
         aggregate.state.state_version = events[-1].aggregate_version
         aggregate.clear_pending_events()
         
-    def update(self, aggregate: TAggregate) -> TAggregate:
+    async def update_async(self, aggregate: TAggregate) -> TAggregate:
         ''' Perists the changes made to the specified aggregate '''
         stream_id = self._build_stream_id_for(aggregate.id())
         events = aggregate._pending_events
         if len(events) < 1 : raise Exception()
         encoded_events = [self._encode_event(e) for e in events] 
-        self._eventstore.append(stream_id, encoded_events, aggregate.state.state_version)
+        await self._eventstore.append_async(stream_id, encoded_events, aggregate.state.state_version)
         aggregate.state.state_version = events[-1].aggregate_version
         aggregate.clear_pending_events()
         return aggregate
 
-    def remove(self, id: TKey) -> None:
+    async def remove_async(self, id: TKey) -> None:
         ''' Removes the aggregate root with the specified key, if any '''
         raise NotImplementedError()
 

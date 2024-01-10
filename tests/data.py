@@ -54,7 +54,8 @@ class User(AggregateRoot[UserStateV1, str]):
         
     def set_email(self, email: str):
         self.state.on(self.register_event(UserEmailChangedDomainEventV1(self.id, email)))
-       
+  
+        
 @dataclass
 class UserDto:
     
@@ -63,6 +64,7 @@ class UserDto:
     name: str
     
     email: str
+
 
 @dataclass
 class GreetCommand(Command):

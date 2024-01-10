@@ -29,9 +29,9 @@ class ESEventStore(EventStore):
     def __init__(self, options: EventStoreOptions):
         self._options = options
 
-    def contains(self, stream_id: str) -> bool: return self.get(stream_id) != None
+    async def contains_async(self, stream_id: str) -> bool: return await self.get_async(stream_id) != None
 
-    def append(self, stream_id: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
+    async def append_async(self, stream_id: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
         stream_name = self._get_stream_name(stream_id)
         stream_state = StreamState.NO_STREAM if expectedVersion is None else expectedVersion
         formatted_events = [NewEvent
@@ -43,7 +43,7 @@ class ESEventStore(EventStore):
         for e in events]
         self._eventstore_client.append_to_stream(stream_name = stream_name, current_version = stream_state, events = formatted_events)
 
-    def get(self, stream_id: str) -> Optional[StreamDescriptor] :
+    async def get_async(self, stream_id: str) -> Optional[StreamDescriptor] :
         stream_name = self._get_stream_name(stream_id)
         metadata, metadata_version = self._eventstore_client.get_stream_metadata(stream_name)
         if metadata_version == StreamState.NO_STREAM: return None        
@@ -69,7 +69,7 @@ class ESEventStore(EventStore):
         last_event = recorded_events[0]
         return StreamDescriptor(stream_id, last_event.stream_position, None, None) #todo: esdbclient does not provide timestamps
     
-    def read(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
+    async def read_async(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
         stream_name = self._get_stream_name(stream_id)
         read_response = self._eventstore_client.read_stream(
             stream_name = stream_name, 
@@ -81,7 +81,7 @@ class ESEventStore(EventStore):
         recorded_events = tuple(read_response)
         return [self._decode_recorded_event(stream_id, recorded_event) for recorded_event in recorded_events]
 
-    def observe(self, stream_id: Optional[str], consumer_group: Optional[str]= None, offset: Optional[int]= None) -> Observable:
+    async def observe_async(self, stream_id: Optional[str], consumer_group: Optional[str]= None, offset: Optional[int]= None) -> Observable:
         stream_name = self._get_stream_name(stream_id)
         subscription = None
         if consumer_group is None: 
