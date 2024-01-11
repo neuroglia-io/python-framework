@@ -1,10 +1,6 @@
-import asyncio
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from neuroglia.hosting.abstractions import HostedServiceBase
-from typing import Any, Dict, Optional
-from rx.subject import Subject
-
+from typing import Any, Optional
 
 @dataclass
 class CloudEvent:
@@ -59,26 +55,3 @@ class CloudEvent:
         ''' Gets the value of the attribute with the specified name, if any '''
         if not name: raise ValueError("Attribute name cannot be empty or None.")
         self.__dict__[name] if name in self.__dict__.keys() else None
-
-
-class CloudEventBus:
-    ''' Defines the fundamentals of a service used to manage incoming and outgoing streams of cloud events '''
-    
-    input_stream : Subject = Subject()
-    ''' Gets the stream of events ingested by the application '''
-    
-    output_stream : Subject = Subject()
-    ''' Gets the stream of events published by the application '''
-    
-class CloudEventConsumer(HostedServiceBase):
-    
-    def __init__(self, cloud_event_bus: CloudEventBus):
-        self.cloud_event_bus = cloud_event_bus
-        
-    cloud_event_bus : CloudEventBus
-
-    async def start_async(self):
-        self.cloud_event_bus.input_stream.subscribe(lambda e: asyncio.ensure_future(self.on_cloud_event_async(e)))
-        
-    async def on_cloud_event_async(self, e : CloudEvent):
-        pass

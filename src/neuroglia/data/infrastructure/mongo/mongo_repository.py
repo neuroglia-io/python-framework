@@ -1,17 +1,17 @@
+import pymongo
 from ast import NodeVisitor, expr
 from dataclasses import dataclass
 from neuroglia.data.queries.queryable import T, QueryProvider, Queryable
 from neuroglia.data.infrastructure.abstractions import QueryableRepository, Repository
 from neuroglia.data.abstractions import TEntity, TKey, VersionedState
-import pymongo
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
 from pymongo.database import Database
 from typing import Dict, Generic, Optional, List, Type
 from neuroglia.dependency_injection.service_provider import ServiceCollection
-
 from neuroglia.expressions.javascript_expression_translator import JavaScriptExpressionTranslator
+from neuroglia.hosting.abstractions import ApplicationBuilderBase
 
 
 @dataclass
@@ -130,3 +130,13 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
          # to get the collection_name, we need to access 'self.__orig_class__', which is not yet available in __init__, thus the need for a function
         collection_name = self._get_entity_name().lower()
         return self._mongo_database[collection_name]
+    
+    def configure(builder: ApplicationBuilderBase, entity_type : Type, key_type : Type, database_name : str) -> ApplicationBuilderBase:
+        connection_string_name = "mongo"
+        connection_string = builder.settings.connection_strings.get(connection_string_name, None)
+        if connection_string is None: raise Exception(f"Missing '{connection_string_name}' connection string")
+        builder.services.try_add_singleton(MongoClient, singleton=MongoClient(connection_string))
+        builder.services.try_add_singleton(MongoRepositoryOptions[entity_type, key_type], singleton= MongoRepositoryOptions[entity_type, key_type](database_name))
+        builder.services.try_add_singleton(Repository[entity_type, key_type], MongoRepository[entity_type, key_type])
+        builder.services.try_add_singleton(QueryableRepository[entity_type, key_type], implementation_factory= lambda provider: provider.get_required_service(Repository[entity_type, key_type]))
+        return builder

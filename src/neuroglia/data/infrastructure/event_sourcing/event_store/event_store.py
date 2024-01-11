@@ -2,9 +2,10 @@ import inspect
 import json
 import sys
 import threading
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 from neuroglia.data.abstractions import DomainEvent
 from neuroglia.data.infrastructure.event_sourcing.abstractions import EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamDescriptor, StreamReadDirection
+from neuroglia.hosting.abstractions import ApplicationBuilderBase
 from neuroglia.serialization.json import JsonSerializer
 from esdbclient import EventStoreDBClient, NewEvent, StreamState, RecordedEvent
 from esdbclient.exceptions import AlreadyExists
@@ -21,13 +22,14 @@ class ESEventStore(EventStore):
     _default_encoding = 'utf-8'
     ''' Gets the default encoding used to write and read event data '''
 
-    _eventstore_client : EventStoreDBClient = EventStoreDBClient(uri="esdb://localhost:2113?Tls=false") #todo: inject instead
+    _eventstore_client : EventStoreDBClient
     ''' Gets the service used to interact with the EventStore DB'''
     
     _options : EventStoreOptions
     
-    def __init__(self, options: EventStoreOptions):
+    def __init__(self, options: EventStoreOptions, eventstore_client : EventStoreDBClient):
         self._options = options
+        self._eventstore_client = eventstore_client
 
     async def contains_async(self, stream_id: str) -> bool: return await self.get_async(stream_id) != None
 
@@ -90,7 +92,7 @@ class ESEventStore(EventStore):
             try : self._eventstore_client.create_subscription_to_stream(stream_name = stream_name, resolve_links = True ) #todo: persistence
             except AlreadyExists: pass
         subject = Subject()
-        thread = threading.Thread(target=self.consume_events_async, kwargs={ 'subject': subject, 'subscription': subscription }) #todo: replace by fire and forget async-like task
+        thread = threading.Thread(target=self._consume_events_async, kwargs={ 'subject': subject, 'subscription': subscription }) #todo: replace by fire and forget async-like task
         thread.start()
         return subject
         
@@ -123,9 +125,21 @@ class ESEventStore(EventStore):
     def _get_stream_name(self, stream_id: str) -> str: stream_id if self._options.database_name is None or stream_id.startswith('$ce-') else f'{self._options.database_name}-{stream_id}'
     ''' Converts the specified stream id to a qualified stream id, which is prefixed with the current database name, if any '''
     
-    def consume_events_async(self, subject: Subject, subscription):
+    def _consume_events_async(self, subject: Subject, subscription):
         ''' Asynchronously enumerate events returned by a subscription '''
         for e in subscription: subject.on_next(e)
         subject.on_completed()  
              
+    def configure(builder : ApplicationBuilderBase, options : EventStoreOptions) -> ApplicationBuilderBase:
+        ''' Registers and configures an EventStore implementation of the EventStore class.
             
+            Args:
+                services (ServiceCollection): the service collection to configure
+        '''
+        connection_string_name = "eventstore"
+        connection_string = builder.settings.connection_strings.get(connection_string_name, None)
+        if connection_string is None: raise Exception(f"Missing '{connection_string_name}' connection string")
+        builder.services.try_add_singleton(EventStoreOptions, singleton=options)
+        builder.services.try_add_singleton(EventStoreDBClient, EventStoreDBClient(uri=connection_string))        
+        builder.services.try_add_singleton(EventStore, ESEventStore)
+        return builder

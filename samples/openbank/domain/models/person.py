@@ -3,9 +3,8 @@ from datetime import date, datetime
 from enum import Enum
 import uuid
 from multipledispatch import dispatch
-from address import Address
-from neuroglia.data.abstractions import AggregateRoot, DomainEvent, Entity
-
+from neuroglia.data.abstractions import AggregateRoot, AggregateState, DomainEvent, Entity
+from samples.openbank.domain.models import Address
 
 class PersonGender(Enum):
     MALE = 'MALE'
@@ -37,7 +36,10 @@ class PersonRegisteredDomainEventV1(DomainEvent[str]):
     address : Address
     
 
-class PersonStateV1(Entity[str]):
+class PersonStateV1(AggregateState[str]):
+
+    def __init__(self):
+        super().__init__()
 
     first_name : str
     

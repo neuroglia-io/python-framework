@@ -1,9 +1,9 @@
-from abc import ABC, abstractmethod
 import asyncio
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import cast
-from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProviderBase, ServiceScope, ServiceScopeBase
-
+from typing import Dict, cast
+from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProviderBase, ServiceScopeBase
+from pydantic_settings import BaseSettings
 
 class HostBase(ABC):
     ''' Defines the fundamentals of an program's abstraction '''
@@ -20,7 +20,7 @@ class HostBase(ABC):
         ''' Attempts to gracefully stop the program '''
         raise NotImplementedError()
     
-    async def run(self):
+    def run(self):
         ''' Runs the program '''
         asyncio.ensure_future(self.start_async())
 
@@ -59,11 +59,18 @@ class Host(HostBase):
         
     def dispose(self):
         if isinstance(self.services, ServiceScopeBase): self.services.dispose()
-         
+   
+        
+class ApplicationSettings(BaseSettings):
+    
+    connection_strings : dict[str, str] = dict[str, str]()
+    
 
 class ApplicationBuilderBase:
     ''' Defines the fundamentals of a service used to build applications '''
-    
+   
+    settings : ApplicationSettings = ApplicationSettings()
+
     services : ServiceCollection = ServiceCollection()
     
     @abstractmethod

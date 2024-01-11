@@ -4,8 +4,9 @@ import inspect
 from types import ModuleType
 from typing import List
 from fastapi import FastAPI
+from neuroglia.core.type_finder import TypeFinder
 from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProviderBase
-from neuroglia.hosting.abstractions import Host, HostBase
+from neuroglia.hosting.abstractions import ApplicationBuilderBase, Host, HostBase
 from neuroglia.mvc.controller_base import ControllerBase
 
 
@@ -30,17 +31,17 @@ class WebHost(WebHostBase, Host):
         Host.__init__(self, services)
          
 
-class WebApplicationBuilderBase:
+class WebApplicationBuilderBase(ApplicationBuilderBase):
     ''' Defines the fundamentals of a service used to build applications '''
-    
-    services : ServiceCollection = ServiceCollection()
-    
-    def add_controllers(self, modules : List[ModuleType]) -> ServiceCollection:
+   
+    def __init__(self):
+        super().__init__()
+
+    def add_controllers(self, modules : List[str]) -> ServiceCollection:
         ''' Registers all API controller types, which enables automatic configuration and implicit Dependency Injection of the application's controllers (specialized router class in FastAPI) '''
         controller_types = []
         for module in [importlib.import_module(module_name) for module_name in modules]:
-            members = inspect.getmembers(module, inspect.isclass)
-            controller_types.extend(cls for name, cls in members if inspect.isclass(cls) and issubclass(cls, ControllerBase) and cls != ControllerBase)
+            controller_types.extend(TypeFinder.get_types(module, lambda t: inspect.isclass(t) and issubclass(t, ControllerBase) and t != ControllerBase))
         for controller_type in controller_types:
             self.services.add_singleton(ControllerBase, controller_type)
         return self.services
@@ -54,6 +55,8 @@ class WebApplicationBuilderBase:
 class WebApplicationBuilder(WebApplicationBuilderBase):
     ''' Represents the default implementation of the ApplicationBuilderBase class '''
     
+    def __init__(self):
+        super().__init__()
     
     def build(self) -> WebHostBase: 
         return WebHost(self.services.build())

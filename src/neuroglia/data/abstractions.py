@@ -31,12 +31,18 @@ class Entity(Generic[TKey], Identifiable[TKey], ABC):
 class VersionedState(ABC):
     ''' Represents the abstract class inherited by all versioned states '''
     
+    def __init__(self):
+        self.state_version = 0
+
     state_version: int = 0
     ''' Gets the state's version '''
 
 
 class AggregateState(Generic[TKey], Identifiable[TKey], VersionedState, ABC):
     ''' Represents the abstract class inherited by all aggregate root states '''
+
+    def __init__(self):
+        super().__init__()
 
     _id: TKey
     ''' Gets the id of the aggregate the state belongs to '''
@@ -86,7 +92,8 @@ class AggregateRoot(Generic[TState, TKey], Entity[TKey], ABC):
 
     def __init__(self):
         ''' Initializes a new aggregate root '''
-        self.state = self.__orig_bases__[0].__args__[0]();
+        self.state = object.__new__(self.__orig_bases__[0].__args__[0]);
+        self.state.__init__()
 
     def id(self) -> TKey: 
         ''' Gets the aggregate root's id '''
