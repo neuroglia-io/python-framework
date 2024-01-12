@@ -14,7 +14,7 @@
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
-    <Environment>CONNECTION_STRINGS={ "mongo": "mongodb://localhost:2701", "eventstore": "esdb://localhost:2113?Tls=false" }</Environment>
+    <Environment>CONNECTION_STRINGS={ "mongo": "mongodb://localhost:27017", "eventstore": "esdb://localhost:2113?Tls=false" }</Environment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -130,9 +130,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="pytest.ini" />
-  </ItemGroup>
-  <ItemGroup>
-    <InterpreterReference Include="3.12" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

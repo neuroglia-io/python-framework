@@ -46,6 +46,8 @@ class CloudEventIngestor(HostedServiceBase):
             print(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'") #todo: remove
             raise
         
+        print(f"Data extracted from the cloud event: {e}") #todo: remove
+
         try:
             await self._mediator.publish_async(e)
         except Exception as ex:

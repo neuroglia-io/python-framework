@@ -1,3 +1,4 @@
+import ast
 import pymongo
 from ast import NodeVisitor, expr
 from dataclasses import dataclass
@@ -9,7 +10,6 @@ from pymongo.collection import Collection
 from pymongo.cursor import Cursor
 from pymongo.database import Database
 from typing import Dict, Generic, Optional, List, Type
-from neuroglia.dependency_injection.service_provider import ServiceCollection
 from neuroglia.expressions.javascript_expression_translator import JavaScriptExpressionTranslator
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 
@@ -23,12 +23,14 @@ class MongoRepositoryOptions(Generic[TEntity, TKey]):
  
     
 class MongoQuery(Generic[T], Queryable[T]):
+    ''' Represents a Mongo query '''
     
     def __init__(self, query_provider: 'MongoQueryProvider', expression : Optional[expr] = None):
         super().__init__(query_provider, expression)
-
+        
 
 class MongoQueryBuilder(NodeVisitor):
+    ''' Represents the service used to build mongo queries '''
    
     def __init__(self, collection : Collection, translator : JavaScriptExpressionTranslator):
         self._collection = collection
@@ -37,19 +39,24 @@ class MongoQueryBuilder(NodeVisitor):
     _collection : Collection
 
     _translator : JavaScriptExpressionTranslator
+
+    _order_by_clauses : Dict[str, int] = dict[str, int]()
     
-    _select_clause : Optional[Dict];
+    _select_clause : Optional[List[str]] = None
+    
+    _skip_clause : Optional[int] = None
+
+    _take_clause : Optional[int] = None
     
     _where_clauses : List[str] = list[str]()
-    
-    _orderby_clauses : Dict[str, int] = dict[str, int]()
 
     def build(self, expression : expr) -> Cursor:
         self.visit(expression)
-        cursor : Cursor = self._collection.find() #projection = None if self._select_clause is None else self._select_clause)
-        where = ' && '.join(self._where_clauses)
-        cursor = cursor.where(where)
-        if len(self._orderby_clauses) > 0: cursor = cursor.sort(self._orderby_clauses) 
+        cursor : Cursor = self._collection.find(projection=self._select_clause)
+        if len(self._order_by_clauses) > 0: cursor = cursor.sort(self._order_by_clauses) 
+        if len(self._where_clauses) > 0: cursor = cursor.where(' && '.join(self._where_clauses))
+        if self._skip_clause is not None: cursor = cursor.skip(self._skip_clause)
+        if self._take_clause is not None: cursor = cursor.limit(self._take_clause)
         return cursor
     
     def visit_Call(self, node):
@@ -57,13 +64,18 @@ class MongoQueryBuilder(NodeVisitor):
         expression = node.args[0]
         self.visit(node.func.value)
         javascript = self._translator.translate(expression)
-        if clause == 'orderby': self._orderby_clauses[javascript.replace('this.', '')] = pymongo.ASCENDING
-        elif clause == 'orderby_descending': self._orderby_clauses[javascript.replace('this.', '')] = pymongo.DESCENDING
-        elif clause == 'select': self._select_clause = javascript
+        if clause == 'distinct_by': self._distinct_by_clauses.append(javascript.replace('this.', ''))
+        elif clause == 'order_by': self._order_by_clauses[javascript.replace('this.', '')] = pymongo.ASCENDING
+        elif clause == 'order_by_descending': self._order_by_clauses[javascript.replace('this.', '')] = pymongo.DESCENDING
+        elif clause == 'select' and isinstance(expression.body, ast.List) : self._select_clause = [ self._translator.translate(elt).replace('this.', '') for elt in expression.body.elts ]
+        elif clause == 'skip' and isinstance(expression, ast.Constant): self._skip_clause = expression.value
+        elif clause == 'take' and isinstance(expression, ast.Constant): self._take_clause = expression.value
         elif clause == 'where': self._where_clauses.append(javascript)
-        
+        pass
+
 
 class MongoQueryProvider(QueryProvider):
+    ''' Represents the Mongo implementation of the QueryProvider '''
     
     def __init__(self, collection: Collection):
         self._collection = collection

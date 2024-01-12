@@ -1,3 +1,4 @@
+import ast
 from ast import And, Attribute, BoolOp, Call, Compare, Constant, Eq, Gt, GtE, In, Is, IsNot, Lambda, Lt, LtE, Name, Not, NotEq, NotIn, Or, Subscript, USub, UnaryOp, arg, boolop, cmpop, expr
 import importlib
 from typing import Dict, List, Type
@@ -18,9 +19,11 @@ class JavaScriptExpressionTranslator:
         elif isinstance(expression, Name): return self._translate_name(expression)
         elif isinstance(expression, Subscript): return self._translate_subscript(expression)
         elif isinstance(expression, UnaryOp): return self._translate_unary_op(expression)
+        elif isinstance(expression, ast.List): return self._translate_list(expression)
         else: raise Exception(f"The specified expression type '{type(expression)}' is not supported in this context")
 
-    def _translate_arg(self, expression: arg) -> str: return expression.arg
+    def _translate_arg(self, expression: arg) -> str: 
+        return expression.arg
 
     def _translate_attribute(self, expression: Attribute) -> str:
         attribute_name : str = None
@@ -82,12 +85,13 @@ class JavaScriptExpressionTranslator:
         
     def _translate_lambda(self, expression: Lambda) -> str:
         body = self.translate(expression.body)
-        args = [arg.arg for arg in expression.args.args]
-        for arg in args: body = body.replace(arg, 'this')
         return body
+    
+    def _translate_list(self, expression: ast.List) -> str:
+        return f"[ {', '.join([self.translate(expression) for expression in expression.elts])} ]"
 
     def _translate_name(self, expression: Name) -> str:
-        return expression.id
+        return "this"
     
     def _translate_subscript(self, expression: Subscript) -> str:
         source = self.translate(expression.value)
