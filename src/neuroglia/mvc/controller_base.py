@@ -2,6 +2,7 @@ import json
 from classy_fastapi import Routable
 from fastapi import Response
 from neuroglia.core.operation_result import OperationResult
+from neuroglia.core.problem_details import ProblemDetails
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator
@@ -37,4 +38,9 @@ class ControllerBase(Routable):
             content = json.dumps(content)
             media_type = "application/json"
         return Response(status_code=result.status, content=content, media_type=media_type)
+    
+    error_responses = {
+        400: { "model": ProblemDetails, "description": "Bad Request" },
+        500: { "model": ProblemDetails, "description": "Internal Server Error" },
+    }
         

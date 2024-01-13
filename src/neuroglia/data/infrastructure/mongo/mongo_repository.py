@@ -144,6 +144,7 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
         return self._mongo_database[collection_name]
     
     def configure(builder: ApplicationBuilderBase, entity_type : Type, key_type : Type, database_name : str) -> ApplicationBuilderBase:
+        ''' Configures the specified application to use a Mongo repository implementation to manage the specified type of entity '''
         connection_string_name = "mongo"
         connection_string = builder.settings.connection_strings.get(connection_string_name, None)
         if connection_string is None: raise Exception(f"Missing '{connection_string_name}' connection string")

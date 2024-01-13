@@ -41,8 +41,8 @@ class WebApplicationBuilderBase(ApplicationBuilderBase):
         ''' Registers all API controller types, which enables automatic configuration and implicit Dependency Injection of the application's controllers (specialized router class in FastAPI) '''
         controller_types = []
         for module in [importlib.import_module(module_name) for module_name in modules]:
-            controller_types.extend(TypeFinder.get_types(module, lambda t: inspect.isclass(t) and issubclass(t, ControllerBase) and t != ControllerBase))
-        for controller_type in controller_types:
+            controller_types.extend(TypeFinder.get_types(module, lambda t: inspect.isclass(t) and issubclass(t, ControllerBase) and t != ControllerBase, include_sub_packages=True))
+        for controller_type in set(controller_types):
             self.services.add_singleton(ControllerBase, controller_type)
         return self.services
     

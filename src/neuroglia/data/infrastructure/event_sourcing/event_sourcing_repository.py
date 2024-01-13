@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Generic, Optional
+from typing import Generic, Optional, Type
 from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.data.abstractions import DomainEvent, TAggregate, TKey
 from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventStore, EventStoreOptions, StreamReadDirection
+from neuroglia.hosting.abstractions import ApplicationBuilderBase
 
 
 @dataclass
@@ -71,3 +72,9 @@ class EventSourcingRepository(Generic[TAggregate, TKey], Repository[TAggregate, 
         ''' Encodes a domain event into a new event descriptor '''
         event_type = type(e).__name__.lower()
         return EventDescriptor(event_type, e)
+    
+    def configure(builder: ApplicationBuilderBase, entity_type : Type, key_type : Type) -> ApplicationBuilderBase:
+        ''' Configures the specified application to use an event sourcing based repository implementation to manage the specified type of entity '''
+        builder.services.try_add_singleton(EventSourcingRepositoryOptions[entity_type, key_type], singleton= EventSourcingRepositoryOptions[entity_type, key_type]())
+        builder.services.try_add_singleton(Repository[entity_type, key_type], EventSourcingRepository[entity_type, key_type])
+        return builder
