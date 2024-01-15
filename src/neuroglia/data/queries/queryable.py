@@ -84,8 +84,9 @@ class Queryable(Generic[T]):
     def where(self, predicate: Callable[[T], bool]) -> 'Queryable[T]':
         ''' Filters a sequence of values based on a predicate. '''        
         frame = inspect.currentframe().f_back
+        frame_info = inspect.getframeinfo(frame)
         variables = {**frame.f_locals}
-        lambda_src = self._get_lambda_source_code(predicate)
+        lambda_src = self._get_lambda_source_code(predicate, frame_info.positions.end_col_offset)
         lambda_tree = ast.parse(lambda_src)
         lambda_expression = lambda_tree.body[0].value
         expression = VariableExpressionReplacer(variables).visit(ast.Call(func = ast.Attribute(value=self.expression, attr='where', ctx=ast.Load()), args = [ lambda_expression ], keywords = []))
@@ -97,11 +98,12 @@ class Queryable(Generic[T]):
     
     def __str__(self) -> str: return ast.unparse(self.expression)
     
-    def _get_lambda_source_code(self, function : Callable):
+    def _get_lambda_source_code(self, function : Callable, max_col_offset: int):
         ''' Gets the source code of the specified lambda 
             
             Args:
                 function (Callable): The lambda to get the source code of
+                max_col_offset (int): The maximum column offset to walk the AST tree for the target lamba
             
             Notes:
                 Credits to https://gist.github.com/Xion/617c1496ff45f3673a5692c3b0e3f75a
@@ -110,18 +112,10 @@ class Queryable(Generic[T]):
         if len(source_lines) != 1: return None
         source_text = os.linesep.join(source_lines).strip()
         source_ast = ast.parse(source_text)
-        lambda_node = next((node for node in ast.walk(source_ast) if isinstance(node, ast.Lambda)), None)
+        lambda_node = next((node for node in ast.walk(source_ast) if isinstance(node, ast.Lambda) and node.col_offset <= max_col_offset), None)
         if lambda_node is None: return None
-        lambda_text = source_text[lambda_node.col_offset:]
-        lambda_body_text = source_text[lambda_node.body.col_offset:]
-        min_length = len('lambda:_')
-        while len(lambda_text) > min_length:
-            try:
-                compile(lambda_body_text, '<unused filename>', 'eval')
-                return lambda_text
-            except SyntaxError:
-                lambda_text = lambda_text[:-1]
-                lambda_body_text = lambda_body_text[:-1]
+        lambda_text = source_text[lambda_node.col_offset:lambda_node.end_col_offset]
+        return lambda_text
  
 
 class VariableExpressionReplacer(NodeTransformer):
