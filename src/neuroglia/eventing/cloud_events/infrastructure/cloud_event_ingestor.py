@@ -1,5 +1,3 @@
-import asyncio
-import importlib
 import inspect
 from typing import List, Type
 from neuroglia.core import TypeFinder, ModuleLoader
@@ -7,6 +5,8 @@ from neuroglia.eventing.cloud_events import CloudEvent
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventBus
 from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedServiceBase
 from neuroglia.mediation.mediator import Mediator
+from neuroglia.reactive import AsyncRx
+
 
 class CloudEventIngestionOptions:
     ''' Represents the service used to configure how the application should ingest incoming cloud events '''
@@ -30,10 +30,9 @@ class CloudEventIngestor(HostedServiceBase):
     _mediator : Mediator
     
     async def start_async(self):
-        self._cloud_event_bus.input_stream.subscribe(lambda e: asyncio.ensure_future(self._on_cloud_event_async(e)))      
+        AsyncRx.subscribe(self._cloud_event_bus.input_stream, self._on_cloud_event_async)
 
     async def _on_cloud_event_async(self, cloud_event : CloudEvent):
-
         event_type = self._options.type_maps.get(cloud_event.type, None)
         if event_type is None: 
             print(f"Ignored incoming cloud event: the specified type '{cloud_event.type}' is not supported") #todo: remove
@@ -45,9 +44,6 @@ class CloudEventIngestor(HostedServiceBase):
         except Exception as ex:
             print(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'") #todo: remove
             raise
-        
-        print(f"Data extracted from the cloud event: {e}") #todo: remove
-
         try:
             await self._mediator.publish_async(e)
         except Exception as ex:

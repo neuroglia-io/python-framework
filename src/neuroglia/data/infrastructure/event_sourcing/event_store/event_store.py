@@ -94,7 +94,7 @@ class ESEventStore(EventStore):
             try : self._eventstore_client.create_subscription_to_stream(stream_name = stream_name, resolve_links = True ) #todo: persistence
             except AlreadyExists: pass
         subject = Subject()
-        thread = threading.Thread(target=self._consume_events_async, kwargs={ 'stream_id': stream_id, 'subject': subject, 'subscription': subscription }) #todo: replace by fire and forget async-like task
+        thread = threading.Thread(target=self._consume_events_async, kwargs={ 'stream_id': stream_id, 'subject': subject, 'subscription': subscription })
         thread.start()
         return subject
         

@@ -4,6 +4,7 @@ from neuroglia.data.infrastructure.event_sourcing.abstractions import EventRecor
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.hosting.abstractions import HostedServiceBase
 from neuroglia.mediation.mediator import Mediator
+from neuroglia.reactive import AsyncRx
 
 @dataclass
 class ReadModelConciliationOptions:
@@ -32,11 +33,10 @@ class ReadModelReconciliator(HostedServiceBase):
 
     async def start_async(self):
         await self.subscribe_async()
-        pass
 
     async def subscribe_async(self):
-        (await self._event_store.observe_async(f'$ce-{self._event_store_options.database_name}')).subscribe(
-            lambda e: self.on_event_record_stream_next(e))
+        observable = await self._event_store.observe_async(f'$ce-{self._event_store_options.database_name}')
+        AsyncRx.subscribe(observable, self.on_event_record_stream_next)
         
     def on_event_record_stream_next(self, e: EventRecord):
         mediator : Mediator = self._service_provider.get_required_service(Mediator);
