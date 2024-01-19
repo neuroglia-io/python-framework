@@ -1,9 +1,10 @@
 import asyncio
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import Dict, cast
+from typing import cast
 from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProviderBase, ServiceScopeBase
 from pydantic_settings import BaseSettings
+
 
 class HostBase(ABC):
     ''' Defines the fundamentals of an program's abstraction '''
@@ -22,7 +23,7 @@ class HostBase(ABC):
     
     def run(self):
         ''' Runs the program '''
-        asyncio.ensure_future(self.start_async())
+        asyncio.run(self.start_async())
 
     @abstractmethod
     def dispose(self):
@@ -51,7 +52,7 @@ class Host(HostBase):
         hosted_services = [cast(HostedServiceBase, service) for service in self.services.get_services(HostedServiceBase)]
         start_tasks = [hosted_service.start_async() for hosted_service in hosted_services]
         await asyncio.gather(*start_tasks)
-        
+    
     async def stop_async(self):
         hosted_services = [cast(HostedServiceBase, service) for service in self.services.get_services(HostedServiceBase)]
         stop_tasks = [hosted_service.stop_async() for hosted_service in hosted_services]
@@ -63,6 +64,8 @@ class Host(HostBase):
         
 class ApplicationSettings(BaseSettings):
     
+    consumer_group : str
+
     connection_strings : dict[str, str] = dict[str, str]()
     
 

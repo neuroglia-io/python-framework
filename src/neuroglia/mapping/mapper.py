@@ -1,8 +1,24 @@
 import importlib
 import inspect
 from typing import Any, Callable, List, Type
-from neuroglia.core.type_finder import TypeFinder
+from neuroglia.core import ModuleLoader, TypeFinder
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
+
+
+def map_to(target_type: Type):
+    ''' Represents a decorator used to create a mapping of the marked class to a specified type '''
+    def decorator(cls):
+        cls.__map_to__ = target_type
+        return cls
+    return decorator
+
+
+def map_from(source_type: Type):
+    ''' Represents a decorator used to create a mapping from a specified type to the marked class '''
+    def decorator(cls):
+        cls.__map_from__ = source_type
+        return cls
+    return decorator
 
 
 class MemberMapConfiguration:
@@ -144,7 +160,7 @@ class Mapper:
                 modules (List[str]): a list containing the names of the modules to scan for MappingProfiles, which are classes used to configure the Mapper
         '''
         configuration : MapperConfiguration = MapperConfiguration()
-        for module in [importlib.import_module(module_name) for module_name in modules]:
+        for module in [ModuleLoader.load(module_name) for module_name in modules]:
             mapping_profile_types = TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and issubclass(cls, MappingProfile) and cls != MappingProfile, include_sub_packages=True)            
             for mapping_profile_type in mapping_profile_types:
                 mapping_profile : MappingProfile = object.__new__(mapping_profile_type)

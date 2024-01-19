@@ -2,7 +2,7 @@ import asyncio
 import importlib
 import inspect
 from typing import List, Type
-from neuroglia.core.type_finder import TypeFinder
+from neuroglia.core import TypeFinder, ModuleLoader
 from neuroglia.eventing.cloud_events import CloudEvent
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventBus
 from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedServiceBase
@@ -30,8 +30,8 @@ class CloudEventIngestor(HostedServiceBase):
     _mediator : Mediator
     
     async def start_async(self):
-        self._cloud_event_bus.input_stream.subscribe(lambda e: asyncio.ensure_future(self._on_cloud_event_async(e)))
-        
+        self._cloud_event_bus.input_stream.subscribe(lambda e: asyncio.ensure_future(self._on_cloud_event_async(e)))      
+
     async def _on_cloud_event_async(self, cloud_event : CloudEvent):
 
         event_type = self._options.type_maps.get(cloud_event.type, None)
@@ -62,7 +62,7 @@ class CloudEventIngestor(HostedServiceBase):
                 modules (List[str]): a list containing the names of the modules to scan for classes marked with the 'cloudevent' decorator. Marked classes as used to configure the mapping of cloud events consumed by the cloud event ingestor
         '''
         options : CloudEventIngestionOptions = CloudEventIngestionOptions()
-        for module in [importlib.import_module(module_name) for module_name in modules]:
+        for module in [ModuleLoader.load(module_name) for module_name in modules]:
             for cloud_event_clr_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and hasattr(cls, "__cloudevent__")):
                 cloud_event_type = cloud_event_clr_type.__cloudevent__
                 options.type_maps[cloud_event_type] = cloud_event_clr_type

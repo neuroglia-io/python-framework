@@ -47,6 +47,7 @@ class EventSourcingRepository(Generic[TAggregate, TKey], Repository[TAggregate, 
         await self._eventstore.append_async(stream_id, encoded_events)
         aggregate.state.state_version = events[-1].aggregate_version
         aggregate.clear_pending_events()
+        return aggregate
         
     async def update_async(self, aggregate: TAggregate) -> TAggregate:
         ''' Perists the changes made to the specified aggregate '''
