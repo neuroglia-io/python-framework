@@ -6,6 +6,7 @@ from neuroglia.hosting.abstractions import HostedServiceBase
 from neuroglia.mediation.mediator import Mediator
 from neuroglia.reactive import AsyncRx
 
+
 @dataclass
 class ReadModelConciliationOptions:
     ''' Represents the options used to configure the application's read model reconciliation features '''
