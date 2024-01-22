@@ -46,6 +46,7 @@ class ReadModelReconciliator(HostedServiceBase):
             asyncio.run( mediator.publish_async(e.data))
             #todo: ack
         except Exception as ex:
+            print(ex)
             pass #todo: nack
     
     async def on_event_record_stream_error(self, ex: Exception):

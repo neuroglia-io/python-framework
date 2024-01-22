@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from neuroglia.data.infrastructure.event_sourcing.abstractions import EventStoreOptions
 from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository import EventSourcingRepository
 from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore

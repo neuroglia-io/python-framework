@@ -34,15 +34,11 @@ class JsonSerializer(TextSerializer):
         value = json.loads(input)
         if expected_type is None or not isinstance(value, dict): return value
         fields = {}
-        for key, field_type in expected_type.__annotations__.items():
-            if key in value:
-                if issubclass(field_type, Enum): fields[key] = field_type[value[key]]
-                elif hasattr(field_type, '__annotations__'):
-                    nested_type = field_type
-                    nested_value = value[key]
-                    fields[key] = self._deserialize_nested(nested_value, nested_type)
-                else:
-                    fields[key] = value[key]
+        for base_type in reversed(expected_type.__mro__):
+            if not hasattr(base_type, "__annotations__"): continue
+            for key, field_type in base_type.__annotations__.items():
+                if key in value:
+                    fields[key] = self._deserialize_nested(value[key], field_type)
         value = object.__new__(expected_type)
         value.__dict__ = fields
         return value
@@ -51,15 +47,11 @@ class JsonSerializer(TextSerializer):
         ''' Deserializes a nested object '''
         if isinstance(value, dict):
             fields = {}
-            for key, field_type in expected_type.__annotations__.items():
-                if issubclass(field_type, Enum): fields[key] = field_type[value[key]]
-                elif key in value:
-                    if hasattr(field_type, '__annotations__'):
-                        nested_type = field_type
-                        nested_value = value[key]
-                        fields[key] = self._deserialize_nested(nested_value, nested_type)
-                    else:
-                        fields[key] = value[key]
+            for base_type in reversed(expected_type.__mro__):
+                if not hasattr(base_type, "__annotations__"): continue
+                for key, field_type in base_type.__annotations__.items():
+                    if key in value:
+                        fields[key] = self._deserialize_nested(value[key], field_type)
             value = object.__new__(expected_type)
             value.__dict__ = fields
             return value

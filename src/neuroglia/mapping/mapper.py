@@ -21,10 +21,41 @@ def map_from(source_type: Type):
     return decorator
 
 
+class TypeMappingContext:
+    ''' Represents the context of a type mapping '''
+    
+    def __init__(self, source : Any, source_type: Type, destination_type : Type):
+        self.source = source
+        self.source_type = source_type
+        self.destination_type = destination_type
+
+    source : Any
+    ''' Gets the value to map '''
+    
+    source_type : Type
+    ''' Gets the type of the value to map '''
+    
+    destination_type: Type
+    ''' Gets the type to map the source to '''
+    
+
+class MemberMappingContext(TypeMappingContext):
+    ''' Represents the context of a type mapping '''
+    
+    def __init__(self, source : Any, source_type: Type, destination_type : Type, member_name : str, source_member_value : Any):
+        super().__init__(source, source_type, destination_type)
+        self.member_name = member_name
+        self.source_member_value = source_member_value
+    
+    member_name : str
+    
+    source_member_value : Any
+
+
 class MemberMapConfiguration:
     ''' Represents an object used to configure the mapping of a type member '''
     
-    def __init__(self, name : str, is_ignored : bool = False, value_converter : Callable[[Any], Any] = None):
+    def __init__(self, name : str, is_ignored : bool = False, value_converter : Callable[[MemberMappingContext], Any] = None):
         self.name = name
         self.is_ignored = is_ignored
         self.value_converter = value_converter
@@ -35,7 +66,7 @@ class MemberMapConfiguration:
     is_ignored: bool
     ''' Gets a boolean indicating whether or not the member is ignored '''
 
-    value_converter: Callable[[Any], Any]
+    value_converter: Callable[[MemberMappingContext], Any]
     ''' Gets a callable, if any, used to convert the value of the member '''
     
 
@@ -53,7 +84,7 @@ class TypeMapConfiguration:
     destination_type: Type
     ''' Gets the type to convert source values to '''
     
-    type_converter: Callable[[Any], Any]
+    type_converter: Callable[[TypeMappingContext], Any]
     ''' Gets the callable, if any, used to convert source instances to the configured destination type '''
     
     member_configurations: List[MemberMapConfiguration] = list[MemberMapConfiguration]()
@@ -61,17 +92,18 @@ class TypeMapConfiguration:
     
     def map(self, source : Any):
         ''' Maps the specified value to the configured destination type '''
-        if self.type_converter is not None: return self.type_converter(source)
+        mapping_context = TypeMappingContext(source, self.source_type, self.destination_type)
+        if self.type_converter is not None: return self.type_converter(mapping_context)
         source_attributes_dictionary = dict([(key, value) for key, value in source.__dict__.items() if not key.startswith('_')]) if hasattr(source, "__dict__") else dict()
         destination_attributes = dict()
         for source_attribute_key, source_attribute_value in source_attributes_dictionary.items():
             member_map = next((member for member in self.member_configurations if member.name == source_attribute_key), None)
             if member_map is None: destination_attributes[source_attribute_key] = source_attribute_value
             elif member_map.is_ignored: continue
-            else: destination_attributes[source_attribute_key] = member_map.value_converter(source_attribute_value)
+            else: destination_attributes[source_attribute_key] = member_map.value_converter(MemberMappingContext(source, self.source_type, self.destination_type, source_attribute_key, source_attribute_value))
         for configured_attribute in [attr for attr in self.member_configurations if attr not in source_attributes_dictionary.keys()]:
             if configured_attribute.is_ignored or configured_attribute.value_converter is None: continue
-            destination_attributes[configured_attribute.name] = configured_attribute.value_converter(source)
+            destination_attributes[configured_attribute.name] = configured_attribute.value_converter(MemberMappingContext(source, self.source_type, self.destination_type, configured_attribute.name, None))
         destination = object.__new__(self.destination_type)
         destination.__dict__ = destination_attributes
         return destination
@@ -85,7 +117,7 @@ class TypeMapExpression:
 
     _configuration : TypeMapConfiguration
 
-    def convert_using(self, converter: Callable[[Any], Any]) -> None:
+    def convert_using(self, converter: Callable[[TypeMappingContext], Any]) -> None:
         ''' Maps values using the specified converter function '''
         self._configuration.type_converter = converter
         
@@ -96,7 +128,7 @@ class TypeMapExpression:
         else: configuration.is_ignored = True
         return self
    
-    def for_member(self, name: str, converter : Callable[[Any], Any]):
+    def for_member(self, name: str, converter : Callable[[MemberMappingContext], Any]):
         ''' Configures the mapping of the specified member to use a converter function '''
         configuration = next((member for member in self._configuration.member_configurations if member.name == name), None)
         if configuration is None: self._configuration.member_configurations.append(MemberMapConfiguration(name, value_converter=converter))
@@ -126,7 +158,7 @@ class MappingProfile:
     def create_map(self, source_type : Type, destination_type : Type) -> TypeMapExpression:
         ''' Creates a new expression used to convert how to map instances of the source type to instances of the destination type '''
         callable : Callable[[MapperConfiguration], None] = lambda config: config.create_map(source_type, destination_type)
-        return self._configuration_actions.append(callable)
+        self._configuration_actions.append(callable)
     
     def apply_to(self, configuration : MapperConfiguration) -> MapperConfiguration:
         ''' Applies the mapping profile to the specified mapper configuration '''
@@ -148,7 +180,7 @@ class Mapper:
         ''' Maps the specified value into a new instance of the destination type '''
         source_type = type(source)
         type_map = next((tmc for tmc in self.options.type_maps if tmc.source_type == source_type and tmc.destination_type == destination_type), None)
-        if type_map is None: raise Exception(f"Missing type map configuration or unsupported mapping. Mapping types: {source_type.__name__} -> {destination_type.__name__}") 
+        if type_map is None: raise Exception(f"Missing type map configuration or unsupported mapping. Mapping types: {source_type.__name__} -> {destination_type.__name__}")
         destination = type_map.map(source)
         return destination
     

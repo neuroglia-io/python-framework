@@ -23,13 +23,18 @@ class HostBase(ABC):
     
     def run(self):
         ''' Runs the program '''
-        asyncio.run(self.start_async())
-
+        try:
+            asyncio.get_running_loop()
+            asyncio.ensure_future(self.start_async())
+        except RuntimeError:
+            asyncio.run(self.start_async())
+        
     @abstractmethod
     def dispose(self):
         ''' Disposes of the program's resources '''
         raise NotImplementedError()
  
+
 class HostedServiceBase:
     ''' Defines the fundamentals of a service managed by the host '''
     
