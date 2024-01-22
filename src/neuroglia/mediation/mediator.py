@@ -1,13 +1,13 @@
 import asyncio
-import importlib
 import inspect
 from abc import ABC, abstractmethod
 from types import UnionType
-from typing import Generic, List, TypeVar
+from typing import Any, Generic, List, Optional, TypeVar
+from neuroglia.core.module_loader import ModuleLoader
 from neuroglia.core.operation_result import OperationResult
 from neuroglia.core.type_finder import TypeFinder
 from neuroglia.data.abstractions import DomainEvent
-from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProviderBase
+from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 from neuroglia.integration.models import IntegrationEvent
 
@@ -42,6 +42,20 @@ class RequestHandler(Generic[TRequest, TResult], ABC):
     async def handle_async(self, request : TRequest) -> TResult:
         ''' Handles the specified request '''
         raise NotImplementedError()
+
+    def ok(self, data : Optional[Any] = None) -> TResult:
+        result = OperationResult("OK", 200)
+        result.data = data
+        return result
+    
+    def created(self, data : Optional[Any] = None) -> TResult:
+        result = OperationResult("Created", 201)
+        result.data = data
+        return result
+
+    def not_found(self, entity_type, entity_key, key_name: str = "id") -> TResult:
+        ''' Creates a new ProblemDetails to describe the fact that an entity of the specified type and key could not be found or does not exist '''
+        return OperationResult("Not Found", 404, f"Failed to find an entity of type '{entity_type.__name__}' with the specified {key_name} '{entity_key}'", "https://www.w3.org/Protocols/HTTP/HTRESP.html#:~:text=Not%20found%20404")
 
 
 TCommand = TypeVar('TCommand', bound=Command)
@@ -143,10 +157,10 @@ class Mediator:
                 services (ServiceCollection): the service collection to configure
                 modules (List[str]): a list containing the names of the modules to scan for mediation services to register
         '''
-        for module in [importlib.import_module(module_name) for module_name in modules]:
-            for command_handler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and issubclass(cls, CommandHandler) and cls != CommandHandler, include_sub_modules=True):
+        for module in [ModuleLoader.load(module_name) for module_name in modules]:
+            for command_handler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and not Generic in cls.__bases__ and issubclass(cls, CommandHandler) and cls != CommandHandler, include_sub_modules=True):
                 app.services.add_transient(RequestHandler, command_handler_type)
-            for queryhandler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and issubclass(cls, QueryHandler) and cls != QueryHandler, include_sub_modules=True):
+            for queryhandler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and not Generic in cls.__bases__ and issubclass(cls, QueryHandler) and cls != QueryHandler, include_sub_modules=True):
                 app.services.add_transient(RequestHandler, queryhandler_type)
             for domain_event_handler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and issubclass(cls, DomainEventHandler) and cls != DomainEventHandler, include_sub_modules=True):
                 app.services.add_transient(NotificationHandler, domain_event_handler_type)

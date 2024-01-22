@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
-import decimal
 from enum import Enum
-from fnmatch import translate
 from typing import List, Optional
 import uuid
 from multipledispatch import dispatch
@@ -16,6 +14,7 @@ class BankTransactionTypeV1(Enum):
     TRANSFER = 'TRANSFER'
     INTEREST = 'INTEREST'
     
+
 @dataclass
 class BankTransactionV1(Entity[str]):
     
@@ -68,7 +67,7 @@ class BankAccountStateV1(AggregateState[str]):
     
     @dispatch(BankAccountCreatedDomainEventV1)
     def on(self, e : BankAccountCreatedDomainEventV1):
-        self._id = e.aggregate_id
+        self.id = e.aggregate_id
         self.created_at = e.created_at
         self.owner_id = e.owner_id
         self.overdraft_limit = e.overdraft_limit

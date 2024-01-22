@@ -25,6 +25,5 @@ class GetByIdQueryHandler(QueryHandler[GetByIdQuery[TEntity, TKey], OperationRes
 
     async def handle_async(self, query : GetByIdQuery[TEntity, TKey]) -> OperationResult[TEntity]:
         entity = await self.repository.get_async(query.id)
-        result = OperationResult[str]('NOT FOUND', 404) if entity is None else OperationResult[str]('OK', 200)
-        result.data = entity
-        return result   
+        if entity is None: return self.not_found(self.repository.__orig_class__.__args__[0], query.id)
+        return self.ok(entity)

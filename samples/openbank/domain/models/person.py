@@ -1,15 +1,11 @@
-from dataclasses import dataclass
-from datetime import date, datetime
-from enum import Enum
 import uuid
+from datetime import date
 from multipledispatch import dispatch
-from neuroglia.data.abstractions import AggregateRoot, AggregateState, DomainEvent, Entity
+from neuroglia.data.abstractions import AggregateRoot, AggregateState, DomainEvent
+from neuroglia.mapping.mapper import map_to
 from samples.openbank.domain.models import Address
-
-class PersonGender(Enum):
-    MALE = 'MALE'
-    FEMALE = 'FEMALE'
-    OTHER = 'OTHER'
+from samples.openbank.integration import PersonGender
+from samples.openbank.integration.models import PersonDto
 
 
 class PersonRegisteredDomainEventV1(DomainEvent[str]):
@@ -36,6 +32,7 @@ class PersonRegisteredDomainEventV1(DomainEvent[str]):
     address : Address
     
 
+@map_to(PersonDto)
 class PersonStateV1(AggregateState[str]):
 
     def __init__(self):
@@ -55,7 +52,7 @@ class PersonStateV1(AggregateState[str]):
     
     @dispatch(PersonRegisteredDomainEventV1)
     def on(self, e : PersonRegisteredDomainEventV1):
-        self._id = e.aggregate_id
+        self.id = e.aggregate_id
         self.created_at = e.created_at
         self.first_name = e.first_name
         self.last_name = e.last_name

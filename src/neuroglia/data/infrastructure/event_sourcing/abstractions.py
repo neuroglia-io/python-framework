@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import datetime
+from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Type
-from xmlrpc.client import datetime
+from typing import Any, List, Optional, Type
+from neuroglia.data.abstractions import AggregateRoot
 
-from neuroglia.data.abstractions import AggregateRoot, DomainEvent
 
 @dataclass
 class StreamDescriptor:
@@ -17,11 +16,12 @@ class StreamDescriptor:
     length: int
     ''' Gets the stream's length '''
     
-    first_event_at: Optional[datetime]
+    first_event_at: Optional[datetime] = None
     ''' Gets the date and time at which the first event, if any, has been recorded to the stream '''
     
-    last_event_at: Optional[datetime]
+    last_event_at: Optional[datetime] = None
     ''' Gets the date and time at which the last event, if any, has been recorded to the stream '''
+
 
 @dataclass
 class EventDescriptor:
@@ -30,11 +30,12 @@ class EventDescriptor:
     type: str
     ''' Gets the type of the event to record '''
     
-    data : Optional[any]
+    data : Optional[Any] = None
     ''' Gets the data of the event to record '''
     
-    metadata: Optional[any]
+    metadata: Optional[Any] = None
     ''' Gets the metadata of the event to record, if any '''
+
 
 @dataclass
 class EventRecord:
@@ -61,7 +62,7 @@ class EventRecord:
     data: Optional[any] = None
     ''' Gets the recorded event's data, if any '''
     
-    metadadata: Optional[any]= None
+    metadata: Optional[any]= None
     ''' Gets the recorded event's metadadata, if any '''
     
     replayed: bool = False
@@ -74,6 +75,7 @@ class StreamReadDirection(Enum):
     ''' Indicates a forwards direction '''
     BACKWARDS=1
     ''' Indicates a backwards direction ''' 
+
 
 @dataclass
 class EventStoreOptions:
