@@ -43,15 +43,12 @@ class DomainEventHandlerBase(Generic[TWriteModel, TReadModel, TKey]):
         ''' Gets or creates a new read model instance for the write model with the specified id '''
         write_model_type = self._get_write_model_type()
         read_model = await self.read_models.get_async(id)
-
         if read_model is None:
             write_model = await self.write_models.get_async(id)
             if write_model is None: raise Exception(f"Failed to find a write model instance of type '{write_model_type}' with the specified key '{id}'")
             read_model = await self._create_read_model_async(write_model)
             read_model = await self.read_models.add_async(read_model)
         return read_model
-
-            
 
     async def _create_read_model_async(self, write_model : TWriteModel):
         ''' Creates a new read model for the specified write model instance '''

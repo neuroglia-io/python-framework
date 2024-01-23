@@ -37,13 +37,13 @@ class ReadModelReconciliator(HostedServiceBase):
 
     async def subscribe_async(self):
         observable = await self._event_store.observe_async(f'$ce-{self._event_store_options.database_name}')
-        AsyncRx.subscribe(observable, self.on_event_record_stream_next)
+        AsyncRx.subscribe(observable, lambda e: asyncio.run(self.on_event_record_stream_next_async(e)))
         
-    def on_event_record_stream_next(self, e: EventRecord):
-        mediator : Mediator = self._service_provider.get_required_service(Mediator);
+    async def on_event_record_stream_next_async(self, e: EventRecord):
+        mediator : Mediator = self._service_provider.get_required_service(Mediator)
         try:
             #todo: migrate event
-            asyncio.run( mediator.publish_async(e.data))
+            await mediator.publish_async(e.data)
             #todo: ack
         except Exception as ex:
             print(ex)
