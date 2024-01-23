@@ -6,7 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from neuroglia.core.problem_details import ProblemDetails
 from neuroglia.core import ModuleLoader, TypeFinder
 from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProviderBase
-from neuroglia.hosting.abstractions import ApplicationBuilderBase, Host, HostBase
+from neuroglia.hosting.abstractions import ApplicationBuilderBase, Host, HostApplicationLifetime, HostBase
 from neuroglia.mvc.controller_base import ControllerBase
 from neuroglia.serialization.json import JsonSerializer
 
@@ -15,7 +15,8 @@ class WebHostBase(HostBase, FastAPI):
     ''' Defines the fundamentals of a web application's abstraction '''
     
     def __init__(self):
-        FastAPI.__init__(self)
+        application_lifetime : HostApplicationLifetime= self.services.get_required_service(HostApplicationLifetime)
+        FastAPI.__init__(self, lifespan=application_lifetime._run_async)
         
     def use_controllers(self):
         ''' Configures FastAPI routes for registered controller services '''
@@ -28,9 +29,9 @@ class WebHost(WebHostBase, Host):
     ''' Represents the default implementation of the HostBase class '''
     
     def __init__(self, services : ServiceProviderBase):
-        WebHostBase.__init__(self)
         Host.__init__(self, services)
-         
+        WebHostBase.__init__(self)
+        
 
 class WebApplicationBuilderBase(ApplicationBuilderBase):
     ''' Defines the fundamentals of a service used to build applications '''

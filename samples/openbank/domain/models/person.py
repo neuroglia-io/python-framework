@@ -63,7 +63,7 @@ class PersonStateV1(AggregateState[str]):
         
     def __str__(self) -> str: return f"{self.last_name} {self.first_name}"
         
-
+@map_to(PersonDto)
 class Person(AggregateRoot[PersonStateV1, str]):
     
     def __init__(self, first_name: str, last_name: str, nationality: str, gender: PersonGender, date_of_birth: date, address: Address):

@@ -1,8 +1,9 @@
-import asyncio
 import inspect
 import sys
 import threading
 from typing import Dict, List, Optional
+import rx
+from rx.disposable.disposable import Disposable
 from neuroglia.data.abstractions import DomainEvent
 from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamDescriptor, StreamReadDirection
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
@@ -96,7 +97,7 @@ class ESEventStore(EventStore):
         subject = Subject()
         thread = threading.Thread(target=self._consume_events_async, kwargs={ 'stream_id': stream_id, 'subject': subject, 'subscription': subscription })
         thread.start()
-        return subject
+        return rx.using(lambda: Disposable(lambda: subscription.stop()), lambda s: subject)
         
     def _build_event_metadata(self, e: DomainEvent, additional_metadata: Optional[any]):
         module_name = inspect.getmodule(e).__name__
@@ -130,10 +131,13 @@ class ESEventStore(EventStore):
     
     def _consume_events_async(self, stream_id: str, subject: Subject, subscription):
         ''' Asynchronously enumerate events returned by a subscription '''
-        for e in subscription: 
-            decoded_event = self._decode_recorded_event(stream_id, e)
-            subject.on_next(decoded_event)
-        subject.on_completed()  
+        try:
+            for e in subscription: 
+                decoded_event = self._decode_recorded_event(stream_id, e)
+                subject.on_next(decoded_event)
+            subject.on_completed()  
+        except Exception as ex:
+            print(ex) #todo: improve feedback
              
     def configure(builder : ApplicationBuilderBase, options : EventStoreOptions) -> ApplicationBuilderBase:
         ''' Registers and configures an EventStore implementation of the EventStore class.

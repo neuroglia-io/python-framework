@@ -118,7 +118,8 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
 
     async def add_async(self, entity: TEntity) -> TEntity:
         if await self.contains_async(entity.id) != None: raise Exception(f"A {self._get_entity_name()} with the specified id '{entity.id}' already exists")
-        self._get_mongo_collection().insert_one(entity.__dict__)
+        encoded = self._encode(entity)
+        self._get_mongo_collection().insert_one(encoded)
         return entity;
 
     async def update_async(self, entity: TEntity) -> TEntity:
@@ -126,7 +127,8 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
         query_filter = { 'id': entity.id }
         expected_version = entity.state_version if isinstance(entity, VersionedState) else None
         if expected_version is not None: query_filter['state_version'] = expected_version
-        self._get_mongo_collection().replace_one(query_filter, entity.__dict__)
+        encoded = self._encode(entity)
+        self._get_mongo_collection().replace_one(query_filter, encoded)
         return entity
 
     async def remove_async(self, id: TKey) -> None:
@@ -139,10 +141,17 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
 
     def _get_mongo_collection(self) -> Collection:
         ''' Gets the Mongo collection to use '''
-         # to get the collection_name, we need to access 'self.__orig_class__', which is not yet available in __init__, thus the need for a function
+        # to get the collection_name, we need to access 'self.__orig_class__', which is not yet available in __init__, thus the need for a function
         collection_name = self._get_entity_name().lower()
         return self._mongo_database[collection_name]
     
+    def _encode(self, obj):
+        if isinstance(obj, (int, float, str, bool, type(None))): return obj
+        elif isinstance(obj, list): return [self._encode(item) for item in obj]
+        elif isinstance(obj, dict): return {key: self._encode(value) for key, value in obj.items()}
+        elif hasattr(obj, '__dict__'): return {key: self._encode(value) for key, value in obj.__dict__.items()}
+        else: return {key: self._encode(value) for key, value in obj.__dict__.items()}
+
     def configure(builder: ApplicationBuilderBase, entity_type : Type, key_type : Type, database_name : str) -> ApplicationBuilderBase:
         ''' Configures the specified application to use a Mongo repository implementation to manage the specified type of entity '''
         connection_string_name = "mongo"

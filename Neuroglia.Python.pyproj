@@ -79,6 +79,7 @@ CONSUMER_GROUP="openbank-0"</Environment>
     <Compile Include="samples\openbank\application\events\domain\person_domain_event_handler.py" />
     <Compile Include="samples\openbank\application\events\domain\bank_account_domain_event_handler.py" />
     <Compile Include="samples\openbank\application\events\domain\__init__.py" />
+    <Compile Include="samples\openbank\application\events\domain_event_handler_base.py" />
     <Compile Include="samples\openbank\application\events\__init__.py" />
     <Compile Include="samples\openbank\application\mapping\profile.py" />
     <Compile Include="samples\openbank\application\mapping\__init__.py" />
