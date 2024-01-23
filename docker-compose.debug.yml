@@ -14,7 +14,7 @@ services:
     environment:
       LOG_LEVEL: DEBUG
       CONSUMER_GROUP: openbank-0
-      CONNECTION_STRINGS: '{"mongo": "mongodb://mongodb:27017", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
+      CONNECTION_STRINGS: '{"mongo": "mongodb://root:Password1!@mongodb:27017", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
     secrets:
       - db_root_password
     volumes:
@@ -34,6 +34,12 @@ services:
     environment:
       EVENTSTORE_INSECURE: true
       EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_START_STANDARD_PROJECTIONS: true
+      EVENTSTORE_EXT_TCP_PORT: 1113
+      EVENTSTORE_HTTP_PORT: 2113     
+      EVENTSTORE_ENABLE_EXTERNAL_TCP: true
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: true
     networks:
       - metanet1
 
@@ -54,22 +60,20 @@ services:
     networks:
       - metanet1
 
-  # mongo-express:
-  #   image: mongo-express:latest
-  #   restart: always
-  #   ports:
-  #     - 8111:8081
-  #   environment:
-  #     ME_CONFIG_MONGODB_SERVER: mongodb-dev
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/db_root_password
-  #     ME_CONFIG_MONGODB_ENABLE_ADMIN: true
-  #   secrets:
-  #     - db_root_password
-  #   depends_on:
-  #     - mongodb-dev
-  #   networks:
-  #     - metanet1
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - 8111:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/db_root_password
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+    secrets:
+      - db_root_password
+    networks:
+      - metanet1
 
   # event-player:
   #   image: ccie-gitlab.ccie.cisco.com:4567/mozart/infrastructure/eventing/cloudevent-player:latest
