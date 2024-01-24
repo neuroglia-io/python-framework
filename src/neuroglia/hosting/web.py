@@ -16,7 +16,7 @@ class WebHostBase(HostBase, FastAPI):
     
     def __init__(self):
         application_lifetime : HostApplicationLifetime= self.services.get_required_service(HostApplicationLifetime)
-        FastAPI.__init__(self, lifespan=application_lifetime._run_async)
+        FastAPI.__init__(self, lifespan=application_lifetime._run_async, docs_url="/api/docs")
         
     def use_controllers(self):
         ''' Configures FastAPI routes for registered controller services '''
