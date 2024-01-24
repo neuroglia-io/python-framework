@@ -1,5 +1,3 @@
-import asyncio
-from datetime import date
 from neuroglia.data.infrastructure.event_sourcing.abstractions import EventStoreOptions
 from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository import EventSourcingRepository
 from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore
@@ -10,11 +8,6 @@ from neuroglia.hosting.web import WebApplicationBuilder
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator
 from neuroglia.serialization.json import JsonSerializer
-from samples.openbank.application.commands.persons.register_person_command import RegisterPersonCommand
-from samples.openbank.application.queries.generic import GetByIdQuery
-from samples.openbank.domain.models.address import Address
-from samples.openbank.integration.models import PersonDto
-from samples.openbank.integration.person_gender import PersonGender
 
 
 database_name = "openbank"
