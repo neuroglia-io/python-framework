@@ -19,4 +19,3 @@ class RegisterPersonCommandDto(BaseModel):
     
     address : AddressDto
         
-        

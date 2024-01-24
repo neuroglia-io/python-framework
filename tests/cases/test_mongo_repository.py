@@ -99,7 +99,7 @@ class TestMongoRepository:
         count = 10
         for i in range(count):
             await self._repository.add_async(UserDto(str(uuid4()), f'{prefix}_name_{i}', f'{prefix}_email_{i}'))
-            
+
         # act
         query = await self._repository.query_async()
         query = query.where(lambda u: u.name.startswith('fake'))
