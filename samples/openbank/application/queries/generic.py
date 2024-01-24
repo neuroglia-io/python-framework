@@ -5,7 +5,7 @@ from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.mediation.mediator import Query, QueryHandler
 
 
-class GetByIdQuery(Query[OperationResult[TEntity]], Generic[TEntity, TKey]):
+class GetByIdQuery(Generic[TEntity, TKey], Query[OperationResult[TEntity]]):
     ''' Represents the query used to get an entity by id'''
     
     def __init__(self, id: Any):
@@ -15,7 +15,7 @@ class GetByIdQuery(Query[OperationResult[TEntity]], Generic[TEntity, TKey]):
     ''' Gets the id of the entity to get '''
     
 
-class GetByIdQueryHandler(QueryHandler[GetByIdQuery[TEntity, TKey], OperationResult[TEntity]], Generic[TEntity, TKey]):
+class GetByIdQueryHandler(Generic[TEntity, TKey], QueryHandler[GetByIdQuery[TEntity, TKey], OperationResult[TEntity]]):
     ''' Represents the service used to handle GetByIdQuery instances '''
     
     def __init__(self, repository : Repository[TEntity, TKey]):

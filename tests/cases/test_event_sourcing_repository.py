@@ -4,6 +4,7 @@ from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository impo
 from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore
 from tests.data import User
 
+
 class TestEventSourcingRepository:
 
     @pytest.mark.asyncio

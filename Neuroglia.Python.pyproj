@@ -98,6 +98,7 @@ CONSUMER_GROUP="openbank-0"</Environment>
     <Compile Include="src\neuroglia\core\module_loader.py" />
     <Compile Include="src\neuroglia\core\operation_result.py" />
     <Compile Include="src\neuroglia\core\problem_details.py" />
+    <Compile Include="src\neuroglia\core\type_extensions.py" />
     <Compile Include="src\neuroglia\core\type_finder.py" />
     <Compile Include="src\neuroglia\core\__init__.py" />
     <Compile Include="src\neuroglia\data\abstractions.py" />
@@ -148,6 +149,7 @@ CONSUMER_GROUP="openbank-0"</Environment>
     <Compile Include="tests\cases\test_mediator.py" />
     <Compile Include="tests\cases\test_mongo_repository.py" />
     <Compile Include="tests\cases\test_service_provider.py" />
+    <Compile Include="tests\cases\test_type_extensions.py" />
     <Compile Include="tests\data.py" />
     <Compile Include="tests\services.py" />
   </ItemGroup>
