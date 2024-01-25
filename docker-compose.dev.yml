@@ -51,7 +51,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     command: mongod --auth --bind_ip_all --keyFile /etc/mongo-keyfile/keyfile
     ports:
-      - 27017:27017
+      - 27099:27017
     volumes:
       - mongodb_data:/data/db
       - ./deployment/mongo/replica-key:/etc/mongo-keyfile/keyfile
