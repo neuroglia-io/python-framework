@@ -22,7 +22,7 @@ class BankAccountDomainEventHandler(DomainEventHandlerBase[BankAccount, BankAcco
     async def handle_async(self, e: BankAccountCreatedDomainEventV1) -> None:
         owner : PersonDto = (await self.mediator.execute_async(GetByIdQuery[PersonDto, str](e.owner_id))).data
         bank_account = await self.get_or_create_read_model_async(e.aggregate_id)
-        bank_account.balance = 0
+        bank_account.balance = Decimal(0)
         bank_account.owner = f"{owner.first_name} {owner.last_name}"
         await self.read_models.update_async(bank_account)
         #todo: await self.publish_cloud_event_async(e)
