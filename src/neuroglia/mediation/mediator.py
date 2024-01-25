@@ -51,8 +51,12 @@ class RequestHandler(Generic[TRequest, TResult], ABC):
         result.data = data
         return result
 
+    def bad_request(self, detail: str) -> TResult:
+        ''' Creates a new OperationResult to describe the fact that the request is invalid '''
+        return OperationResult("Bad Request", 400, detail, "https://www.w3.org/Protocols/HTTP/HTRESP.html#:~:text=Bad%20Request")
+
     def not_found(self, entity_type, entity_key, key_name: str = "id") -> TResult:
-        ''' Creates a new ProblemDetails to describe the fact that an entity of the specified type and key could not be found or does not exist '''
+        ''' Creates a new OperationResult to describe the fact that an entity of the specified type and key could not be found or does not exist '''
         return OperationResult("Not Found", 404, f"Failed to find an entity of type '{entity_type.__name__}' with the specified {key_name} '{entity_key}'", "https://www.w3.org/Protocols/HTTP/HTRESP.html#:~:text=Not%20found%20404")
 
 

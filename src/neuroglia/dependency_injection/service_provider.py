@@ -164,12 +164,23 @@ class ServiceProvider(ServiceProviderBase):
         for descriptor in service_descriptors:
             implementation_type = descriptor.get_implementation_type()
             realized_service = next((service for service in realized_services if self._is_service_instance_of(service, implementation_type)), None) 
-            if realized_service is None: realized_services.append(self._build_service(descriptor))
+            if realized_service is None: 
+                realized_services.append(self._build_service(descriptor))
         return realized_services
       
-    def _is_service_instance_of(self, service : Any, type : Type) -> bool:
-        if hasattr(type, '__origin__'): return isinstance(service, type.__origin__)
-        else: return isinstance(service, type)
+    def _is_service_instance_of(self, service : Any, type_ : Type) -> bool:
+        if hasattr(type_, "__origin__"): 
+            service_type = service.__orig_class__ if hasattr(service, "__orig_class__") else type(service)
+            service_generic_arguments = TypeExtensions.get_generic_arguments(service_type)
+            implementation_generic_arguments = TypeExtensions.get_generic_arguments(type_)
+            for i in range(len(implementation_generic_arguments)):
+                generic_argument_name = list(implementation_generic_arguments.keys())[i]
+                service_generic_argument = service_generic_arguments.get(generic_argument_name, None)
+                if service_generic_argument is None or service_generic_argument != implementation_generic_arguments[generic_argument_name]:
+                    return False
+            return isinstance(service, type_.__origin__)
+        else: 
+            return isinstance(service, type_)
 
     def _build_service(self, service_descriptor: ServiceDescriptor) -> any:
         ''' Builds a new service provider based on the configured dependencies '''
