@@ -4,6 +4,8 @@ from enum import Enum
 import inspect
 from typing import Any, Callable, ForwardRef, List, Optional, Type, Dict, TypeVar
 
+from neuroglia.core.type_extensions import TypeExtensions
+
 
 class ServiceLifetime(Enum):
     '''Enumerates all supported service lifetimes.'''
@@ -179,14 +181,13 @@ class ServiceProvider(ServiceProviderBase):
             service_generic_type = service_descriptor.implementation_type.__origin__ if is_service_generic else None # retrieve the generic type, used to determine the __init__ args
             service_type = service_descriptor.implementation_type if service_generic_type is None else service_generic_type # get the type used to determine the __init__ args: the implementation type as is or its generic type definition
             service_init_args = [param for param in inspect.signature(service_type.__init__).parameters.values() if param.name not in ['self', 'args', 'kwargs']] # gets the __init__ args and leave out self, args and kwargs
-            service_generic_args = None if service_generic_type is None else service_descriptor.implementation_type.__args__ # gets the generic args: we will need them to substitute the type args of potential generic dependencies
-            generic_args_map = dict() if service_generic_type is None else dict(zip(service_generic_type.__parameters__, service_generic_args))
+            service_generic_args = TypeExtensions.get_generic_arguments(service_descriptor.implementation_type) # gets the generic args: we will need them to substitute the type args of potential generic dependencies
             service_args = dict[Type, any]()
             for init_arg in service_init_args:
                 is_dependency_generic = not inspect.isclass(init_arg.annotation)
                 dependency_generic_type = init_arg.annotation.__origin__ if is_dependency_generic else None
                 dependency_generic_args = None if dependency_generic_type is None else init_arg.annotation.__args__
-                if dependency_generic_args is not None: dependency_generic_args = [generic_args_map[arg] if type(arg) == TypeVar else arg for arg in dependency_generic_args] # replace TypeVar generic arguments by the service's matching generic argument
+                if dependency_generic_args is not None: dependency_generic_args = [service_generic_args[arg.__name__] if type(arg) == TypeVar else arg for arg in dependency_generic_args] # replace TypeVar generic arguments by the service's matching generic argument
                 dependency_type = init_arg.annotation.__origin__[*dependency_generic_args] if is_dependency_generic else init_arg.annotation
                 dependency = self.get_service(dependency_type)
                 if dependency is None and init_arg.default == init_arg.empty and init_arg.name != 'self': raise Exception(f"Failed to build service of type '{service_descriptor.service_type.__name__}' because the service provider failed to resolve service '{dependency_type.__name__}'")

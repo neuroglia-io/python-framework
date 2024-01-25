@@ -10,7 +10,7 @@ class MemoryRepository(Repository[TEntity, TKey]):
         return self.entities.get(id) is not None
 
     async def get_async(self, id: TKey) -> Optional[TEntity]:
-        return self.entities[id];
+        return self.entities.get(id, None);
 
     async def add_async(self, entity: TEntity) -> TEntity:
         if entity.id in self.entities: raise Exception();

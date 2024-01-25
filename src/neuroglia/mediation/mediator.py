@@ -2,10 +2,8 @@ import asyncio
 import inspect
 from abc import ABC, abstractmethod
 from types import UnionType
-from typing import Any, Generic, List, Optional, TypeVar
-from neuroglia.core.module_loader import ModuleLoader
-from neuroglia.core.operation_result import OperationResult
-from neuroglia.core.type_finder import TypeFinder
+from typing import Any, Generic, List, Optional, Type, TypeVar
+from neuroglia.core import ModuleLoader, OperationResult, TypeFinder, TypeExtensions
 from neuroglia.data.abstractions import DomainEvent
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
@@ -121,7 +119,7 @@ class Mediator:
 
     async def execute_async(self, request: Request) -> OperationResult:
         ''' Executes the specified request '''
-        handlers : List[RequestHandler] = [candidate for candidate in self._service_provider.get_services(RequestHandler) if self._request_handler_matches(candidate, type(request))]
+        handlers : List[RequestHandler] = [candidate for candidate in self._service_provider.get_services(RequestHandler) if self._request_handler_matches(candidate, request)]
         if handlers is None or len(handlers) < 1: raise Exception(f"Failed to find a handler for request of type '{type(request).__name__}'")
         elif len(handlers) > 1: raise Exception(f"There must be exactly one handler defined for the command of type '{type(request).__name__}'")
         handler = handlers[0]
@@ -130,25 +128,25 @@ class Mediator:
     async def publish_async(self, notification : object):
         ''' Publishes the specified notification '''
         handlers : List[NotificationHandler] = [candidate for candidate in self._service_provider.get_services(NotificationHandler) if self._notification_handler_matches(candidate, type(notification))]
-        if handlers is None or len(handlers) < 1: 
-            return
+        if handlers is None or len(handlers) < 1: return
         await asyncio.gather(*(handler.handle_async(notification) for handler in handlers))
         
     def _request_handler_matches(self, candidate, request_type) -> bool:
-        candidate_type = type(candidate)
-        handler_type = next(base for base in candidate_type.__orig_bases__ if (issubclass(base.__origin__, RequestHandler) if hasattr(base, '__origin__') else issubclass(base, RequestHandler)))
+        expected_request_type = request_type.__orig_class__ if hasattr(request_type, "__orig_class__") else request_type
+        handler_type = TypeExtensions.get_generic_implementation(candidate, RequestHandler)
         handled_request_type = handler_type.__args__[0]
-        return issubclass(handled_request_type.__origin__, request_type) if hasattr(handled_request_type, '__origin__') else issubclass(handled_request_type, request_type)
+        if type(handled_request_type) == type(expected_request_type):
+            matches =  handled_request_type == expected_request_type
+            return matches
+        else:
+            return handled_request_type == type(expected_request_type)
     
     def _notification_handler_matches(self, candidate, request_type) -> bool:
         candidate_type = type(candidate)
         handler_type = next(base for base in candidate_type.__orig_bases__ if (issubclass(base.__origin__, NotificationHandler) if hasattr(base, '__origin__') else issubclass(base, NotificationHandler)))
         handled_notification_type = handler_type.__args__[0]
-        
-        if isinstance(handled_notification_type, UnionType):
-            return any(issubclass(t, request_type) for t in handled_notification_type.__args__)
-        else:
-            return issubclass(handled_notification_type.__origin__, request_type) if hasattr(handled_notification_type, '__origin__') else issubclass(handled_notification_type, request_type)
+        if isinstance(handled_notification_type, UnionType): return any(issubclass(t, request_type) for t in handled_notification_type.__args__)
+        else: return issubclass(handled_notification_type.__origin__, request_type) if hasattr(handled_notification_type, '__origin__') else issubclass(handled_notification_type, request_type)
         
     def configure(app : ApplicationBuilderBase, modules : List[str] = list[str]()) -> ApplicationBuilderBase:
         ''' Registers and configures mediation-related services (command/query/notification handlers) to the specified service collection.
@@ -158,9 +156,9 @@ class Mediator:
                 modules (List[str]): a list containing the names of the modules to scan for mediation services to register
         '''
         for module in [ModuleLoader.load(module_name) for module_name in modules]:
-            for command_handler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and not Generic in cls.__bases__ and issubclass(cls, CommandHandler) and cls != CommandHandler, include_sub_modules=True):
+            for command_handler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and (not hasattr(cls, "__parameters__") or len(cls.__parameters__) < 1) and issubclass(cls, CommandHandler) and cls != CommandHandler, include_sub_modules=True):
                 app.services.add_transient(RequestHandler, command_handler_type)
-            for queryhandler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and not Generic in cls.__bases__ and issubclass(cls, QueryHandler) and cls != QueryHandler, include_sub_modules=True):
+            for queryhandler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and not hasattr(cls, "__parameters__") and issubclass(cls, QueryHandler) and cls != QueryHandler, include_sub_modules=True):
                 app.services.add_transient(RequestHandler, queryhandler_type)
             for domain_event_handler_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and issubclass(cls, DomainEventHandler) and cls != DomainEventHandler, include_sub_modules=True):
                 app.services.add_transient(NotificationHandler, domain_event_handler_type)
@@ -168,3 +166,4 @@ class Mediator:
                 app.services.add_transient(NotificationHandler, integration_event_handler_type)
         app.services.add_singleton(Mediator)
         return app
+    

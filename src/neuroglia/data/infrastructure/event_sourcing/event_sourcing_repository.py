@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Generic, Optional, Type
 from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.data.abstractions import DomainEvent, TAggregate, TKey
-from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventStore, EventStoreOptions, StreamReadDirection
+from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventStore, StreamReadDirection
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 
 
@@ -15,14 +15,10 @@ class EventSourcingRepositoryOptions(Generic[TAggregate, TKey]):
 class EventSourcingRepository(Generic[TAggregate, TKey], Repository[TAggregate, TKey]):
     ''' Represents an event sourcing repository implementation '''
 
-    def __init__(self, event_store_options: EventStoreOptions, eventstore: EventStore, aggregator: Aggregator):
+    def __init__(self, eventstore: EventStore, aggregator: Aggregator):
         ''' Initialize a new event sourcing repository '''
-        self._event_store_options = event_store_options
         self._eventstore = eventstore
         self._aggregator = aggregator
-            
-    _event_store_options: EventStoreOptions
-    ''' Gets the current event store options '''
     
     _eventstore : EventStore
     ''' Gets the underlying event store '''
@@ -67,7 +63,7 @@ class EventSourcingRepository(Generic[TAggregate, TKey], Repository[TAggregate, 
     def _build_stream_id_for(self, aggregate_id : TKey):
         ''' Builds a new stream id for the specified aggregate '''
         aggregate_name = self.__orig_class__.__args__[0].__name__
-        return f"{self._event_store_options.database_name}-{aggregate_name.lower()}-{aggregate_id}"
+        return f"{aggregate_name.lower()}-{aggregate_id}"
     
     def _encode_event(self, e: DomainEvent):
         ''' Encodes a domain event into a new event descriptor '''
