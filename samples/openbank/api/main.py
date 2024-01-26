@@ -18,11 +18,11 @@ builder = WebApplicationBuilder()
 
 Mapper.configure(builder, [application_module])
 Mediator.configure(builder, [application_module])
-CloudEventIngestor.configure(builder, [application_module])  # replace application_module with name of module(s) defining cloud events to handle
+CloudEventIngestor.configure(builder, ["samples.openbank.application.events.integration.score_report_event_handler"])  # replace application_module with name of module(s) defining cloud events to handle
 CloudEventPublisher.configure(builder)
 ESEventStore.configure(builder, EventStoreOptions(database_name))
 DataAccessLayer.WriteModel.configure(builder, ["samples.openbank.domain.models"], lambda builder_, entity_type, key_type: EventSourcingRepository.configure(builder_, entity_type, key_type))
-DataAccessLayer.ReadModel.configure(builder, ["samples.openbank.integration.models"], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))
+DataAccessLayer.ReadModel.configure(builder, ["samples.openbank.integration.models", "samples.openbank.application.events.integration.score_report_event_handler"], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))
 JsonSerializer.configure(builder)
 builder.add_controllers(["samples.openbank.api.controllers"])
 
