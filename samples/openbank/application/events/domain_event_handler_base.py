@@ -1,10 +1,9 @@
 import datetime
 import uuid
-from neuroglia import integration
 from neuroglia.data.abstractions import DomainEvent, Identifiable, TKey
 from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.eventing.cloud_events.cloud_event import CloudEvent, CloudEventSpecVersion
-from neuroglia.eventing.cloud_events.infrastructure.cloud_event_bus import CloudEventBus
+from neuroglia.eventing.cloud_events.infrastructure import CloudEventBus
 from neuroglia.eventing.cloud_events.infrastructure.cloud_event_publisher import CloudEventPublishingOptions
 from neuroglia.mediation import Mediator
 from neuroglia.mapping import Mapper
