@@ -33,6 +33,7 @@ class JsonSerializer(TextSerializer):
     def deserialize_from_text(self, input: str, expected_type : Optional[Type] = None) -> Any:
         value = json.loads(input)
         if expected_type is None or not isinstance(value, dict): return value
+        elif expected_type == dict: return dict(value)
         fields = {}
         for base_type in reversed(expected_type.__mro__):
             if not hasattr(base_type, "__annotations__"): continue

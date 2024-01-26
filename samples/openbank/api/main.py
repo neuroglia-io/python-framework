@@ -18,7 +18,7 @@ builder = WebApplicationBuilder()
 
 Mapper.configure(builder, [application_module])
 Mediator.configure(builder, [application_module])
-CloudEventIngestor.configure(builder, [application_module]) #replace application_module with name of module(s) defining cloud events to handle
+CloudEventIngestor.configure(builder, ["samples.openbank.integration.models"]) #replace application_module with name of module(s) defining cloud events to handle
 CloudEventPublisher.configure(builder)
 ESEventStore.configure(builder, EventStoreOptions(database_name))
 DataAccessLayer.WriteModel.configure(builder, [ "samples.openbank.domain.models" ], lambda builder_, entity_type, key_type: EventSourcingRepository.configure(builder_, entity_type, key_type))
