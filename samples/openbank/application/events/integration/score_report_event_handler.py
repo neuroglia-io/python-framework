@@ -39,7 +39,7 @@ class ScoreReportIntegrationEventHandler(IntegrationEventHandler[ScoreReportSubm
 
     @dispatch(ScoreReportSubmittedEventV1)
     async def handle_async(self, e: ScoreReportSubmittedEventV1) -> None:
-        report = await self.get_or_create_read_model_async(e.aggregate_id)
+        # report = await self.get_or_create_read_model_async(e.aggregate_id)
         report = ScoreReport(candidate_id=e.candidate_id,
                              total_score=e.total_score,
                              max_score=e.max_score,
