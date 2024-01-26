@@ -1,11 +1,10 @@
-import json
+import logging
 from fastapi import FastAPI, Request, Response
-from neuroglia.dependency_injection.service_provider import ServiceProvider, ServiceProviderBase
+from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.eventing.cloud_events.cloud_event import CloudEvent
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventBus
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from neuroglia.serialization.json import JsonSerializer
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class CloudEventMiddleware(BaseHTTPMiddleware):
@@ -34,7 +33,7 @@ class CloudEventMiddleware(BaseHTTPMiddleware):
             cloud_event = CloudEvent(**attributes)
             self.cloud_event_bus.input_stream.on_next(cloud_event)
         except Exception as ex:
-            print(f"An error occured while processing an incoming cloud event: {ex}")
+            logging.error(f"An error occured while processing an incoming cloud event: {ex}")
             return Response(content=str(ex), status_code=500)
         return Response(status_code=202)
         

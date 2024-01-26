@@ -1,4 +1,5 @@
 import inspect
+import logging
 import sys
 import threading
 from typing import Dict, List, Optional
@@ -137,16 +138,16 @@ class ESEventStore(EventStore):
                 try:
                     decoded_event = self._decode_recorded_event(stream_id, e)
                 except Exception as ex:
-                    print(f"An exception occured while decoding event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}") #todo: replace with logging
+                    logging.error(f"An exception occured while decoding event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}")
                     raise
                 try:
                     subject.on_next(decoded_event)
                 except Exception as ex:
-                    print(f"An exception occured while handling event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}") #todo: replace with logging
+                    logging.error(f"An exception occured while handling event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}")
                     raise
             subject.on_completed()
         except Exception as ex:
-            print(f"An exception occured while consuming events from stream '{stream_id}', consequently to which the related subscription will be stopped: {ex}") #todo: improve feedback
+            logging.error(f"An exception occured while consuming events from stream '{stream_id}', consequently to which the related subscription will be stopped: {ex}") #todo: improve feedback
             subscription.stop()
              
     def configure(builder : ApplicationBuilderBase, options : EventStoreOptions) -> ApplicationBuilderBase:

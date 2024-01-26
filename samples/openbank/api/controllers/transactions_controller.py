@@ -14,6 +14,6 @@ class TransactionsController(ControllerBase):
         ControllerBase.__init__(self, service_provider, mapper, mediator)
 
     @post("/", response_model=BankTransactionDto, status_code=201, responses=ControllerBase.error_responses)
-    async def create_bank_account(self, command : CreateBankAccountTransferCommandDto) -> BankTransactionDto:
-        ''' Creates a new bank account '''
+    async def create_transfer(self, command : CreateBankAccountTransferCommandDto) -> BankTransactionDto:
+        ''' Creates a new transfer from a bank account to another '''
         return self.process(await self.mediator.execute_async(self.mapper.map(command, CreateBankAccountTransferCommand)))

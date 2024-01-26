@@ -1,3 +1,4 @@
+from typing import List
 from classy_fastapi import post
 from classy_fastapi.decorators import get
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
@@ -5,7 +6,7 @@ from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator 
 from neuroglia.mvc.controller_base import ControllerBase
 from samples.openbank.application.commands.persons import RegisterPersonCommand
-from samples.openbank.application.queries.generic import GetByIdQuery
+from samples.openbank.application.queries.generic import GetByIdQuery, ListQuery
 from samples.openbank.integration.commands.persons import RegisterPersonCommandDto
 from samples.openbank.integration.models import PersonDto
 
@@ -19,6 +20,11 @@ class PersonsController(ControllerBase):
     async def register_person(self, command : RegisterPersonCommandDto) -> PersonDto:
         ''' Registers a new person '''
         return self.process(await self.mediator.execute_async(self.mapper.map(command, RegisterPersonCommand)))
+
+    @get("/", response_model=List[PersonDto], responses=ControllerBase.error_responses)
+    async def list_persons(self) -> List[PersonDto]:
+        ''' Lists all registered persons '''
+        return self.process(await self.mediator.execute_async(ListQuery[PersonDto, str]()))
 
     @get("/byid/{id}", response_model=PersonDto, responses=ControllerBase.error_responses)
     async def get_person_by_id(self, id: str) -> PersonDto:

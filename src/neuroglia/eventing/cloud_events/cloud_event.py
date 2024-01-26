@@ -2,6 +2,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Optional
 
+
+class CloudEventSpecVersion:
+    ''' Exposes all supported versions of the Cloud Event Specification '''
+    
+    v1_0 : str = "1.0"
+    ''' Gets the version '1.0' of the Cloud Event Specification '''
+    
+
 @dataclass
 class CloudEvent:
     '''

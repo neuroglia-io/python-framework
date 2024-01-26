@@ -3,9 +3,9 @@ from typing import Callable, List, Type
 from neuroglia.core import TypeFinder, ModuleLoader
 from neuroglia.data.abstractions import AggregateRoot
 from neuroglia.data.infrastructure.event_sourcing.read_model_reconciliator import ReadModelConciliationOptions, ReadModelReconciliator
-from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedServiceBase
+from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedService
 from neuroglia.mediation.mediator import RequestHandler
-from samples.openbank.application.queries.generic import GetByIdQueryHandler
+from samples.openbank.application.queries.generic import GetByIdQueryHandler, ListQueryHandler
 
 
 class DataAccessLayer:
@@ -41,9 +41,10 @@ class DataAccessLayer:
             '''
             consumer_group = builder.settings.consumer_group
             builder.services.add_singleton(ReadModelConciliationOptions, singleton=ReadModelConciliationOptions(consumer_group))
-            builder.services.add_singleton(HostedServiceBase, ReadModelReconciliator)
+            builder.services.add_singleton(HostedService, ReadModelReconciliator)
             for module in [ModuleLoader.load(module_name) for module_name in modules]:
                 for queryable_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and hasattr(cls, "__queryable__")):
                     key_type = str #todo: reflect from DTO base type
                     repository_setup(builder, queryable_type, key_type)
                     builder.services.add_transient(RequestHandler, GetByIdQueryHandler[queryable_type, key_type])
+                    builder.services.add_transient(RequestHandler, ListQueryHandler[queryable_type, key_type])

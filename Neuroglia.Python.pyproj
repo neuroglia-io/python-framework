@@ -15,7 +15,9 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>CONNECTION_STRINGS={ "mongo": "mongodb://localhost:27017", "eventstore": "esdb://localhost:2113?Tls=false" }
-CONSUMER_GROUP="openbank-0"</Environment>
+CONSUMER_GROUP="openbank-0"
+CLOUD_EVENT_SINK=https://webhook.site/c83a607a-1b6a-4a44-aa9c-e16292fa63bc
+CLOUD_EVENT_SOURCE=https://openbank.io</Environment>
     <InterpreterId>Global|PythonCore|3.12</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -40,6 +42,7 @@ CONSUMER_GROUP="openbank-0"</Environment>
     <Folder Include="samples\openbank\application\events\" />
     <Folder Include="samples\openbank\application\commands\" />
     <Folder Include="samples\openbank\application\queries\" />
+    <Folder Include="samples\openbank\application\queries\generic\" />
     <Folder Include="samples\openbank\domain\" />
     <Folder Include="samples\openbank\domain\models\" />
     <Folder Include="samples\openbank\integration\" />
@@ -92,7 +95,9 @@ CONSUMER_GROUP="openbank-0"</Environment>
     <Compile Include="samples\openbank\application\events\__init__.py" />
     <Compile Include="samples\openbank\application\mapping\profile.py" />
     <Compile Include="samples\openbank\application\mapping\__init__.py" />
-    <Compile Include="samples\openbank\application\queries\generic.py" />
+    <Compile Include="samples\openbank\application\queries\generic\list_query.py" />
+    <Compile Include="samples\openbank\application\queries\generic\get_by_id_query.py" />
+    <Compile Include="samples\openbank\application\queries\generic\__init__.py" />
     <Compile Include="samples\openbank\application\__init__.py" />
     <Compile Include="samples\openbank\domain\models\address.py" />
     <Compile Include="samples\openbank\domain\models\bank_account.py" />
@@ -136,6 +141,7 @@ CONSUMER_GROUP="openbank-0"</Environment>
     <Compile Include="src\neuroglia\eventing\cloud_events\infrastructure\cloud_event_bus.py" />
     <Compile Include="src\neuroglia\eventing\cloud_events\infrastructure\cloud_event_ingestor.py" />
     <Compile Include="src\neuroglia\eventing\cloud_events\infrastructure\cloud_event_middleware.py" />
+    <Compile Include="src\neuroglia\eventing\cloud_events\infrastructure\cloud_event_publisher.py" />
     <Compile Include="src\neuroglia\eventing\cloud_events\infrastructure\__init__.py" />
     <Compile Include="src\neuroglia\eventing\cloud_events\__init__.py" />
     <Compile Include="src\neuroglia\expressions\javascript_expression_translator.py" />
@@ -171,7 +177,6 @@ CONSUMER_GROUP="openbank-0"</Environment>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.12" />
-    <InterpreterReference Include="PythonCore|3.12" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

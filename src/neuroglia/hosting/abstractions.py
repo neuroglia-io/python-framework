@@ -35,7 +35,7 @@ class HostBase(ABC):
         raise NotImplementedError()
  
 
-class HostedServiceBase:
+class HostedService:
     ''' Defines the fundamentals of a service managed by the host '''
     
     async def start_async(self):
@@ -78,12 +78,12 @@ class Host(HostBase):
         self.services = services
         
     async def start_async(self):
-        hosted_services = [cast(HostedServiceBase, service) for service in self.services.get_services(HostedServiceBase)]
+        hosted_services = [cast(HostedService, service) for service in self.services.get_services(HostedService)]
         start_tasks = [hosted_service.start_async() for hosted_service in hosted_services]
         await asyncio.gather(*start_tasks)
         
     async def stop_async(self):
-        hosted_services = [cast(HostedServiceBase, service) for service in self.services.get_services(HostedServiceBase)]
+        hosted_services = [cast(HostedService, service) for service in self.services.get_services(HostedService)]
         stop_tasks = [hosted_service.stop_async() for hosted_service in hosted_services]
         await asyncio.gather(*stop_tasks)
         
@@ -96,6 +96,14 @@ class ApplicationSettings(BaseSettings):
     consumer_group : str
 
     connection_strings : dict[str, str] = dict[str, str]()
+
+    cloud_event_sink : str
+    
+    cloud_event_source : str
+    
+    cloud_event_retry_attempts : int = 5
+    
+    cloud_event_retry_delay : float = 1
     
 
 class ApplicationBuilderBase:
