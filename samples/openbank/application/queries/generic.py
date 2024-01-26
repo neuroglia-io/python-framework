@@ -35,7 +35,7 @@ class ListQuery(Query[OperationResult[TEntity]], Generic[TEntity, TKey]):
     pass
 
 
-class ListQueryHandler(QueryHandler[ListQuery[TEntity, TKey], OperationResult[TEntity]], Generic[TEntity, TKey]):
+class ListQueryHandler(Generic[TEntity, TKey], QueryHandler[ListQuery[TEntity, TKey], OperationResult[TEntity]]):
     ''' Represents the service used to handle ListQuery instances '''
 
     def __init__(self, repository: QueryableRepository[TEntity, TKey]):
