@@ -121,4 +121,5 @@ class Aggregator:
         aggregate.state = aggregate.__orig_bases__[0].__args__[0]();
         for e in events:
             aggregate.state.on(e.data)
+            aggregate.state.state_version = e.data.aggregate_version
         return aggregate

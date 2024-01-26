@@ -132,12 +132,22 @@ class ESEventStore(EventStore):
     def _consume_events_async(self, stream_id: str, subject: Subject, subscription):
         ''' Asynchronously enumerate events returned by a subscription '''
         try:
+            e : RecordedEvent
             for e in subscription: 
-                decoded_event = self._decode_recorded_event(stream_id, e)
-                subject.on_next(decoded_event)
-            subject.on_completed()  
+                try:
+                    decoded_event = self._decode_recorded_event(stream_id, e)
+                except Exception as ex:
+                    print(f"An exception occured while decoding event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}") #todo: replace with logging
+                    raise
+                try:
+                    subject.on_next(decoded_event)
+                except Exception as ex:
+                    print(f"An exception occured while handling event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}") #todo: replace with logging
+                    raise
+            subject.on_completed()
         except Exception as ex:
-            print(ex) #todo: improve feedback
+            print(f"An exception occured while consuming events from stream '{stream_id}', consequently to which the related subscription will be stopped: {ex}") #todo: improve feedback
+            subscription.stop()
              
     def configure(builder : ApplicationBuilderBase, options : EventStoreOptions) -> ApplicationBuilderBase:
         ''' Registers and configures an EventStore implementation of the EventStore class.

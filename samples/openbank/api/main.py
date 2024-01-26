@@ -4,7 +4,7 @@ from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import
 from neuroglia.data.infrastructure.mongo.mongo_repository import MongoRepository
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventIngestor, CloudEventMiddleware
 from neuroglia.hosting.configuration.data_access_layer import DataAccessLayer
-from neuroglia.hosting.web import WebApplicationBuilder
+from neuroglia.hosting.web import ExceptionHandlingMiddleware, WebApplicationBuilder
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator
 from neuroglia.serialization.json import JsonSerializer
@@ -26,7 +26,7 @@ builder.add_controllers(["samples.openbank.api.controllers"])
 
 app = builder.build()
 
-# app.add_middleware(ExceptionHandlingMiddleware, service_provider=app.services) #todo: uncomment
+app.add_middleware(ExceptionHandlingMiddleware, service_provider=app.services)
 app.add_middleware(CloudEventMiddleware, service_provider=app.services)
 app.use_controllers()
 

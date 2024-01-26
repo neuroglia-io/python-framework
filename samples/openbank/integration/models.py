@@ -49,3 +49,10 @@ class BankAccountDto:
     owner : str
     
     balance : Decimal
+    
+
+@queryable
+@dataclass
+class BankTransactionDto:
+    
+    pass

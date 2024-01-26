@@ -143,6 +143,7 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
         ''' Gets the Mongo collection to use '''
         # to get the collection_name, we need to access 'self.__orig_class__', which is not yet available in __init__, thus the need for a function
         collection_name = self._get_entity_name().lower()
+        if collection_name.endswith("dto"): collection_name = collection_name[:-3]
         return self._mongo_database[collection_name]
     
     def _encode(self, obj):

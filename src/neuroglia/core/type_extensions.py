@@ -38,7 +38,7 @@ class TypeExtensions:
                 arg_type = type_.__args__[i]
                 generic_arguments[name] = TypeExtensions._substitute_generic_arguments(arg_type, generic_arguments)
         for base_type in TypeExtensions._get_base_types(type_):
-            TypeExtensions.get_generic_arguments(base_type, generic_arguments)
+            generic_arguments = TypeExtensions.get_generic_arguments(base_type, generic_arguments)
         return generic_arguments
 
     def get_generic_argument(type_ : Type, name : str) -> Type | None:

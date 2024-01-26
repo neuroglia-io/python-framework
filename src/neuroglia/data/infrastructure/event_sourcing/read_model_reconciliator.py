@@ -54,7 +54,7 @@ class ReadModelReconciliator(HostedServiceBase):
             await self._mediator.publish_async(e.data)
             #todo: ack
         except Exception as ex:
-            print(ex)
+            print(f"An exception occured while publishing an event of type '{type(e.data).__name__}': {ex}")
             pass #todo: nack
     
     async def on_event_record_stream_error(self, ex: Exception):
