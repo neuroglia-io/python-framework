@@ -3,6 +3,7 @@ from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository impo
 from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore
 from neuroglia.data.infrastructure.mongo.mongo_repository import MongoRepository
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventIngestor, CloudEventMiddleware
+from neuroglia.eventing.cloud_events.infrastructure.cloud_event_publisher import CloudEventPublisher
 from neuroglia.hosting.configuration.data_access_layer import DataAccessLayer
 from neuroglia.hosting.web import ExceptionHandlingMiddleware, WebApplicationBuilder
 from neuroglia.mapping.mapper import Mapper
@@ -18,6 +19,7 @@ builder = WebApplicationBuilder()
 Mapper.configure(builder, [application_module])
 Mediator.configure(builder, [application_module])
 CloudEventIngestor.configure(builder, [application_module])  # replace application_module with name of module(s) defining cloud events to handle
+CloudEventPublisher.configure(builder)
 ESEventStore.configure(builder, EventStoreOptions(database_name))
 DataAccessLayer.WriteModel.configure(builder, ["samples.openbank.domain.models"], lambda builder_, entity_type, key_type: EventSourcingRepository.configure(builder_, entity_type, key_type))
 DataAccessLayer.ReadModel.configure(builder, ["samples.openbank.integration.models"], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))

@@ -15,6 +15,8 @@ services:
       LOG_LEVEL: DEBUG
       CONSUMER_GROUP: openbank-0
       CONNECTION_STRINGS: '{"mongo": "mongodb://root:Password1!@mongodb:27017", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
+      CLOUD_EVENT_SINK: http://event-player/events/pub
+      CLOUD_EVENT_SOURCE: https://openbank.io
     secrets:
       - db_root_password
     volumes:
@@ -75,17 +77,17 @@ services:
     networks:
       - metanet1
 
-  # event-player:
-  #   image: ccie-gitlab.ccie.cisco.com:4567/mozart/infrastructure/eventing/cloudevent-player:latest
-  #   ports:
-  #     - 8885:80
-  #   environment:
-  #     api_tag: "0.2.30"
-  #     api_repository_url: "https://ccie-gitlab.ccie.cisco.com/mozart/infrastructure/eventing/cloudevent-player"
-  #     api_log_level: DEBUG
-  #     api_log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  #     api_default_generator_gateways: '{"urls": ["http://localhost/events/pub", "http://reporter-dev:8888/api/v1/events/pub", "http://k.ccie.cisco.com:32051/events/pub", "https://events-player.k.ccie.cisco.com/events/pub", "https://pubhook.k.certs.cloud/c3c588d1-dc7f-424e-ad22-dbd4e6ebcbd9"]}'
-  #     api_browser_queue_size: 2000
+  event-player:
+    image: ccie-gitlab.ccie.cisco.com:4567/mozart/infrastructure/eventing/cloudevent-player:latest
+    ports:
+      - 8885:80
+    environment:
+      api_tag: "0.2.30"
+      api_repository_url: "https://ccie-gitlab.ccie.cisco.com/mozart/infrastructure/eventing/cloudevent-player"
+      api_log_level: DEBUG
+      api_log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      api_default_generator_gateways: '{"urls": ["http://localhost/events/pub", "http://openbank-app:8899/api/v1/events/pub", "http://k.ccie.cisco.com:32051/events/pub", "https://events-player.k.ccie.cisco.com/events/pub", "https://pubhook.k.certs.cloud/c3c588d1-dc7f-424e-ad22-dbd4e6ebcbd9"]}'
+      api_browser_queue_size: 2000
 
 volumes:
   mongodb_data:

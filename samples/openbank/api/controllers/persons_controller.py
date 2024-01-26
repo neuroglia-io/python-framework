@@ -21,12 +21,12 @@ class PersonsController(ControllerBase):
         ''' Registers a new person '''
         return self.process(await self.mediator.execute_async(self.mapper.map(command, RegisterPersonCommand)))
 
+    @get("/", response_model=List[PersonDto], responses=ControllerBase.error_responses)
+    async def list_persons(self) -> List[PersonDto]:
+        ''' Lists all registered persons '''
+        return self.process(await self.mediator.execute_async(ListQuery[PersonDto, str]()))
+
     @get("/byid/{id}", response_model=PersonDto, responses=ControllerBase.error_responses)
     async def get_person_by_id(self, id: str) -> PersonDto:
         ''' Gets the person with the specified id '''
         return self.process(await self.mediator.execute_async(GetByIdQuery[PersonDto, str](id)))
-
-    @get("/", response_model=List[PersonDto], responses=ControllerBase.error_responses)
-    async def get_all_persons(self) -> List[PersonDto]:
-        ''' Gets all persons '''
-        return self.process(await self.mediator.execute_async(ListQuery[PersonDto, str]()))

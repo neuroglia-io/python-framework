@@ -94,14 +94,16 @@ class TypeMapConfiguration:
         ''' Maps the specified value to the configured destination type '''
         mapping_context = TypeMappingContext(source, self.source_type, self.destination_type)
         if self.type_converter is not None: return self.type_converter(mapping_context)
-        source_attributes_dictionary = dict([(key, value) for key, value in source.__dict__.items() if not key.startswith('_')]) if hasattr(source, "__dict__") else dict()
+        source_attributes = dict([(key, value) for key, value in source.__dict__.items() if not key.startswith('_')]) if hasattr(source, "__dict__") else dict()
         destination_attributes = dict()
-        for source_attribute_key, source_attribute_value in source_attributes_dictionary.items():
+        declared_attributes = [key for key, _ in self.destination_type.__annotations__.items() if not key.startswith('_')] if hasattr(self.destination_type, "__annotations__") else list[str]()
+        for source_attribute_key, source_attribute_value in source_attributes.items():
+            if not source_attribute_key in declared_attributes: continue
             member_map = next((member for member in self.member_configurations if member.name == source_attribute_key), None)
             if member_map is None: destination_attributes[source_attribute_key] = source_attribute_value
             elif member_map.is_ignored: continue
             else: destination_attributes[source_attribute_key] = member_map.value_converter(MemberMappingContext(source, self.source_type, self.destination_type, source_attribute_key, source_attribute_value))
-        for configured_attribute in [attr for attr in self.member_configurations if attr not in source_attributes_dictionary.keys()]:
+        for configured_attribute in [attr for attr in self.member_configurations if attr not in source_attributes.keys()]:
             if configured_attribute.is_ignored or configured_attribute.value_converter is None: continue
             destination_attributes[configured_attribute.name] = configured_attribute.value_converter(MemberMappingContext(source, self.source_type, self.destination_type, configured_attribute.name, None))
         destination = object.__new__(self.destination_type)

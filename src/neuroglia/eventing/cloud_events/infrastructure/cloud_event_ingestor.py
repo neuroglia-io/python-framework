@@ -1,9 +1,10 @@
 import inspect
+import logging
 from typing import List, Type
 from neuroglia.core import TypeFinder, ModuleLoader
 from neuroglia.eventing.cloud_events import CloudEvent
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventBus
-from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedServiceBase
+from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedService
 from neuroglia.mediation.mediator import Mediator
 from neuroglia.reactive import AsyncRx
 
@@ -15,7 +16,7 @@ class CloudEventIngestionOptions:
     ''' Gets/sets a cloud event type/CLR type mapping of all supported cloud events'''
     
 
-class CloudEventIngestor(HostedServiceBase):
+class CloudEventIngestor(HostedService):
     ''' Represents the service used to ingest cloud events '''
     
     def __init__(self, options : CloudEventIngestionOptions, cloud_event_bus: CloudEventBus, mediator : Mediator):
@@ -35,19 +36,19 @@ class CloudEventIngestor(HostedServiceBase):
     async def _on_cloud_event_async(self, cloud_event : CloudEvent):
         event_type = self._options.type_maps.get(cloud_event.type, None)
         if event_type is None: 
-            print(f"Ignored incoming cloud event: the specified type '{cloud_event.type}' is not supported") #todo: remove
-            return #todo: log that we ignored an incoming event
+            logging.warning(f"Ignored incoming cloud event: the specified type '{cloud_event.type}' is not supported")
+            return
         
         e: object = None
         try:
             e = event_type(**cloud_event.data)
         except Exception as ex:
-            print(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'") #todo: remove
+            logging.error(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'")
             raise
         try:
             await self._mediator.publish_async(e)
         except Exception as ex:
-            print(f"An error occured while dispatching an incoming cloud event of type '{cloud_event.type}': '{ex}'") #todo: remove
+            logging.error(f"An error occured while dispatching an incoming cloud event of type '{cloud_event.type}': '{ex}'")
             raise
         
     def configure(builder : ApplicationBuilderBase, modules : List[str]) -> ApplicationBuilderBase:
@@ -64,6 +65,6 @@ class CloudEventIngestor(HostedServiceBase):
                 options.type_maps[cloud_event_type] = cloud_event_clr_type
         builder.services.try_add_singleton(CloudEventBus)
         builder.services.add_singleton(CloudEventIngestionOptions, singleton=options)
-        builder.services.add_singleton(HostedServiceBase, CloudEventIngestor)
+        builder.services.add_singleton(HostedService, CloudEventIngestor)
         return builder
         
