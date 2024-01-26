@@ -39,5 +39,13 @@ class ScoreReportIntegrationEventHandler(IntegrationEventHandler[ScoreReportSubm
 
     @dispatch(ScoreReportSubmittedEventV1)
     async def handle_async(self, e: ScoreReportSubmittedEventV1) -> None:
+        report = await self.get_or_create_read_model_async(e.aggregate_id)
+        report = ScoreReport(candidate_id=e.candidate_id,
+                             total_score=e.total_score,
+                             max_score=e.max_score,
+                             min_score=e.min_score,
+                             reread_score=e.reread_score,
+                             lab_date=e.lab_date)
+        await self.repository.add_async(report)
         reports = (await self.repository.query_async()).where(lambda x: x.candidate_id == e.candidate_id).to_list()
         pass
