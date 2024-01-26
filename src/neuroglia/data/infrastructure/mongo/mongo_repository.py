@@ -13,6 +13,7 @@ from pymongo.database import Database
 from typing import Any, Dict, Generic, Optional, List, Type
 from neuroglia.expressions.javascript_expression_translator import JavaScriptExpressionTranslator
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
+from neuroglia.serialization.json import JsonSerializer
 
 
 @dataclass
@@ -101,11 +102,12 @@ class MongoQueryProvider(QueryProvider):
 class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]):
     ''' Represents a Mongo implementation of the repository class '''
 
-    def __init__(self, options: MongoRepositoryOptions[TEntity, TKey], mongo_client: MongoClient):
+    def __init__(self, options: MongoRepositoryOptions[TEntity, TKey], mongo_client: MongoClient, serializer : JsonSerializer):
         ''' Initializes a new Mongo repository '''
         self._options = options
         self._mongo_client = mongo_client
         self._mongo_database = self._mongo_client[self._options.database_name]
+        self._serializer = serializer
 
     _options : MongoRepositoryOptions[TEntity, TKey]
     ''' Gets the options used to configure the Mongo repository '''
@@ -116,51 +118,49 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
     _mongo_database: Database
     ''' Gets the Mongo database to use '''
     
-    async def contains_async(self, id: TKey) -> bool: return self._get_mongo_collection().find_one({ 'id': id }, projection={'_id': 1})
+    _serializer : JsonSerializer
+    ''' Gets the service used to serialize/deserialize to/from JSON '''
+    
+    async def contains_async(self, id: TKey) -> bool: return self._get_mongo_collection().find_one({ "id": id }, projection={"_id": 1})
    
     async def get_async(self, id: TKey) -> Optional[TEntity]:
-        dict = self._get_mongo_collection().find_one({ 'id': id })
-        if(dict is None): return None
-        entity = object.__new__(self.__orig_class__.__args__[0])
-        entity.__dict__ = dict
+        attributes_dictionary = self._get_mongo_collection().find_one({ "id": id })
+        if(attributes_dictionary is None): return None
+        json = self._serializer.serialize(attributes_dictionary)
+        entity = self._serializer.deserialize_from_text(json, self._get_entity_type())
         return entity
 
     async def add_async(self, entity: TEntity) -> TEntity:
-        if await self.contains_async(entity.id) != None: raise Exception(f"A {self._get_entity_name()} with the specified id '{entity.id}' already exists")
-        encoded = self._encode(entity)
-        self._get_mongo_collection().insert_one(encoded)
+        if await self.contains_async(entity.id) != None: raise Exception(f"A {self._get_entity_type().__name__} with the specified id '{entity.id}' already exists")
+        json = self._serializer.serialize_to_text(entity)
+        attributes_dictionary = self._serializer.deserialize_from_text(json, dict)
+        self._get_mongo_collection().insert_one(attributes_dictionary)
         return entity;
 
     async def update_async(self, entity: TEntity) -> TEntity:
-        if not await self.contains_async(entity.id) != None: raise Exception(f"Failed to find a {self._get_entity_name()} with the specified id '{entity.id}'")
-        query_filter = { 'id': entity.id }
+        if not await self.contains_async(entity.id) != None: raise Exception(f"Failed to find a {self._get_entity_type().__name__} with the specified id '{entity.id}'")
+        query_filter = { "id": entity.id }
         expected_version = entity.state_version if isinstance(entity, VersionedState) else None
-        if expected_version is not None: query_filter['state_version'] = expected_version
-        encoded = self._encode(entity)
-        self._get_mongo_collection().replace_one(query_filter, encoded)
+        if expected_version is not None: query_filter["state_version"] = expected_version
+        json = self._serializer.serialize_to_text(entity)
+        attributes_dictionary = self._serializer.deserialize_from_text(json, dict)
+        self._get_mongo_collection().replace_one(query_filter, attributes_dictionary)
         return entity
 
     async def remove_async(self, id: TKey) -> None:
-         if not await self.contains_async(id) != None: raise Exception(f"Failed to find a {self._get_entity_name()} with the specified id '{id}'")
-         self._get_mongo_collection().delete_one({ 'id': id })
+         if not await self.contains_async(id) != None: raise Exception(f"Failed to find a {self._get_entity_type().__name__} with the specified id '{id}'")
+         self._get_mongo_collection().delete_one({ "id": id })
         
     async def query_async(self) -> Queryable[TEntity]: return MongoQuery[TEntity](MongoQueryProvider(self._get_mongo_collection()))
     
-    def _get_entity_name(self) -> str: return self.__orig_class__.__args__[0].__name__
+    def _get_entity_type(self) -> str: return self.__orig_class__.__args__[0]
 
     def _get_mongo_collection(self) -> Collection:
         ''' Gets the Mongo collection to use '''
         # to get the collection_name, we need to access 'self.__orig_class__', which is not yet available in __init__, thus the need for a function
-        collection_name = self._get_entity_name().lower()
+        collection_name = self._get_entity_type().__name__.lower()
         if collection_name.endswith("dto"): collection_name = collection_name[:-3]
         return self._mongo_database[collection_name]
-    
-    def _encode(self, obj):
-        if isinstance(obj, (int, float, str, bool, type(None))): return obj
-        elif isinstance(obj, list): return [self._encode(item) for item in obj]
-        elif isinstance(obj, dict): return {key: self._encode(value) for key, value in obj.items()}
-        elif hasattr(obj, '__dict__'): return {key: self._encode(value) for key, value in obj.__dict__.items()}
-        else: return {key: self._encode(value) for key, value in obj.__dict__.items()}
 
     def configure(builder: ApplicationBuilderBase, entity_type : Type, key_type : Type, database_name : str) -> ApplicationBuilderBase:
         ''' Configures the specified application to use a Mongo repository implementation to manage the specified type of entity '''
