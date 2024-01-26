@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from neuroglia.data.abstractions import queryable
-from neuroglia.eventing.cloud_events.decorators import cloudevent
 from samples.openbank.integration import PersonGender
 
 
@@ -57,12 +56,3 @@ class BankAccountDto:
 class BankTransactionDto:
     
     pass
-
-@cloudevent("test")
-class MyCloudEvent:
-    
-    foo: str
-    
-    bar : str
-    
-    baz : str
