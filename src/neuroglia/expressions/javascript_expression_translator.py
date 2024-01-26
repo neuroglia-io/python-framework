@@ -28,21 +28,25 @@ class JavaScriptExpressionTranslator:
     def _translate_attribute(self, expression: Attribute) -> str:
         attribute_name : str = None
         attribute_path_parts = list[str]()
-        try: 
-            attribute_name = expression.value.id
-            attribute_path_parts.append(expression.attr)
-        except:
-            while True:
-                try:
-                    attribute_name = expression.value.id
-                    break
-                except:
-                    attribute_path_parts.append(expression.value.attr)
-                    expression = expression.value
-        #if scope.get_all_arguments().get(attribute_name) is None: return self._evaluate(expression) #todo
-        attribute_path_parts.reverse()
-        attribute_full_name = f"this.{'.'.join(attribute_path_parts)}"
-        return attribute_full_name
+        if isinstance(expression.value, Constant):
+            return self.translate(Constant(getattr(expression.value.value, expression.attr)))
+        else:
+            try: 
+                attribute_name = expression.value.id
+                attribute_path_parts.append(expression.attr)
+            except:
+                while True:
+                    try:
+                        attribute_name = expression.value.id
+                        break
+                    except:
+                        attribute_path_part = self.translate(expression.value)
+                        attribute_path_parts.append(attribute_path_part)
+                        expression = expression.value
+            #if scope.get_all_arguments().get(attribute_name) is None: return self._evaluate(expression) #todo
+            attribute_path_parts.reverse()
+            attribute_full_name = f"this.{'.'.join(attribute_path_parts)}"
+            return attribute_full_name
 
     def _translate_bool_op(self, expression: BoolOp) -> str:
         operator = self._translate_boolop(expression.op)
