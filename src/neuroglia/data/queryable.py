@@ -1,9 +1,8 @@
-from _ast import Add, Name
-from abc import ABC, abstractclassmethod
-from ast import Attribute, NodeTransformer, expr
 import ast
 import inspect
 import os
+from abc import ABC, abstractclassmethod
+from ast import Attribute, Name, NodeTransformer, expr
 from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar
 
 
@@ -15,12 +14,12 @@ class QueryProvider(ABC):
     ''' Defines the fundamentals of a service used to create and execute queries associated with the data source '''
     
     @abstractclassmethod
-    def create_query(element_type: Type, expression : expr) -> 'Queryable':
+    def create_query(self, element_type: Type, expression : expr) -> 'Queryable':
         ''' Creates a new queryable based on the specified expression '''
         raise NotImplementedError()
     
     @abstractclassmethod
-    def execute(expression : expr) -> any:
+    def execute(self, expression : expr, query_type : Type) -> Any:
         ''' Executes the specified query expression '''
         raise NotImplementedError()
    
@@ -41,6 +40,42 @@ class Queryable(Generic[T]):
     def get_element_type(self) -> Type: 
         ''' Gets the type of elements to query against '''
         return self.__orig_class__.__args__[0]
+
+    def first_or_default(self, predicate: Callable[[T], bool] = None) -> T:
+        ''' Gets the first element in the sequence that matches the specified predicate, if any '''
+        frame = inspect.currentframe().f_back
+        frame_info = inspect.getframeinfo(frame)
+        variables = {**frame.f_locals}
+        lambda_src = self._get_lambda_source_code(predicate, frame_info.positions.end_col_offset)
+        lambda_tree = ast.parse(lambda_src)
+        lambda_expression = lambda_tree.body[0].value
+        expression = VariableExpressionReplacer(variables).visit(ast.Call(func = ast.Attribute(value=self.expression, attr='first', ctx=ast.Load()), args = [ lambda_expression ], keywords = []))
+        query = self.provider.create_query(self.get_element_type(), expression)
+        return self.provider.execute(query.expression, T)
+
+    def first(self, predicate: Callable[[T], bool] = None) -> T:
+        ''' Gets the first element in the sequence that matches the specified predicate, if any '''  
+        result = self.first_or_default(predicate)
+        if result is None and T != None: raise Exception("No match")
+        return result
+    
+    def last_or_default(self, predicate: Callable[[T], bool] = None) -> T:
+        ''' Gets the last element in the sequence that matches the specified predicate, if any '''
+        frame = inspect.currentframe().f_back
+        frame_info = inspect.getframeinfo(frame)
+        variables = {**frame.f_locals}
+        lambda_src = self._get_lambda_source_code(predicate, frame_info.positions.end_col_offset)
+        lambda_tree = ast.parse(lambda_src)
+        lambda_expression = lambda_tree.body[0].value
+        expression = VariableExpressionReplacer(variables).visit(ast.Call(func = ast.Attribute(value=self.expression, attr='last', ctx=ast.Load()), args = [ lambda_expression ], keywords = []))
+        query = self.provider.create_query(self.get_element_type(), expression)
+        return self.provider.execute(query.expression, T)
+
+    def last(self, predicate: Callable[[T], bool] = None) -> T:
+        ''' Gets the last element in the sequence that matches the specified predicate, if any '''  
+        result = self.last_or_default(predicate)
+        if result is None and T != None: raise Exception("No match")
+        return result
 
     def order_by(self, selector: Callable[[T], Any]):
         ''' Orders the sequence using the specified attribute '''
@@ -94,7 +129,7 @@ class Queryable(Generic[T]):
 
     def to_list(self) -> List[T]: 
         ''' Executes the queryable '''
-        return self.provider.execute(self.expression)
+        return self.provider.execute(self.expression, List)
     
     def __str__(self) -> str: return ast.unparse(self.expression)
     

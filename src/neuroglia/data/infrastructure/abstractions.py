@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, List, Optional
 from neuroglia.data.abstractions import TEntity, TKey
-from neuroglia.data.queries.queryable import Queryable
+from neuroglia.data.queryable import Queryable
 
 class Repository(Generic[TEntity, TKey], ABC):
     ''' Defines the fundamentals of a repository '''
