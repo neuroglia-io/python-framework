@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import logging
 from typing import List, Type
@@ -31,7 +32,7 @@ class CloudEventIngestor(HostedService):
     _mediator : Mediator
     
     async def start_async(self):
-        AsyncRx.subscribe(self._cloud_event_bus.input_stream, self._on_cloud_event_async)
+        AsyncRx.subscribe(self._cloud_event_bus.input_stream, lambda e: asyncio.ensure_future(self._on_cloud_event_async(e)))
 
     async def _on_cloud_event_async(self, cloud_event : CloudEvent):
         event_type = self._options.type_maps.get(cloud_event.type, None)
@@ -41,7 +42,8 @@ class CloudEventIngestor(HostedService):
         
         e: object = None
         try:
-            e = event_type(**cloud_event.data)
+            e = object.__new__(event_type)
+            e.__dict__ = cloud_event.data
         except Exception as ex:
             logging.error(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'")
             raise
