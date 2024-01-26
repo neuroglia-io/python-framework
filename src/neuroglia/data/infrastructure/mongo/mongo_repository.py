@@ -1,15 +1,16 @@
 import ast
+from inspect import isclass
 import pymongo
 from ast import NodeVisitor, expr
 from dataclasses import dataclass
-from neuroglia.data.queries.queryable import T, QueryProvider, Queryable
+from neuroglia.data.queryable import T, QueryProvider, Queryable
 from neuroglia.data.infrastructure.abstractions import QueryableRepository, Repository
 from neuroglia.data.abstractions import TEntity, TKey, VersionedState
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
 from pymongo.database import Database
-from typing import Dict, Generic, Optional, List, Type
+from typing import Any, Dict, Generic, Optional, List, Type
 from neuroglia.expressions.javascript_expression_translator import JavaScriptExpressionTranslator
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 
@@ -54,7 +55,7 @@ class MongoQueryBuilder(NodeVisitor):
         self.visit(expression)
         cursor : Cursor = self._collection.find(projection=self._select_clause)
         if len(self._order_by_clauses) > 0: cursor = cursor.sort(self._order_by_clauses) 
-        if len(self._where_clauses) > 0: cursor = cursor.where(' && '.join(self._where_clauses))
+        if len(self._where_clauses) > 0: cursor = cursor.where(" && ".join(self._where_clauses))
         if self._skip_clause is not None: cursor = cursor.skip(self._skip_clause)
         if self._take_clause is not None: cursor = cursor.limit(self._take_clause)
         return cursor
@@ -64,13 +65,20 @@ class MongoQueryBuilder(NodeVisitor):
         expression = node.args[0]
         self.visit(node.func.value)
         javascript = self._translator.translate(expression)
-        if clause == 'distinct_by': self._distinct_by_clauses.append(javascript.replace('this.', ''))
-        elif clause == 'order_by': self._order_by_clauses[javascript.replace('this.', '')] = pymongo.ASCENDING
-        elif clause == 'order_by_descending': self._order_by_clauses[javascript.replace('this.', '')] = pymongo.DESCENDING
-        elif clause == 'select' and isinstance(expression.body, ast.List) : self._select_clause = [ self._translator.translate(elt).replace('this.', '') for elt in expression.body.elts ]
-        elif clause == 'skip' and isinstance(expression, ast.Constant): self._skip_clause = expression.value
-        elif clause == 'take' and isinstance(expression, ast.Constant): self._take_clause = expression.value
-        elif clause == 'where': self._where_clauses.append(javascript)
+        if clause == "distinct_by": self._distinct_by_clauses.append(javascript.replace("this.", ""))
+        elif clause == "first": 
+            self._where_clauses.append(javascript)
+            self._take_clause = 1
+        elif clause == "last":
+            self._where_clauses.append(javascript)
+            self._take_clause = 1
+            self._order_by_clauses["created_at"] = pymongo.DESCENDING #todo: could be anything, really
+        elif clause == "order_by": self._order_by_clauses[javascript.replace("this.", "")] = pymongo.ASCENDING
+        elif clause == "order_by_descending": self._order_by_clauses[javascript.replace("this.", "")] = pymongo.DESCENDING
+        elif clause == "select" and isinstance(expression.body, ast.List) : self._select_clause = [ self._translator.translate(elt).replace("this.", "") for elt in expression.body.elts ]
+        elif clause == "skip" and isinstance(expression, ast.Constant): self._skip_clause = expression.value
+        elif clause == "take" and isinstance(expression, ast.Constant): self._take_clause = expression.value
+        elif clause == "where": self._where_clauses.append(javascript)
         pass
 
 
@@ -84,10 +92,11 @@ class MongoQueryProvider(QueryProvider):
 
     def create_query(self, element_type: Type, expression : expr) -> Queryable: return MongoQuery[element_type](self, expression)
     
-    def execute(self, expression : expr) -> any:
+    def execute(self, expression : expr, query_type : Type) -> Any:
         query = MongoQueryBuilder(self._collection, JavaScriptExpressionTranslator()).build(expression)
-        return list(query)
-
+        type_ = query_type if isclass(query_type) else type(query_type)
+        if issubclass(type_, List): return list(query)
+        else: return next(query, None)
 
 class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]):
     ''' Represents a Mongo implementation of the repository class '''
