@@ -76,15 +76,12 @@ class BankAccountStateV1(AggregateState[str]):
     
     overdraft_limit : Decimal
     
-    balance : Decimal
-    
     @dispatch(BankAccountCreatedDomainEventV1)
     def on(self, e : BankAccountCreatedDomainEventV1):
         self.id = e.aggregate_id
         self.created_at = e.created_at
         self.owner_id = e.owner_id
         self.overdraft_limit = e.overdraft_limit
-        self.balance = 100 #todo: replace
         
     @dispatch(BankAccountTransactionRecordedDomainEventV1)
     def on(self, e : BankAccountTransactionRecordedDomainEventV1):
@@ -95,7 +92,7 @@ class BankAccountStateV1(AggregateState[str]):
     def _compute_balance(self):
         balance : Decimal = 0
         for transaction in self.transactions:
-            if transaction.type == BankTransactionTypeV1.DEPOSIT or transaction.type == BankTransactionTypeV1.INTEREST or (transaction.type == BankTransactionTypeV1.TRANSFER and transaction.to_account_id == self.id):
+            if transaction.type == BankTransactionTypeV1.DEPOSIT or transaction.type == BankTransactionTypeV1.INTEREST or (BankTransactionTypeV1(transaction.type) == BankTransactionTypeV1.TRANSFER and transaction.to_account_id == self.id):
                 balance = Decimal(balance) + Decimal(transaction.amount)
             else:
                 balance = Decimal(balance) - Decimal(transaction.amount)

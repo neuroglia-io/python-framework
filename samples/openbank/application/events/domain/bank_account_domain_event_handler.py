@@ -33,10 +33,9 @@ class BankAccountDomainEventHandler(DomainEventHandlerBase[BankAccount, BankAcco
     @dispatch(BankAccountTransactionRecordedDomainEventV1)
     async def handle_async(self, e: BankAccountTransactionRecordedDomainEventV1) -> None:
         bank_account = await self.get_or_create_read_model_async(e.aggregate_id)
-        if not hasattr(bank_account, "balance"):
-            bank_account.balance = Decimal(0)
-        if e.transaction.type == BankTransactionTypeV1.DEPOSIT or e.transaction.type == BankTransactionTypeV1.INTEREST or (e.transaction.type == BankTransactionTypeV1.TRANSFER and e.transaction.to_account_id == self.id):
-            bank_account.balance = str(Decimal(bank_account.balance) + Decimal(e.transaction.amount))
+        if not hasattr(bank_account, "balance"): bank_account.balance = Decimal(0)
+        if e.transaction.type == BankTransactionTypeV1.DEPOSIT or e.transaction.type == BankTransactionTypeV1.INTEREST or (BankTransactionTypeV1(e.transaction.type) == BankTransactionTypeV1.TRANSFER and e.transaction.to_account_id == bank_account.id):
+            bank_account.balance = Decimal(bank_account.balance) + Decimal(e.transaction.amount)
         else:
             bank_account.balance = str(Decimal(bank_account.balance) - Decimal(e.transaction.amount))
         await self.read_models.update_async(bank_account)

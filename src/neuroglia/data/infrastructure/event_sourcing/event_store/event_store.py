@@ -37,9 +37,10 @@ class ESEventStore(EventStore):
 
     async def contains_async(self, stream_id: str) -> bool: return await self.get_async(stream_id) != None
 
-    async def append_async(self, stream_id: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
+    async def append_async(self, stream_id: str, events: List[EventDescriptor], expected_version: Optional[int] = None):
+        if expected_version is not None: expected_version = expected_version - 1
         stream_name = self._get_stream_name(stream_id)
-        stream_state = StreamState.NO_STREAM if expectedVersion is None else expectedVersion
+        stream_state = StreamState.NO_STREAM if expected_version is None else expected_version
         formatted_events = [NewEvent
         (
             type = e.type, 
