@@ -23,7 +23,8 @@
                     "localRoot": "${workspaceFolder}",
                     "remoteRoot": "/app"
                 }
-            ]
+            ],
+            "justMyCode": false
         }
     ]
 }

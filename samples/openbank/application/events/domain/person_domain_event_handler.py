@@ -18,3 +18,4 @@ class PersonDomainEventHandler(DomainEventHandlerBase[Person, PersonDto, str],
     @dispatch(PersonRegisteredDomainEventV1)
     async def handle_async(self, e: PersonRegisteredDomainEventV1) -> None:
         await self.get_or_create_read_model_async(e.aggregate_id)
+        await self.publish_cloud_event_async(e)

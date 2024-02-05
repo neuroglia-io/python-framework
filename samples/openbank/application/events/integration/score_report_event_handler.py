@@ -39,7 +39,7 @@ class ScoreReport(Identifiable[str]):
 
 
 @cloudevent("com.cisco.mozart.test-requested.v1")
-class ScoreReportSubmittedEventV1(IntegrationEvent[str]):
+class ScoreReportSubmittedIntegrationEventV1(IntegrationEvent[str]):
     candidate_id: str
     total_score: int = 0
     max_score: int = 0
@@ -48,15 +48,15 @@ class ScoreReportSubmittedEventV1(IntegrationEvent[str]):
     lab_date: str = ""
 
 
-class ScoreReportIntegrationEventHandler(IntegrationEventHandler[ScoreReportSubmittedEventV1]):
+class ScoreReportIntegrationEventHandler(IntegrationEventHandler[ScoreReportSubmittedIntegrationEventV1]):
 
     repository: QueryableRepository[ScoreReport, str]
 
     def __init__(self, repository: QueryableRepository[ScoreReport, str]) -> None:
         self.repository = repository
 
-    @dispatch(ScoreReportSubmittedEventV1)
-    async def handle_async(self, e: ScoreReportSubmittedEventV1) -> None:
+    @dispatch(ScoreReportSubmittedIntegrationEventV1)
+    async def handle_async(self, e: ScoreReportSubmittedIntegrationEventV1) -> None:
         # report = await self.get_or_create_read_model_async(e.aggregate_id)
         report = ScoreReport(id=e.aggregate_id,
                              candidate_id=e.candidate_id,
@@ -66,5 +66,4 @@ class ScoreReportIntegrationEventHandler(IntegrationEventHandler[ScoreReportSubm
                              reread_score=e.reread_score,
                              lab_date=e.lab_date)
         await self.repository.add_async(report)
-        reports = (await self.repository.query_async()).where(lambda x: x.candidate_id == e.candidate_id).to_list()
-        pass
+        # reports = (await self.repository.query_async()).where(lambda x: x.candidate_id == e.candidate_id).to_list()

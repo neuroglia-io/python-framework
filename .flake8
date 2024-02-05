@@ -1,2 +1,4 @@
 [flake8]
-ignore = E501,E722,DS101,D101 ; line too long, bare except, docstring in public class
+; line too long, bare except, docstring in public class
+; redefinition of unused 'handle_async' from line 25Flake8(F811)
+ignore = E501,E722,DS101,D101,F811

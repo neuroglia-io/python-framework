@@ -101,6 +101,8 @@ class ApplicationSettings(BaseSettings):
     
     cloud_event_source : str
     
+    cloud_event_type_prefix : str
+    
     cloud_event_retry_attempts : int = 5
     
     cloud_event_retry_delay : float = 1

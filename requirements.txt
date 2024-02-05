@@ -1,6 +1,7 @@
 annotated-types==0.6.0
 anyio==4.2.0
 autopep8==2.0.4
+certifi==2024.2.2
 classy-fastapi==0.6.1
 click==8.1.7
 coverage==7.3.3
@@ -9,6 +10,8 @@ esdbclient==1.0.13
 fastapi==0.109.0
 grpcio==1.60.0
 h11==0.14.0
+httpcore==1.0.2
+httpx==0.26.0
 idna==3.6
 iniconfig==2.0.0
 multipledispatch==1.0.0

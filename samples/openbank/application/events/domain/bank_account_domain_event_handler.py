@@ -26,17 +26,19 @@ class BankAccountDomainEventHandler(DomainEventHandlerBase[BankAccount, BankAcco
         owner: PersonDto = (await self.mediator.execute_async(GetByIdQuery[PersonDto, str](e.owner_id))).data
         bank_account = await self.get_or_create_read_model_async(e.aggregate_id)
         bank_account.balance = Decimal(0)
+        bank_account.owner_id = owner.id
         bank_account.owner = f"{owner.first_name} {owner.last_name}"
         await self.read_models.update_async(bank_account)
-        # todo: await self.publish_cloud_event_async(e)
+        await self.publish_cloud_event_async(e)
 
     @dispatch(BankAccountTransactionRecordedDomainEventV1)
     async def handle_async(self, e: BankAccountTransactionRecordedDomainEventV1) -> None:
         bank_account = await self.get_or_create_read_model_async(e.aggregate_id)
-        if not hasattr(bank_account, "balance"): bank_account.balance = Decimal(0)
+        if not hasattr(bank_account, "balance"):
+            bank_account.balance = Decimal(0)
         if e.transaction.type == BankTransactionTypeV1.DEPOSIT or e.transaction.type == BankTransactionTypeV1.INTEREST or (BankTransactionTypeV1(e.transaction.type) == BankTransactionTypeV1.TRANSFER and e.transaction.to_account_id == bank_account.id):
             bank_account.balance = Decimal(bank_account.balance) + Decimal(e.transaction.amount)
         else:
             bank_account.balance = str(Decimal(bank_account.balance) - Decimal(e.transaction.amount))
         await self.read_models.update_async(bank_account)
-        # todo: await self.publish_cloud_event_async(e)
+        await self.publish_cloud_event_async(e)

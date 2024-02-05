@@ -1,0 +1,2 @@
+from .person_events import PersonRegisteredIntegrationEvent
+from .score_report_event_handler import ScoreReportSubmittedIntegrationEventV1

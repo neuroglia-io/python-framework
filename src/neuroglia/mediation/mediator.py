@@ -35,18 +35,18 @@ TRequest = TypeVar('TRequest', bound=Request)
 
 class RequestHandler(Generic[TRequest, TResult], ABC):
     ''' Represents a service used to handle a specific type of CQRS request '''
-    
+
     @abstractmethod
-    async def handle_async(self, request : TRequest) -> TResult:
+    async def handle_async(self, request: TRequest) -> TResult:
         ''' Handles the specified request '''
         raise NotImplementedError()
 
-    def ok(self, data : Optional[Any] = None) -> TResult:
+    def ok(self, data: Optional[Any] = None) -> TResult:
         result = OperationResult("OK", 200)
         result.data = data
         return result
-    
-    def created(self, data : Optional[Any] = None) -> TResult:
+
+    def created(self, data: Optional[Any] = None) -> TResult:
         result = OperationResult("Created", 201)
         result.data = data
         return result
@@ -66,9 +66,9 @@ TCommand = TypeVar('TCommand', bound=Command)
 
 class CommandHandler(Generic[TCommand, TResult], RequestHandler[TCommand, TResult], ABC):
     ''' Represents a service used to handle a specific type of CQRS command '''
-    
+
     pass
- 
+
 
 TQuery = TypeVar('TQuery', bound=Query)
 ''' Represents the type of CQRS query to handle '''
@@ -76,7 +76,7 @@ TQuery = TypeVar('TQuery', bound=Query)
 
 class QueryHandler(Generic[TQuery, TResult], RequestHandler[TQuery, TResult], ABC):
     ''' Represents a service used to handle a specific type of CQRS query '''
-    
+
     pass
 
 
@@ -86,11 +86,11 @@ TNotification = TypeVar('TNotification', bound=object)
 
 class NotificationHandler(Generic[TNotification], ABC):
     ''' Represents a service used to handle a specific type of CQRS notification'''
-    
+
     @abstractmethod
-    async def handle_async(self, notification : TNotification) -> None:
+    async def handle_async(self, notification: TNotification) -> None:
         ''' Handles the specified notification '''
-        raise NotImplementedError() 
+        raise NotImplementedError()
 
 
 TDomainEvent = TypeVar('TDomainEvent', bound=DomainEvent)
@@ -99,7 +99,7 @@ TDomainEvent = TypeVar('TDomainEvent', bound=DomainEvent)
 
 class DomainEventHandler(Generic[TDomainEvent], NotificationHandler[TDomainEvent], ABC):
     ''' Represents a service used to handle a specific domain event '''
-    
+
     pass
 
 
@@ -109,52 +109,58 @@ TIntegrationEvent = TypeVar('TIntegrationEvent', bound=IntegrationEvent)
 
 class IntegrationEventHandler(Generic[TIntegrationEvent], NotificationHandler[TIntegrationEvent], ABC):
     ''' Represents a service used to handle a specific integration event '''
-    
+
     pass
 
 
 class Mediator:
     ''' Represents the default implementation of the IMediator class '''
-    
-    _service_provider : ServiceProviderBase
+
+    _service_provider: ServiceProviderBase
 
     def __init__(self, service_provider: ServiceProviderBase):
         self._service_provider = service_provider
 
     async def execute_async(self, request: Request) -> OperationResult:
         ''' Executes the specified request '''
-        handlers : List[RequestHandler] = [candidate for candidate in self._service_provider.get_services(RequestHandler) if self._request_handler_matches(candidate, request)]
-        if handlers is None or len(handlers) < 1: raise Exception(f"Failed to find a handler for request of type '{type(request).__name__}'")
-        elif len(handlers) > 1: raise Exception(f"There must be exactly one handler defined for the command of type '{type(request).__name__}'")
+        t = self._service_provider.get_services(RequestHandler)
+        handlers: List[RequestHandler] = [candidate for candidate in self._service_provider.get_services(RequestHandler) if self._request_handler_matches(candidate, request)]
+        if handlers is None or len(handlers) < 1:
+            raise Exception(f"Failed to find a handler for request of type '{type(request).__name__}'")
+        elif len(handlers) > 1:
+            raise Exception(f"There must be exactly one handler defined for the command of type '{type(request).__name__}'")
         handler = handlers[0]
         return await handler.handle_async(request)
 
-    async def publish_async(self, notification : object):
+    async def publish_async(self, notification: object):
         ''' Publishes the specified notification '''
-        handlers : List[NotificationHandler] = [candidate for candidate in self._service_provider.get_services(NotificationHandler) if self._notification_handler_matches(candidate, type(notification))]
-        if handlers is None or len(handlers) < 1: return
+        handlers: List[NotificationHandler] = [candidate for candidate in self._service_provider.get_services(NotificationHandler) if self._notification_handler_matches(candidate, type(notification))]
+        if handlers is None or len(handlers) < 1:
+            return
         await asyncio.gather(*(handler.handle_async(notification) for handler in handlers))
-        
+
     def _request_handler_matches(self, candidate, request_type) -> bool:
         expected_request_type = request_type.__orig_class__ if hasattr(request_type, "__orig_class__") else request_type
         handler_type = TypeExtensions.get_generic_implementation(candidate, RequestHandler)
         handled_request_type = handler_type.__args__[0]
         if type(handled_request_type) == type(expected_request_type):
-            matches =  handled_request_type == expected_request_type
+            matches = handled_request_type == expected_request_type
             return matches
         else:
             return handled_request_type == type(expected_request_type)
-    
+
     def _notification_handler_matches(self, candidate, request_type) -> bool:
         candidate_type = type(candidate)
         handler_type = next(base for base in candidate_type.__orig_bases__ if (issubclass(base.__origin__, NotificationHandler) if hasattr(base, '__origin__') else issubclass(base, NotificationHandler)))
         handled_notification_type = handler_type.__args__[0]
-        if isinstance(handled_notification_type, UnionType): return any(issubclass(t, request_type) for t in handled_notification_type.__args__)
-        else: return issubclass(handled_notification_type.__origin__, request_type) if hasattr(handled_notification_type, '__origin__') else issubclass(handled_notification_type, request_type)
-        
-    def configure(app : ApplicationBuilderBase, modules : List[str] = list[str]()) -> ApplicationBuilderBase:
+        if isinstance(handled_notification_type, UnionType):
+            return any(issubclass(t, request_type) for t in handled_notification_type.__args__)
+        else:
+            return issubclass(handled_notification_type.__origin__, request_type) if hasattr(handled_notification_type, '__origin__') else issubclass(handled_notification_type, request_type)
+
+    def configure(app: ApplicationBuilderBase, modules: List[str] = list[str]()) -> ApplicationBuilderBase:
         ''' Registers and configures mediation-related services (command/query/notification handlers) to the specified service collection.
-            
+
             Args:
                 services (ServiceCollection): the service collection to configure
                 modules (List[str]): a list containing the names of the modules to scan for mediation services to register
@@ -170,4 +176,3 @@ class Mediator:
                 app.services.add_transient(NotificationHandler, integration_event_handler_type)
         app.services.add_singleton(Mediator)
         return app
-    
