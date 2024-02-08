@@ -2,7 +2,7 @@ import asyncio
 import inspect
 from abc import ABC, abstractmethod
 from types import UnionType
-from typing import Any, Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, List, Optional, TypeVar
 from neuroglia.core import ModuleLoader, OperationResult, TypeFinder, TypeExtensions
 from neuroglia.data.abstractions import DomainEvent
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
@@ -42,7 +42,7 @@ class RequestHandler(Generic[TRequest, TResult], ABC):
         raise NotImplementedError()
 
     def ok(self, data: Optional[Any] = None) -> TResult:
-        result = OperationResult("OK", 200)
+        result: OperationResult = OperationResult("OK", 200)
         result.data = data
         return result
 
@@ -123,7 +123,6 @@ class Mediator:
 
     async def execute_async(self, request: Request) -> OperationResult:
         ''' Executes the specified request '''
-        t = self._service_provider.get_services(RequestHandler)
         handlers: List[RequestHandler] = [candidate for candidate in self._service_provider.get_services(RequestHandler) if self._request_handler_matches(candidate, request)]
         if handlers is None or len(handlers) < 1:
             raise Exception(f"Failed to find a handler for request of type '{type(request).__name__}'")

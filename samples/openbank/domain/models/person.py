@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime
+
 from multipledispatch import dispatch
 from neuroglia.data.abstractions import AggregateRoot, AggregateState, DomainEvent
 from neuroglia.mapping.mapper import map_to
@@ -9,6 +10,7 @@ from samples.openbank.integration.models import PersonDto
 from samples.openbank.application.events.integration import PersonRegisteredIntegrationEvent
 
 
+# @labels(entity="person", action="registered")
 @map_to(PersonRegisteredIntegrationEvent)
 class PersonRegisteredDomainEventV1(DomainEvent[str]):
 

@@ -1,12 +1,13 @@
-from neuroglia.eventing.cloud_events.decorators import cloudevent
 from dataclasses import dataclass
 from datetime import date
+
+from neuroglia.eventing.cloud_events.decorators import cloudevent
 from neuroglia.integration.models import IntegrationEvent
 from samples.openbank.domain.models.address import Address
 from samples.openbank.integration.person_gender import PersonGender
 
 
-@cloudevent("io.openbank.test.requested.v1")
+@cloudevent("person.registered.v1")
 @dataclass
 class PersonRegisteredIntegrationEvent(IntegrationEvent[str]):
 
@@ -21,3 +22,7 @@ class PersonRegisteredIntegrationEvent(IntegrationEvent[str]):
     nationality: str
 
     date_of_birth: date
+
+    address: Address
+
+    gender: PersonGender

@@ -38,7 +38,7 @@ class ScoreReport(Identifiable[str]):
         self.lab_date = lab_date
 
 
-@cloudevent("com.cisco.mozart.test-requested.v1")
+@cloudevent("com.cisco.mozart.scorereport.submitted.v1")
 class ScoreReportSubmittedIntegrationEventV1(IntegrationEvent[str]):
     candidate_id: str
     total_score: int = 0

@@ -1,18 +1,6 @@
 {
     "configurations": [
         {
-            "name": "Python: Pytest",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "-v",
-                "${relativeFile}"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": false
-        },
-        {
             "name": "Python: Remote Attach",
             "type": "python",
             "request": "attach",
@@ -24,6 +12,18 @@
                     "remoteRoot": "/app"
                 }
             ],
+            "justMyCode": false
+        },
+        {
+            "name": "Python: Pytest",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-v",
+                "${relativeFile}"
+            ],
+            "console": "integratedTerminal",
             "justMyCode": false
         }
     ]

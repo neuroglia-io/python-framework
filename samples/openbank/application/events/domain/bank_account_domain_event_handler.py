@@ -7,7 +7,8 @@ from neuroglia.mapping import Mapper
 from neuroglia.mediation import DomainEventHandler, Mediator
 from samples.openbank.application.events.domain_event_handler_base import DomainEventHandlerBase
 from samples.openbank.application.queries.generic import GetByIdQuery
-from samples.openbank.domain.models.bank_account import BankAccount, BankAccountCreatedDomainEventV1, BankAccountTransactionRecordedDomainEventV1, BankTransactionTypeV1
+from samples.openbank.domain.models.bank_account import BankTransactionTypeV1, BankAccount
+from samples.openbank.domain.events.bank_account import BankAccountCreatedDomainEventV1, BankAccountTransactionRecordedDomainEventV1
 from samples.openbank.integration.models import BankAccountDto, PersonDto
 
 
@@ -25,6 +26,8 @@ class BankAccountDomainEventHandler(DomainEventHandlerBase[BankAccount, BankAcco
     async def handle_async(self, e: BankAccountCreatedDomainEventV1) -> None:
         owner: PersonDto = (await self.mediator.execute_async(GetByIdQuery[PersonDto, str](e.owner_id))).data
         bank_account = await self.get_or_create_read_model_async(e.aggregate_id)
+        if not hasattr(bank_account, "balance"):
+            bank_account.balance = Decimal(0)
         bank_account.balance = Decimal(0)
         bank_account.owner_id = owner.id
         bank_account.owner = f"{owner.first_name} {owner.last_name}"
@@ -36,7 +39,9 @@ class BankAccountDomainEventHandler(DomainEventHandlerBase[BankAccount, BankAcco
         bank_account = await self.get_or_create_read_model_async(e.aggregate_id)
         if not hasattr(bank_account, "balance"):
             bank_account.balance = Decimal(0)
-        if e.transaction.type == BankTransactionTypeV1.DEPOSIT or e.transaction.type == BankTransactionTypeV1.INTEREST or (BankTransactionTypeV1(e.transaction.type) == BankTransactionTypeV1.TRANSFER and e.transaction.to_account_id == bank_account.id):
+        if e.transaction.type == BankTransactionTypeV1.DEPOSIT.value or \
+            e.transaction.type == BankTransactionTypeV1.INTEREST.value or \
+                (e.transaction.type == BankTransactionTypeV1.TRANSFER.value and e.transaction.to_account_id == bank_account.id):
             bank_account.balance = Decimal(bank_account.balance) + Decimal(e.transaction.amount)
         else:
             bank_account.balance = str(Decimal(bank_account.balance) - Decimal(e.transaction.amount))

@@ -3,6 +3,7 @@ from typing import Generic, List, Optional
 from neuroglia.data.abstractions import TEntity, TKey
 from neuroglia.data.queryable import Queryable
 
+
 class Repository(Generic[TEntity, TKey], ABC):
     ''' Defines the fundamentals of a repository '''
 
@@ -30,11 +31,11 @@ class Repository(Generic[TEntity, TKey], ABC):
     async def remove_async(self, id: TKey) -> None:
         ''' Removes the entity with the specified key '''
         raise NotImplementedError()
-  
-    
+
+
 class QueryableRepository(Generic[TEntity, TKey], Repository[TEntity, TKey], ABC):
     ''' Defines the fundamentals of a queryable repository '''
-    
+
     @abstractmethod
     async def query_async(self) -> Queryable[TEntity]:
         raise NotImplementedError()

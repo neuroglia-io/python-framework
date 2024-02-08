@@ -75,15 +75,13 @@ class DomainEventHandlerBase(Generic[TWriteModel, TReadModel, TKey]):
     async def publish_cloud_event_async(self, e: DomainEvent):
         ''' Converts the specified domain event into a new integration event, then publishes it as a cloud event'''
         if "__map_to__" not in dir(e):
-            raise Exception(f"Missing a mapping configuration for event type {type(e)}")
-        integration_event_type = e.__map_to__
-        integration_event = self.mapper.map(e, integration_event_type)
+            raise Exception(f"Missing a domain-to-integration-event mapping configuration for event type {type(e)}")
         id_ = str(uuid.uuid4()).replace("-", "")
         source = self.cloud_event_publishing_options.source
-        aggregate_name = "test"
-        event_name = "requested"
-        event_version = "v1"
-        type_ = f"{self.cloud_event_publishing_options.type_prefix}.{aggregate_name}.{event_name}.{event_version}"
+        type_prefix = self.cloud_event_publishing_options.type_prefix
+        integration_event_type = e.__map_to__
+        integration_event = self.mapper.map(e, integration_event_type)
+        type_ = f"{type_prefix}.{integration_event.__cloudevent__}"
         spec_version = CloudEventSpecVersion.v1_0
         time = datetime.datetime.now()
         subject = e.aggregate_id

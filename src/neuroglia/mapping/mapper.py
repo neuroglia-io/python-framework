@@ -5,6 +5,27 @@ from neuroglia.core import ModuleLoader, TypeFinder
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 
 
+def label(name: str, value: str):
+    ''' Represents a decorator used to add a custom label (key, value) to a class'''
+    def decorator(cls):
+        if "__labels__" not in dir(cls):
+            cls.__labels__ = dict()
+        cls.__labels__[name] = value
+        return cls
+    return decorator
+
+
+def labels(**kwargs):
+    ''' Represents a decorator used to add one or more custom labels to a class'''
+    def decorator(cls):
+        if "__labels__" not in dir(cls):
+            cls.__labels__ = dict()
+        for k, v in kwargs.items():
+            cls.__labels__[k] = v
+        return cls
+    return decorator
+
+
 def map_to(target_type: Type):
     ''' Represents a decorator used to create a mapping of the marked class to a specified type '''
     def decorator(cls):
@@ -197,6 +218,7 @@ class Mapper:
         destination = type_map.map(source)
         return destination
 
+    @staticmethod
     def configure(builder: ApplicationBuilderBase, modules: List[str] = list[str]()) -> ApplicationBuilderBase:
         ''' Registers and configures mapping-related services to the specified service collection.
 
