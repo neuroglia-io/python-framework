@@ -1,4 +1,4 @@
-import httpx
+import logging
 from neuroglia.data.infrastructure.event_sourcing.abstractions import EventStoreOptions
 from neuroglia.data.infrastructure.event_sourcing.event_sourcing_repository import EventSourcingRepository
 from neuroglia.data.infrastructure.event_sourcing.event_store.event_store import ESEventStore
@@ -12,6 +12,9 @@ from neuroglia.mediation.mediator import Mediator, RequestHandler
 from neuroglia.serialization.json import JsonSerializer
 from samples.openbank.application.queries.account_by_owner import AccountsByOwnerQueryHandler
 
+logging.basicConfig(filename='logs/openbank.log', format='%(asctime)s %(levelname)-8s %(message)s', encoding='utf-8', level=logging.DEBUG)
+log = logging.getLogger(__name__)
+log.debug("Bootstrapping the app...")
 
 database_name = "openbank"
 application_module = "samples.openbank.application"
@@ -26,7 +29,7 @@ CloudEventIngestor.configure(builder, ["samples.openbank.application.events.inte
 CloudEventPublisher.configure(builder)
 ESEventStore.configure(builder, EventStoreOptions(database_name))
 DataAccessLayer.WriteModel.configure(builder, ["samples.openbank.domain.models"], lambda builder_, entity_type, key_type: EventSourcingRepository.configure(builder_, entity_type, key_type))
-DataAccessLayer.ReadModel.configure(builder, ["samples.openbank.integration.models", "samples.openbank.application.events.integration"], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))
+DataAccessLayer.ReadModel.configure(builder, ["samples.openbank.integration.models", "samples.openbank.application.events"], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))
 builder.add_controllers(["samples.openbank.api.controllers"])
 
 app = builder.build()

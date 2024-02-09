@@ -47,7 +47,7 @@ class RequestHandler(Generic[TRequest, TResult], ABC):
         return result
 
     def created(self, data: Optional[Any] = None) -> TResult:
-        result = OperationResult("Created", 201)
+        result: OperationResult = OperationResult("Created", 201)
         result.data = data
         return result
 
