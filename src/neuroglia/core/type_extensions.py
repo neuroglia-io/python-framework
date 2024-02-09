@@ -3,7 +3,8 @@ from typing import Dict, List, Type, TypeVar
 
 class TypeExtensions:
 
-    def get_generic_implementation(self, type_: Type, generic_type_definition: Type, generic_args: Dict[str, Type] = None):
+    @staticmethod
+    def get_generic_implementation(type_: Type, generic_type_definition: Type, generic_args: Dict[str, Type] = None):
         base_types = TypeExtensions._get_base_types(type_)
         base_types = [base for base in base_types if (issubclass(base.__origin__, generic_type_definition) if hasattr(base, "__origin__") else issubclass(base, generic_type_definition))]
         base_type = next((base for base in base_types if base == generic_type_definition or (hasattr(base, "__origin__")) and base.__origin__ == generic_type_definition), None)
@@ -26,7 +27,8 @@ class TypeExtensions:
         else:
             return next((implementation_type for implementation_type in [TypeExtensions.get_generic_implementation(base, generic_type_definition, generic_args) for base in base_types]), None)
 
-    def get_generic_arguments(self, type_: Type, generic_arguments: Dict[str, Type] = None) -> Dict[str, Type]:
+    @staticmethod
+    def get_generic_arguments(type_: Type, generic_arguments: Dict[str, Type] = None) -> Dict[str, Type]:
         if hasattr(type_, "__orig_class__") and hasattr(type_.__orig_class__.__origin__, "__parameters__"):
             if generic_arguments is None:
                 generic_arguments = dict[str, Type]()
@@ -45,11 +47,13 @@ class TypeExtensions:
             generic_arguments = TypeExtensions.get_generic_arguments(base_type, generic_arguments)
         return generic_arguments
 
-    def get_generic_argument(self, type_: Type, name: str) -> Type | None:
+    @staticmethod
+    def get_generic_argument(type_: Type, name: str) -> Type | None:
         generic_arguments = TypeExtensions.get_generic_arguments(type_)
         return generic_arguments.get(name, None)
 
-    def _get_base_types(self, type_: Type) -> List[Type]:
+    @staticmethod
+    def _get_base_types(type_: Type) -> List[Type]:
         if hasattr(type_, "__origin__") and hasattr(type_.__origin__, "__orig_bases__"):
             return type_.__origin__.__orig_bases__
         elif hasattr(type_, "__orig_bases__"):
@@ -57,8 +61,9 @@ class TypeExtensions:
         else:
             return list[Type]()
 
-    def _substitute_generic_arguments(self, type_: Type, generic_args: Dict[str, Type] = None) -> Type:
-        if not hasattr(type_, "__parameters__") or generic_args is None:
+    @staticmethod
+    def _substitute_generic_arguments(type_: Type, generic_args: Dict[str, Type] | None = None) -> Type:
+        if not hasattr(type_, "__parameters__") and generic_args is not None:
             if isinstance(type_, TypeVar):
                 return generic_args.get(type_.__name__, None)
             else:
