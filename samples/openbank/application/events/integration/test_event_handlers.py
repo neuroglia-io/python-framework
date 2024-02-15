@@ -1,17 +1,18 @@
 import logging
 
-from dataclasses import dataclass
 from multipledispatch import dispatch
-from typing import List
 
-from neuroglia.integration.models import IntegrationEvent
 from neuroglia.eventing.cloud_events.decorators import cloudevent
+from neuroglia.integration.models import IntegrationEvent
 from neuroglia.mediation.mediator import IntegrationEventHandler
+
+log = logging.getLogger(__name__)
 
 
 @cloudevent("com.source.dummy.test.requested.v1")
 class TestRequestedIntegrationEventV1(IntegrationEvent[str]):
     foo: str
+    bar: str
 
 
 class TestRequestedIntegrationEventHandler(IntegrationEventHandler[TestRequestedIntegrationEventV1]):
@@ -21,5 +22,5 @@ class TestRequestedIntegrationEventHandler(IntegrationEventHandler[TestRequested
 
     @dispatch(TestRequestedIntegrationEventV1)
     async def handle_async(self, e: TestRequestedIntegrationEventV1) -> None:
-        logging.info(f"Handling event type: {e.foo}")
-        print(f"Handling event type: {e.foo}")
+        log.info(f"Handling event type: {e.__cloudevent__}")
+        # Publish event (DataRecord) to all subscribers (ReportAggregator)

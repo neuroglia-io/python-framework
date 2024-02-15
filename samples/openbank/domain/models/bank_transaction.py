@@ -7,7 +7,7 @@ import uuid
 
 from neuroglia.data.abstractions import Entity
 from neuroglia.mapping.mapper import map_to
-from samples.openbank.integration.models import BankTransactionDto
+from samples.openbank.integration.models.bank import BankTransactionDto
 
 
 class BankTransactionTypeV1(Enum):

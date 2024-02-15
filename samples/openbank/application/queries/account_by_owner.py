@@ -2,7 +2,7 @@ from neuroglia.core.operation_result import OperationResult
 from neuroglia.data.infrastructure.abstractions import QueryableRepository
 from neuroglia.mediation.mediator import Query, QueryHandler
 
-from samples.openbank.integration.models import BankAccountDto
+from samples.openbank.integration.models.bank import BankAccountDto
 
 
 class AccountsByOwnerQuery(Query[OperationResult[BankAccountDto]]):

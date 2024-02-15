@@ -9,7 +9,7 @@ from neuroglia.mediation.mediator import CommandHandler
 from samples.openbank.domain.models import BankAccount
 from samples.openbank.domain.models.bank_account import BankTransactionTypeV1, BankTransactionV1
 from samples.openbank.integration.commands.transactions import CreateBankAccountDepositCommandDto
-from samples.openbank.integration.models import BankTransactionDto
+from samples.openbank.integration.models.bank import BankTransactionDto
 
 
 @map_from(CreateBankAccountDepositCommandDto)
@@ -55,7 +55,7 @@ class CreateBankAccountDepositCommandHandler(CommandHandler[CreateBankAccountDep
         transaction = BankTransactionV1(BankTransactionTypeV1.DEPOSIT, Decimal(command.amount), None, to_bank_account.id(), command.communication)
 
         if command.communication is None or len(command.communication) == 0:
-            command.communication = f"{transaction.id}: {to_bank_account.state.id} deposited {command.amount}EUR in cash."
+            command.communication = f"{transaction.id}: user {to_bank_account.state.owner_id} deposited {command.amount}EUR in cash."
 
         if not to_bank_account.try_add_transaction(transaction):
             raise Exception("The beneficiary of a transaction of type 'DEPOSIT' should never invalidate it for insufficient funds, thus this exception should never be raised")

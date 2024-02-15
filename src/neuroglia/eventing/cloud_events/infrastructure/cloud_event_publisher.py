@@ -12,6 +12,8 @@ from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedService
 from neuroglia.reactive.rx_async import AsyncRx
 from neuroglia.serialization.json import JsonSerializer
 
+log = logging.getLogger(__name__)
+
 
 @dataclass
 class CloudEventPublishingOptions:
@@ -66,8 +68,6 @@ class CloudEventPublisher(HostedService):
         published = False
         for retries in range(self._options.retry_attempts):
             try:
-                # logging.debug(f"Publishing cloud event: {e}")  # fix
-                print(f"Publishing cloud event (type: {e.type}, subject: {e.subject}, id: {e.id}")  # todo: remove
                 url = uri.geturl()
                 headers = {
                     "Content-Type": "application/cloudevents+json"
@@ -77,15 +77,14 @@ class CloudEventPublisher(HostedService):
                     response = client.post(url=url, headers=headers, content=self._json_serializer.serialize(e))
                     response.raise_for_status()
                     if response is not None and 200 <= response.status_code < 300:
-                        print(f"Published cloud event: (id: {e.id}) - Response: {response.status_code}")
-                        logging.info(f"Published cloud event: {e.id}")
+                        log.debug(f"Published cloudevent: {e.type}")
                         published = True
                         break
 
             except httpx.HTTPError as ex:
-                logging.error(f"HTTP error occurred: {ex}")
+                log.error(f"HTTP error occurred: {ex}")
             except Exception as ex:
-                logging.warning(f"An error occured while publishing the cloud event with id '{e.id}' [attempt {retries}/{self._options.retry_attempts}]: {ex}")
+                log.warning(f"An error occured while publishing the cloud event with id '{e.id}' [attempt {retries}/{self._options.retry_attempts}]: {ex}")
             await asyncio.sleep(self._options.retry_delay * retries)
         if not published:
             raise Exception(f"Failed to publish cloud events to the specified sink '{self._options.sink_uri}' after '{self._options.retry_attempts}' attempts")

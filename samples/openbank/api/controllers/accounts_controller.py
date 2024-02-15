@@ -8,7 +8,7 @@ from samples.openbank.application.commands.accounts import CreateBankAccountComm
 from samples.openbank.application.queries.generic import GetByIdQuery
 from samples.openbank.application.queries import AccountsByOwnerQuery
 from samples.openbank.integration.commands.accounts import CreateBankAccountCommandDto
-from samples.openbank.integration.models import BankAccountDto
+from samples.openbank.integration.models.bank import BankAccountDto
 
 
 class AccountsController(ControllerBase):

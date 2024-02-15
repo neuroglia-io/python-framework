@@ -5,7 +5,7 @@ from neuroglia.mediation.mediator import Mediator
 from neuroglia.mvc.controller_base import ControllerBase
 from samples.openbank.application.commands.transactions import CreateBankAccountTransferCommand, CreateBankAccountDepositCommand
 from samples.openbank.integration.commands.transactions import CreateBankAccountTransferCommandDto, CreateBankAccountDepositCommandDto
-from samples.openbank.integration.models import BankTransactionDto
+from samples.openbank.integration.models.bank import BankTransactionDto
 
 
 class TransactionsController(ControllerBase):

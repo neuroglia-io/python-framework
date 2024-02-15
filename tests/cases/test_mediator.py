@@ -7,7 +7,7 @@ from neuroglia.data.infrastructure.memory.memory_repository import MemoryReposit
 from neuroglia.dependency_injection.service_provider import ServiceCollection
 from neuroglia.mediation.mediator import Mediator, NotificationHandler, RequestHandler
 from samples.openbank.application.queries.generic import GetByIdQuery, GetByIdQueryHandler
-from samples.openbank.integration.models import AddressDto, PersonDto
+from samples.openbank.integration.models.person import AddressDto, PersonDto
 from samples.openbank.integration.person_gender import PersonGender
 from tests.data import GreetCommand, UserCreatedDomainEventV1, UserDto
 from tests.services import GreetCommandHandler, UserCreatedDomainEventV1Handler

@@ -10,7 +10,7 @@ from neuroglia.mediation.mediator import CommandHandler
 from samples.openbank.domain.models import BankAccount
 from samples.openbank.domain.models.bank_account import BankTransactionTypeV1, BankTransactionV1
 from samples.openbank.integration.commands.transactions import CreateBankAccountTransferCommandDto
-from samples.openbank.integration.models import BankTransactionDto
+from samples.openbank.integration.models.bank import BankTransactionDto
 
 log = logging.getLogger(__name__)
 

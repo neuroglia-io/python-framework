@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal
 from neuroglia.data.abstractions import queryable
 from samples.openbank.integration import PersonGender
 
@@ -38,23 +37,3 @@ class PersonDto:
     date_of_birth: date
 
     address: AddressDto
-
-
-@queryable
-@dataclass
-class BankAccountDto:
-
-    id: str
-
-    owner_id: str
-
-    owner: str
-
-    balance: Decimal
-
-
-@queryable
-@dataclass
-class BankTransactionDto:
-
-    pass

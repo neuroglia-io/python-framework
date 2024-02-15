@@ -8,7 +8,7 @@ from neuroglia.mediation.mediator import CommandHandler
 from samples.openbank.domain.models import Address, Person
 from samples.openbank.integration import PersonGender
 from samples.openbank.integration.commands.persons import RegisterPersonCommandDto
-from samples.openbank.integration.models import PersonDto
+from samples.openbank.integration.models.person import PersonDto
 
 
 @map_from(RegisterPersonCommandDto)

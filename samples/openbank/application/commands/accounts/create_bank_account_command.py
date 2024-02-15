@@ -7,7 +7,7 @@ from neuroglia.mediation import CommandHandler
 from samples.openbank.domain.models import BankAccount
 from samples.openbank.domain.models.person import Person
 from samples.openbank.integration.commands.accounts import CreateBankAccountCommandDto
-from samples.openbank.integration.models import BankAccountDto
+from samples.openbank.integration.models.bank import BankAccountDto
 
 
 @map_from(CreateBankAccountCommandDto)

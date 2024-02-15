@@ -1,15 +1,19 @@
 from decimal import Decimal
 from multipledispatch import dispatch
+
 from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.eventing.cloud_events.infrastructure import CloudEventBus
 from neuroglia.eventing.cloud_events.infrastructure.cloud_event_publisher import CloudEventPublishingOptions
 from neuroglia.mapping import Mapper
 from neuroglia.mediation import DomainEventHandler, Mediator
+
 from samples.openbank.application.events.domain_event_handler_base import DomainEventHandlerBase
 from samples.openbank.application.queries.generic import GetByIdQuery
+from samples.openbank.domain.events.bank_transaction import BankAccountTransactionRecordedDomainEventV1
 from samples.openbank.domain.models.bank_account import BankTransactionTypeV1, BankAccount
-from samples.openbank.domain.events.bank_account import BankAccountCreatedDomainEventV1, BankAccountTransactionRecordedDomainEventV1
-from samples.openbank.integration.models import BankAccountDto, PersonDto
+from samples.openbank.domain.events.bank_account import BankAccountCreatedDomainEventV1
+from samples.openbank.integration.models.person import PersonDto
+from samples.openbank.integration.models.bank import BankAccountDto
 
 
 class BankAccountDomainEventHandler(DomainEventHandlerBase[BankAccount, BankAccountDto, str],

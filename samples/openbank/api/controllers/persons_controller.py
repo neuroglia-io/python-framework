@@ -1,4 +1,7 @@
+import logging
+
 from typing import List
+
 from classy_fastapi import post
 from classy_fastapi.decorators import get
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
@@ -8,7 +11,10 @@ from neuroglia.mvc.controller_base import ControllerBase
 from samples.openbank.application.commands.persons import RegisterPersonCommand
 from samples.openbank.application.queries.generic import GetByIdQuery, ListQuery
 from samples.openbank.integration.commands.persons import RegisterPersonCommandDto
-from samples.openbank.integration.models import PersonDto
+from samples.openbank.integration.models.person import PersonDto
+
+
+log = logging.getLogger(__name__)
 
 
 class PersonsController(ControllerBase):
@@ -24,6 +30,7 @@ class PersonsController(ControllerBase):
     @get("/", response_model=List[PersonDto], responses=ControllerBase.error_responses)
     async def list_persons(self) -> List[PersonDto]:
         ''' Lists all registered persons '''
+        log.debug("get all persons")
         return self.process(await self.mediator.execute_async(ListQuery[PersonDto, str]()))
 
     @get("/byid/{id}", response_model=PersonDto, responses=ControllerBase.error_responses)

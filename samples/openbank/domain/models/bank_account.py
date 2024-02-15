@@ -2,12 +2,12 @@ from decimal import Decimal
 from typing import List
 import uuid
 from multipledispatch import dispatch
-from neuroglia.data.abstractions import AggregateRoot, AggregateState, DomainEvent
+from neuroglia.data.abstractions import AggregateRoot, AggregateState
 from neuroglia.mapping.mapper import map_to
-from samples.openbank.application.events.integration.bank_account_event_handlers import BankAccountCreatedIntegrationEventV1, BankAccountTransactionRecordedIntegrationEventV1
-from samples.openbank.domain.events.bank_account import BankAccountCreatedDomainEventV1, BankAccountTransactionRecordedDomainEventV1
+from samples.openbank.domain.events.bank_account import BankAccountCreatedDomainEventV1
+from samples.openbank.domain.events.bank_transaction import BankAccountTransactionRecordedDomainEventV1
 from samples.openbank.domain.models.person import Person
-from samples.openbank.integration.models import BankAccountDto
+from samples.openbank.integration.models.bank import BankAccountDto
 from samples.openbank.domain.models.bank_transaction import BankTransactionV1, BankTransactionTypeV1  # Splitting into a separate module vs BankAccount in order to avoid circular import in the application's domain_event_handler
 
 
@@ -16,7 +16,7 @@ class BankAccountStateV1(AggregateState[str]):
 
     def __init__(self):
         super().__init__()
-
+ 
     owner_id: str
 
     transactions: List[BankTransactionV1] = list[BankTransactionV1]()

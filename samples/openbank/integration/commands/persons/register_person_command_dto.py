@@ -1,7 +1,7 @@
 from datetime import date
 from pydantic import BaseModel
 from samples.openbank.integration import PersonGender
-from samples.openbank.integration.models import AddressDto
+from samples.openbank.integration.models.person import AddressDto
 
 
 class RegisterPersonCommandDto(BaseModel):

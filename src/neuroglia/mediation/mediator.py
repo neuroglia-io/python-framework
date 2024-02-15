@@ -1,5 +1,7 @@
 import asyncio
 import inspect
+import logging
+
 from abc import ABC, abstractmethod
 from types import UnionType
 from typing import Any, Generic, List, Optional, TypeVar
@@ -8,6 +10,8 @@ from neuroglia.data.abstractions import DomainEvent
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 from neuroglia.integration.models import IntegrationEvent
+
+log = logging.getLogger(__name__)
 
 
 TResult = TypeVar('TResult', bound=OperationResult)
@@ -128,6 +132,7 @@ class Mediator:
             raise Exception(f"Failed to find a handler for request of type '{type(request).__name__}'")
         elif len(handlers) > 1:
             raise Exception(f"There must be exactly one handler defined for the command of type '{type(request).__name__}'")
+        log.info(f"Executing request type {type(request).__name__}")
         handler = handlers[0]
         return await handler.handle_async(request)
 
