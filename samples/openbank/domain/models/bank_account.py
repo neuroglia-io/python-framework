@@ -16,7 +16,7 @@ class BankAccountStateV1(AggregateState[str]):
 
     def __init__(self):
         super().__init__()
- 
+
     owner_id: str
 
     transactions: List[BankTransactionV1] = list[BankTransactionV1]()

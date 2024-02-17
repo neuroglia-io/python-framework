@@ -11,7 +11,8 @@ class Profile(MappingProfile):
         super().__init__()
         modules = [
             "samples.openbank.domain.models",
-            "samples.openbank.application.commands"
+            "samples.openbank.application.commands",
+            "samples.openbank.application.events"
         ]
         for module in [ModuleLoader.load(module_name) for module_name in modules]:
             for type_ in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and (hasattr(cls, "__map_from__") or hasattr(cls, "__map_to__"))):

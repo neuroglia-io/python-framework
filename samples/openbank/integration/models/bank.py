@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from neuroglia.data.abstractions import queryable
+from neuroglia.data.abstractions import Identifiable, queryable
 
 
 @queryable
 @dataclass
-class BankAccountDto:
+class BankAccountDto(Identifiable):
 
     id: str
 

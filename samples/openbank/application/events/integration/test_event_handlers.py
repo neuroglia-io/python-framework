@@ -23,4 +23,3 @@ class TestRequestedIntegrationEventHandler(IntegrationEventHandler[TestRequested
     @dispatch(TestRequestedIntegrationEventV1)
     async def handle_async(self, e: TestRequestedIntegrationEventV1) -> None:
         log.info(f"Handling event type: {e.__cloudevent__}")
-        # Publish event (DataRecord) to all subscribers (ReportAggregator)
