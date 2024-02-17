@@ -53,6 +53,7 @@ class CloudEventIngestor(HostedService):
             logging.error(f"An error occured while dispatching an incoming cloud event of type '{cloud_event.type}': '{ex}'")
             raise
 
+    @staticmethod
     def configure(builder: ApplicationBuilderBase, modules: List[str]) -> ApplicationBuilderBase:
         ''' Registers and configures cloud event related services to the specified service collection.
 

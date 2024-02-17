@@ -5,7 +5,7 @@ from neuroglia.data.abstractions import AggregateRoot
 from neuroglia.data.infrastructure.event_sourcing.read_model_reconciliator import ReadModelConciliationOptions, ReadModelReconciliator
 from neuroglia.hosting.abstractions import ApplicationBuilderBase, HostedService
 from neuroglia.mediation.mediator import RequestHandler
-from samples.openbank.application.queries.generic import GetByIdQueryHandler, ListQueryHandler
+from neuroglia.data.queries.generic import GetByIdQueryHandler, ListQueryHandler
 
 
 class DataAccessLayer:

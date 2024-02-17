@@ -8,6 +8,7 @@ import rx
 
 class AsyncRx:
 
+    @staticmethod
     def subscribe(source: Observable, on_next: Callable[[Any], None]):
         return source.pipe(
             ops.map(lambda value: rx.from_future(on_next(value))),
