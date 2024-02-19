@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from classy_fastapi import Routable
 from fastapi import Response
 from neuroglia.core.operation_result import OperationResult
@@ -43,7 +44,7 @@ class ControllerBase(Routable):
             media_type = "application/json"
         return Response(status_code=result.status, content=content, media_type=media_type)
 
-    error_responses = {
+    error_responses: Dict[int | str, Dict[str, Any]] | None = {
         400: {"model": ProblemDetails, "description": "Bad Request"},
         404: {"model": ProblemDetails, "description": "Not Found"},
         500: {"model": ProblemDetails, "description": "Internal Server Error"},
