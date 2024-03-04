@@ -4,12 +4,13 @@ from typing import List
 
 from classy_fastapi import post
 from classy_fastapi.decorators import get
+from neuroglia.data.queries.generic import GetByIdQuery, ListQuery
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator
 from neuroglia.mvc.controller_base import ControllerBase
+
 from samples.openbank.application.commands.persons import RegisterPersonCommand
-from samples.openbank.application.queries.generic import GetByIdQuery, ListQuery
 from samples.openbank.integration.commands.persons import RegisterPersonCommandDto
 from samples.openbank.integration.models.person import PersonDto
 

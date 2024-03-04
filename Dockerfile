@@ -11,14 +11,14 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app 
 
 # Pip
-COPY requirements.txt /app/
-RUN python -m pip install -r requirements.txt
+# COPY requirements.txt /app/
+# RUN python -m pip install -r requirements.txt
 
 # Poetry
-# COPY poetry.lock pyproject.toml /app/
-# RUN pip install poetry
-# RUN poetry config virtualenvs.create false && \
-#     poetry install --no-interaction --no-ansi
+COPY poetry.lock pyproject.toml /app/
+RUN pip install poetry
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
 
 COPY . /app
 

@@ -1,11 +1,11 @@
 from typing import List
 from classy_fastapi.decorators import get, post
+from neuroglia.data.queries.generic import GetByIdQuery
 from neuroglia.dependency_injection import ServiceProviderBase
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator
 from neuroglia.mvc.controller_base import ControllerBase
 from samples.openbank.application.commands.accounts import CreateBankAccountCommand
-from samples.openbank.application.queries.generic import GetByIdQuery
 from samples.openbank.application.queries import AccountsByOwnerQuery
 from samples.openbank.integration.commands.accounts import CreateBankAccountCommandDto
 from samples.openbank.integration.models.bank import BankAccountDto

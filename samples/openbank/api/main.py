@@ -9,7 +9,7 @@ from neuroglia.eventing.cloud_events.infrastructure import CloudEventIngestor, C
 from neuroglia.eventing.cloud_events.infrastructure.cloud_event_publisher import CloudEventPublisher
 from neuroglia.hosting.configuration.data_access_layer import DataAccessLayer
 from neuroglia.hosting.web import ExceptionHandlingMiddleware, WebApplicationBuilder
-from neuroglia.logging.logger import configure_logging
+from neuroglia.log.logger import configure_logging
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator, RequestHandler
 from neuroglia.serialization.json import JsonSerializer

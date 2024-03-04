@@ -28,20 +28,3 @@ class GetByIdQueryHandler(Generic[TEntity, TKey], QueryHandler[GetByIdQuery[TEnt
         if entity is None:
             return self.not_found(self.repository.__orig_class__.__args__[0], query.id)
         return self.ok(entity)
-
-
-class ListQuery(Query[OperationResult[TEntity]], Generic[TEntity, TKey]):
-    ''' Represents the query used to get a list of entities'''
-    pass
-
-
-class ListQueryHandler(Generic[TEntity, TKey], QueryHandler[ListQuery[TEntity, TKey], OperationResult[TEntity]]):
-    ''' Represents the service used to handle ListQuery instances '''
-
-    def __init__(self, repository: QueryableRepository[TEntity, TKey]):
-        self.repository = repository
-
-    repository: QueryableRepository[TEntity, TKey]
-
-    async def handle_async(self, query: ListQuery[TEntity, TKey]) -> OperationResult[TEntity]:
-        return self.ok((await self.repository.query_async()).to_list())

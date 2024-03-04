@@ -146,17 +146,14 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
     _collection_name: str
     ''' Gets the name collection of the collection where to CRUD the entity '''
 
-    async def contains_async(self, id: TKey) -> bool: return self._get_mongo_collection(
-    ).find_one({"id": id}, projection={"_id": 1})
+    async def contains_async(self, id: TKey) -> bool: return self._get_mongo_collection().find_one({"id": id}, projection={"_id": 1})
 
     async def get_async(self, id: TKey) -> Optional[TEntity]:
-        attributes_dictionary = self._get_mongo_collection().find_one({
-            "id": id})
+        attributes_dictionary = self._get_mongo_collection().find_one({"id": id})
         if (attributes_dictionary is None):
             return None
         json = self._serializer.serialize(attributes_dictionary)
-        entity = self._serializer.deserialize_from_text(
-            json, self._get_entity_type())
+        entity = self._serializer.deserialize_from_text(json, self._get_entity_type())
         return entity
 
     async def get_by_collection_name_async(self, collection_name: str, id: TKey) -> Optional[TEntity]:
@@ -164,9 +161,8 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
         return await self.get_async(id)
 
     async def add_async(self, entity: TEntity) -> TEntity:
-        if await self.contains_async(entity.id) != None:
-            raise Exception(f"A {self._get_entity_type().__name__} with the specified id '{
-                            entity.id}' already exists")
+        if await self.contains_async(entity.id) is not None:
+            raise Exception(f"A {self._get_entity_type().__name__} with the specified id '{entity.id}' already exists")
         json = self._serializer.serialize_to_text(entity)
         attributes_dictionary = self._serializer.deserialize_from_text(
             json, dict)
@@ -178,9 +174,8 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
         return await self.add_async(entity)
 
     async def update_async(self, entity: TEntity) -> TEntity:
-        if not await self.contains_async(entity.id) != None:
-            raise Exception(f"Failed to find a {self._get_entity_type(
-            ).__name__} with the specified id '{entity.id}'")
+        if not await self.contains_async(entity.id) is not None:
+            raise Exception(f"Failed to find a {self._get_entity_type().__name__} with the specified id '{entity.id}'")
         query_filter = {"id": entity.id}
         expected_version = entity.state_version if isinstance(
             entity, VersionedState) else None
@@ -197,20 +192,17 @@ class MongoRepository(Generic[TEntity, TKey], QueryableRepository[TEntity, TKey]
         return await self.update_async(entity)
 
     async def remove_async(self, id: TKey) -> None:
-        if not await self.contains_async(id) != None:
-            raise Exception(f"Failed to find a {
-                            self._get_entity_type().__name__} with the specified id '{id}'")
+        if not await self.contains_async(id) is not None:
+            raise Exception(f"Failed to find a {self._get_entity_type().__name__} with the specified id '{id}'")
         self._get_mongo_collection().delete_one({"id": id})
 
     async def remove_by_collection_name_async(self, collection_name: str, id: TKey) -> None:
         self._collection_name = collection_name  # TODO: validate collection_name!
         return await self.remove_async(id)
 
-    async def query_async(self) -> Queryable[TEntity]: return MongoQuery[TEntity](
-        MongoQueryProvider(self._get_mongo_collection()))
+    async def query_async(self) -> Queryable[TEntity]: return MongoQuery[TEntity](MongoQueryProvider(self._get_mongo_collection()))
 
-    async def query_by_collection_name_async(
-        self, collection_name: str) -> Queryable[TEntity]: return MongoQuery[TEntity](MongoQueryProvider(collection_name))
+    async def query_by_collection_name_async(self, collection_name: str) -> Queryable[TEntity]: return MongoQuery[TEntity](MongoQueryProvider(collection_name))
 
     def _get_entity_type(self) -> str: return self.__orig_class__.__args__[0]
 

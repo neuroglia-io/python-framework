@@ -14,7 +14,7 @@ services:
     environment:
       LOG_LEVEL: DEBUG
       CONSUMER_GROUP: openbank-0
-      CONNECTION_STRINGS: '{"mongo": "mongodb://root:Password1!@mongodb:27017", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
+      CONNECTION_STRINGS: '{"mongo": "mongodb://mongodb:27017", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
       CLOUD_EVENT_SINK: http://event-player/events/pub
       CLOUD_EVENT_SOURCE: https://openbank.io
       CLOUD_EVENT_TYPE_PREFIX: io.openbank
@@ -49,17 +49,18 @@ services:
   mongodb:
     image: mongo:latest
     restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
-    command: mongod --auth --bind_ip_all --keyFile /etc/mongo-keyfile/keyfile
+    # environment:
+      # MONGO_INITDB_ROOT_USERNAME: root
+      # MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    # command: mongod --auth --bind_ip_all --keyFile /etc/mongo-keyfile/keyfile
+    command: mongod --bind_ip_all
     ports:
       - 27099:27017
     volumes:
       - mongodb_data:/data/db
-      - ./deployment/mongo/replica-key:/etc/mongo-keyfile/keyfile
-    secrets:
-      - db_root_password
+      # - ./deployment/mongo/replica-key:/etc/mongo-keyfile/keyfile
+    # secrets:
+    #   - db_root_password
     networks:
       - metanet1
 
@@ -70,11 +71,11 @@ services:
       - 8111:8081
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/db_root_password
+      # ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      # ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/db_root_password
       ME_CONFIG_MONGODB_ENABLE_ADMIN: true
-    secrets:
-      - db_root_password
+    # secrets:
+    #   - db_root_password
     networks:
       - metanet1
 
