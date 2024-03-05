@@ -280,7 +280,7 @@ class FlexibleMongoRepository(MongoRepository[TEntity, TKey], FlexibleRepository
         # max 63chars, no `/\. "$*<>:|?`
         assert len(database_name) < 64, f"Database name {database_name} is too long. Max 63chars."
         assert "/" not in database_name, f"The char / (forward slash) may not be included in the database name."
-        assert "\\" not in database_name, f"The char \ (backward slash) may not be included in the database name."
+        assert r"\ " not in database_name, f"The char \ (backward slash) may not be included in the database name."
         assert "." not in database_name, f"The char . (dot) may not be included in the database name."
         assert " " not in database_name, f"Space char may not be included in the database name."
         assert '"' not in database_name, f"Double quote char may not be included in the database name."
@@ -291,7 +291,6 @@ class FlexibleMongoRepository(MongoRepository[TEntity, TKey], FlexibleRepository
         assert ':' not in database_name, f"Colon char may not be included in the database name."
         assert '|' not in database_name, f"Pipe char may not be included in the database name."
         assert '?' not in database_name, f"Question mark char may not be included in the database name."
-        assert all(char.isalnum() and char.islower() for char in database_name), f"Only lower-case alphanumeric chars are supported in a database name"
         return True
 
     @staticmethod
