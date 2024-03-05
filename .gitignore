@@ -400,3 +400,5 @@ FodyWeavers.xsd
 
 dist/
 .DS_Store
+
+.local_note.md
