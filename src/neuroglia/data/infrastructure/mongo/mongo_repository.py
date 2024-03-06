@@ -290,7 +290,7 @@ class FlexibleMongoRepository(MongoRepository[TEntity, TKey], FlexibleRepository
         # max 63chars, no `/\. "$*<>:|?`
         assert len(database_name) < 64, f"Database name {database_name} is too long. Max 63chars."
         assert "/" not in database_name, f"The char / (forward slash) may not be included in the database name."
-        assert r"\ " not in database_name, f"The char \ (backward slash) may not be included in the database name."
+        # assert r"\ " not in database_name, f"The char \ (backward slash) may not be included in the database name."  # SyntaxWarning: invalid escape sequence
         assert "." not in database_name, f"The char . (dot) may not be included in the database name."
         assert " " not in database_name, f"Space char may not be included in the database name."
         assert '"' not in database_name, f"Double quote char may not be included in the database name."
