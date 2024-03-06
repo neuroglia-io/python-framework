@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neuroglia"
-version = "0.0.4"
+version = "0.0.5"
 description = "Port from .NET to Python of the Neuroglia Framework"
 authors = ["Charles d'Avernas <charles.davernas@neuroglia.io>"]
 license = "Apache"

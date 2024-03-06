@@ -274,6 +274,16 @@ class FlexibleMongoRepository(MongoRepository[TEntity, TKey], FlexibleRepository
     async def query_by_collection_name_async(self, collection_name: str) -> Queryable[TEntity]:
         return MongoQuery[TEntity](MongoQueryProvider(collection_name))
 
+    def _get_mongo_collection(self) -> Collection:
+        ''' Gets the Mongo collection to use '''
+        if self._collection_name is not None and self._collection_name != "":
+            return self._mongo_database[self._collection_name]
+        else:
+            collection_name = self._get_entity_type().__name__.lower()
+            if collection_name.endswith("dto"):
+                collection_name = collection_name[:-3]
+            return self._mongo_database[collection_name]
+
     @staticmethod
     def _is_valid_database_name(database_name: str) -> bool:
         # https://www.mongodb.com/docs/manual/reference/limits/#naming-restrictions
