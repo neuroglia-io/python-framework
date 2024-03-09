@@ -98,7 +98,7 @@ class AggregateRoot(Generic[TState, TKey], Entity[TKey], ABC):
     state: TState
     ''' Gets the aggregate root's state '''
 
-    def register_event(self, e: Type[TEvent]) -> TEvent:
+    def register_event(self, e: TEvent) -> TEvent:
         ''' Registers the specified domain event '''
         if not hasattr(self, "_pending_events"):
             self._pending_events = list[DomainEvent]()
