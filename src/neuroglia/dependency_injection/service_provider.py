@@ -2,9 +2,10 @@ from abc import ABC, abstractclassmethod
 from contextlib import contextmanager
 from enum import Enum
 import inspect
-from typing import Callable, ForwardRef, List, Optional, Type, Dict, TypeVar, get_type_hints
+from typing import Any, Callable, ForwardRef, List, Optional, Type, Dict, TypeVar
 
-from neuroglia.data.infrastructure.mongo.mongo_repository import MongoRepository
+from neuroglia.core.type_extensions import TypeExtensions
+
 
 class ServiceLifetime(Enum):
     '''Enumerates all supported service lifetimes.'''
@@ -23,10 +24,10 @@ ServiceDescriptor = ForwardRef("ServiceDescriptor")
 
 ServiceProvider = ForwardRef("ServiceProvider")
 
-IServiceScope = ForwardRef("IServiceScope")
+ServiceScopeBase = ForwardRef("IServiceScope")
 
 
-class IServiceProvider(ABC):
+class ServiceProviderBase(ABC):
     ''' Defines the fundamentals of a container used to manage and provide instances of dependencies, enabling dependency injection to promote modularity and maintainability. '''
     
     def get_service(self, type: Type) -> Optional[any]:
@@ -41,16 +42,16 @@ class IServiceProvider(ABC):
         ''' Gets all services of the specified type '''
         raise NotImplementedError()
     
-    def create_scope(self) -> IServiceScope:
+    def create_scope(self) -> ServiceScopeBase:
         ''' Creates a new service scope '''
         raise NotImplementedError()
 
 
-class IServiceScope(ABC):
+class ServiceScopeBase(ABC):
     ''' Defines the fundamentals of a a limited context within which services are resolved and managed by a service provider, allowing for scoped instances and controlled lifetimes of dependencies. '''
 
     @abstractclassmethod
-    def get_service_provider(self) -> IServiceProvider:
+    def get_service_provider(self) -> ServiceProviderBase:
         ''' Gets the scoped service provider '''
         raise NotImplementedError()
 
@@ -60,14 +61,14 @@ class IServiceScope(ABC):
         raise NotImplementedError()
 
 
-class ServiceScope(IServiceScope, IServiceProvider):
+class ServiceScope(ServiceScopeBase, ServiceProviderBase):
     ''' Represents the default implementation of the IServiceScope class '''
 
-    def __init__(self, root_service_provider: IServiceProvider, scoped_service_descriptors: List[ServiceDescriptor]):
+    def __init__(self, root_service_provider: ServiceProviderBase, scoped_service_descriptors: List[ServiceDescriptor]):
         self._root_service_provider = root_service_provider
         self._scoped_service_descriptors = scoped_service_descriptors
 
-    _root_service_provider: IServiceProvider
+    _root_service_provider: ServiceProviderBase
     ''' Gets the IServiceProvider that has created the service scope '''
     
     _scoped_service_descriptors: List[ServiceDescriptor]
@@ -76,10 +77,10 @@ class ServiceScope(IServiceScope, IServiceProvider):
     _realized_scoped_services: Dict[Type, List]= dict[Type, List]()
     ''' Gets a type/list mapping containing all scoped services that have already been built/resolved '''
     
-    def get_service_provider(self) -> IServiceProvider: return self
+    def get_service_provider(self) -> ServiceProviderBase: return self
 
     def get_service(self, type: Type) -> Optional[any]:
-        if type == IServiceProvider: return self
+        if type == ServiceProviderBase: return self
         realized_services = self._realized_scoped_services.get(type)
         realized_service = self._root_service_provider.get_service(type) if realized_services is None else realized_services[0]
         if realized_service is not None: return realized_service
@@ -93,7 +94,7 @@ class ServiceScope(IServiceScope, IServiceProvider):
         return service
     
     def get_services(self, type: Type) -> List:
-        if type == IServiceProvider: return [ self ]
+        if type == ServiceProviderBase: return [ self ]
         service_descriptors = [descriptor for descriptor in self._scoped_service_descriptors if descriptor.service_type == type]
         realized_services = self._realized_scoped_services.get(type)
         if realized_services is None: realized_services = List()
@@ -121,14 +122,14 @@ class ServiceScope(IServiceScope, IServiceProvider):
             else: realized_services.append(service)
         return service
 
-    def create_scope(self) -> IServiceScope: return self
+    def create_scope(self) -> ServiceScopeBase: return self
 
     def dispose(self):
         for service in self._realized_scoped_services: service.__exit__()
         self._realized_scoped_services = dict[Type, List]()
 
 
-class ServiceProvider(IServiceProvider):
+class ServiceProvider(ServiceProviderBase):
     ''' Represents the default implementation of the IServiceProvider class '''
     
     def __init__(self, service_descriptors: List[ServiceDescriptor]):
@@ -142,7 +143,7 @@ class ServiceProvider(IServiceProvider):
     ''' Gets a type/list mapping containing all services that have already been built/resolved '''
     
     def get_service(self, type: Type) -> Optional[any]:
-        if type == IServiceProvider: return self
+        if type == ServiceProviderBase: return self
         realized_services = self._realized_services.get(type)
         if realized_services is not None: return realized_services[0]
         if len(self._service_descriptors) < 1: return None
@@ -156,16 +157,31 @@ class ServiceProvider(IServiceProvider):
         return service
     
     def get_services(self, type: Type) -> List:
-        if type == IServiceProvider: return [ self ]
+        if type == ServiceProviderBase: return [ self ]
         service_descriptors = [descriptor for descriptor in self._service_descriptors if descriptor.service_type == type]
         realized_services = self._realized_services.get(type)
         if realized_services is None: realized_services = list()
         for descriptor in service_descriptors:
             implementation_type = descriptor.get_implementation_type()
-            realized_service = next((service for service in realized_services if isinstance(service, implementation_type)), None)          
-            if realized_service is None: realized_services.append(self._build_service(descriptor))
+            realized_service = next((service for service in realized_services if self._is_service_instance_of(service, implementation_type)), None) 
+            if realized_service is None: 
+                realized_services.append(self._build_service(descriptor))
         return realized_services
-        
+      
+    def _is_service_instance_of(self, service : Any, type_ : Type) -> bool:
+        if hasattr(type_, "__origin__"): 
+            service_type = service.__orig_class__ if hasattr(service, "__orig_class__") else type(service)
+            service_generic_arguments = TypeExtensions.get_generic_arguments(service_type)
+            implementation_generic_arguments = TypeExtensions.get_generic_arguments(type_)
+            for i in range(len(implementation_generic_arguments)):
+                generic_argument_name = list(implementation_generic_arguments.keys())[i]
+                service_generic_argument = service_generic_arguments.get(generic_argument_name, None)
+                if service_generic_argument is None or service_generic_argument != implementation_generic_arguments[generic_argument_name]:
+                    return False
+            return isinstance(service, type_.__origin__)
+        else: 
+            return isinstance(service, type_)
+
     def _build_service(self, service_descriptor: ServiceDescriptor) -> any:
         ''' Builds a new service provider based on the configured dependencies '''
         if service_descriptor.lifetime == ServiceLifetime.SCOPED: raise Exception(f"Failed to resolve scoped service of type '{service_descriptor.implementation_type}' from root service provider")
@@ -176,14 +192,13 @@ class ServiceProvider(IServiceProvider):
             service_generic_type = service_descriptor.implementation_type.__origin__ if is_service_generic else None # retrieve the generic type, used to determine the __init__ args
             service_type = service_descriptor.implementation_type if service_generic_type is None else service_generic_type # get the type used to determine the __init__ args: the implementation type as is or its generic type definition
             service_init_args = [param for param in inspect.signature(service_type.__init__).parameters.values() if param.name not in ['self', 'args', 'kwargs']] # gets the __init__ args and leave out self, args and kwargs
-            service_generic_args = None if service_generic_type is None else service_descriptor.implementation_type.__args__ # gets the generic args: we will need them to substitute the type args of potential generic dependencies
-            generic_args_map = dict() if service_generic_type is None else dict(zip(service_generic_type.__parameters__, service_generic_args))
+            service_generic_args = TypeExtensions.get_generic_arguments(service_descriptor.implementation_type) # gets the generic args: we will need them to substitute the type args of potential generic dependencies
             service_args = dict[Type, any]()
             for init_arg in service_init_args:
                 is_dependency_generic = not inspect.isclass(init_arg.annotation)
                 dependency_generic_type = init_arg.annotation.__origin__ if is_dependency_generic else None
                 dependency_generic_args = None if dependency_generic_type is None else init_arg.annotation.__args__
-                if dependency_generic_args is not None: dependency_generic_args = [generic_args_map[arg] if type(arg) == TypeVar else arg for arg in dependency_generic_args] # replace TypeVar generic arguments by the service's matching generic argument
+                if dependency_generic_args is not None: dependency_generic_args = [service_generic_args[arg.__name__] if type(arg) == TypeVar else arg for arg in dependency_generic_args] # replace TypeVar generic arguments by the service's matching generic argument
                 dependency_type = init_arg.annotation.__origin__[*dependency_generic_args] if is_dependency_generic else init_arg.annotation
                 dependency = self.get_service(dependency_type)
                 if dependency is None and init_arg.default == init_arg.empty and init_arg.name != 'self': raise Exception(f"Failed to build service of type '{service_descriptor.service_type.__name__}' because the service provider failed to resolve service '{dependency_type.__name__}'")
@@ -196,13 +211,15 @@ class ServiceProvider(IServiceProvider):
         return service
     
     @contextmanager
-    def create_scope(self) -> IServiceScope:
+    def create_scope(self) -> ServiceScopeBase:
         service_scope = ServiceScope(self, [descriptor for descriptor in self._service_descriptors if descriptor.lifetime == ServiceLifetime.SCOPED])
         try: yield service_scope
         finally: service_scope.dispose()
 
     def dispose(self):
-        for service in self._realized_services: service.__exit__()
+        for service in self._realized_services: 
+            try: service.__exit__() 
+            except: pass
         self._realized_services = dict[Type, List]()
 
 
@@ -217,6 +234,7 @@ class ServiceDescriptor:
         self.singleton = singleton
         self.implementation_factory = implementation_factory
         self.lifetime = lifetime
+        if self.singleton is None and self.implementation_factory is None and self.implementation_type is None: self.implementation_type = self.service_type
 
     service_type: Type
     ''' Gets the type of the service dependency '''
@@ -279,5 +297,5 @@ class ServiceCollection(List[ServiceDescriptor]):
         if any(descriptor.service_type == service_type for descriptor in self): return self
         return self.add_scoped(service_type, implementation_type, implementation_factory)
 
-    def build(self) -> IServiceProvider:
+    def build(self) -> ServiceProviderBase:
         return ServiceProvider(self)

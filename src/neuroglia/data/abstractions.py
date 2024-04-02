@@ -9,9 +9,8 @@ TKey = TypeVar("TKey")
 class Identifiable(Generic[TKey], ABC):
     ''' Defines the fundamentals of an object that can be identified based on a unique identifier '''
     
-    def id(self) -> TKey: 
-        ''' Gets the object's unique identifier '''
-        raise NotImplementedError()
+    id : TKey
+    ''' Gets the object's unique identifier '''
 
 
 TEntity = TypeVar("TEntity", bound=Identifiable)
@@ -31,6 +30,9 @@ class Entity(Generic[TKey], Identifiable[TKey], ABC):
 class VersionedState(ABC):
     ''' Represents the abstract class inherited by all versioned states '''
     
+    def __init__(self):
+        self.state_version = 0
+
     state_version: int = 0
     ''' Gets the state's version '''
 
@@ -38,13 +40,12 @@ class VersionedState(ABC):
 class AggregateState(Generic[TKey], Identifiable[TKey], VersionedState, ABC):
     ''' Represents the abstract class inherited by all aggregate root states '''
 
-    _id: TKey
-    ''' Gets the id of the aggregate the state belongs to '''
-    
-    def id(self) -> TKey:
-        ''' Gets the id of the aggregate the state belongs to '''
-        return self._id
+    def __init__(self):
+        super().__init__()
 
+    id: TKey
+    ''' Gets the id of the aggregate the state belongs to '''
+ 
     created_at: datetime
     ''' Gets the date and time the aggregate has been created at '''
     
@@ -81,24 +82,27 @@ TEvent = TypeVar("TEvent", bound=DomainEvent)
 class AggregateRoot(Generic[TState, TKey], Entity[TKey], ABC):
     ''' Represents the base class for all aggregate roots '''
     
-    _pending_events: List[DomainEvent] = []
+    _pending_events: List[DomainEvent]
     ''' Gets a list containing all domain events pending persistence '''
 
     def __init__(self):
         ''' Initializes a new aggregate root '''
-        self.state = self.__orig_bases__[0].__args__[0]();
+        self.state = object.__new__(self.__orig_bases__[0].__args__[0]);
+        self.state.__init__()
+        self._pending_events = list[DomainEvent]()
 
-    def id(self) -> TKey: 
+    def id(self): 
         ''' Gets the aggregate root's id '''
-        return self.state.id()
-        
+        return self.state.id   
+    
     state : TState
     ''' Gets the aggregate root's state '''
     
     def register_event(self, e : Type[TEvent]) -> TEvent:
         ''' Registers the specified domain event '''
+        if not hasattr(self, "_pending_events"): self._pending_events = list[DomainEvent]()
         self._pending_events.append(e)
-        e.aggregate_version = self.state.state_version + len(self._pending_events) + 1
+        e.aggregate_version = self.state.state_version + len(self._pending_events)
         return e
     
     def clear_pending_events(self):
@@ -108,3 +112,8 @@ class AggregateRoot(Generic[TState, TKey], Entity[TKey], ABC):
 
 TAggregate = TypeVar("TAggregate", bound=AggregateRoot)
 ''' Represents the generic argument used to specify an aggregate root type '''
+
+
+def queryable(cls):
+    cls.__queryable__ = True
+    return cls

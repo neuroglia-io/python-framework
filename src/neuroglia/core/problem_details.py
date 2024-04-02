@@ -20,9 +20,6 @@ class ProblemDetails:
 
     instance: Optional[str] = None
     '''A URI reference that identifies the specific occurrence of the problem.'''
-
-    custom_field: Optional[str] = None
-    '''Additional custom field for specific information.'''
     
     def is_success_status_code(self) -> bool: self.status >= 200 and self.status < 300
     ''' Determines whether the operation is successfull or not '''

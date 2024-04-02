@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import datetime
+from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Type
-from xmlrpc.client import datetime
+from typing import Any, List, Optional, Type
+from neuroglia.data.abstractions import AggregateRoot
 
-from neuroglia.data.abstractions import AggregateRoot, DomainEvent
 
 @dataclass
 class StreamDescriptor:
@@ -17,11 +16,12 @@ class StreamDescriptor:
     length: int
     ''' Gets the stream's length '''
     
-    first_event_at: Optional[datetime]
+    first_event_at: Optional[datetime] = None
     ''' Gets the date and time at which the first event, if any, has been recorded to the stream '''
     
-    last_event_at: Optional[datetime]
+    last_event_at: Optional[datetime] = None
     ''' Gets the date and time at which the last event, if any, has been recorded to the stream '''
+
 
 @dataclass
 class EventDescriptor:
@@ -30,11 +30,12 @@ class EventDescriptor:
     type: str
     ''' Gets the type of the event to record '''
     
-    data : Optional[any]
+    data : Optional[Any] = None
     ''' Gets the data of the event to record '''
     
-    metadata: Optional[any]
+    metadata: Optional[Any] = None
     ''' Gets the metadata of the event to record, if any '''
+
 
 @dataclass
 class EventRecord:
@@ -61,7 +62,7 @@ class EventRecord:
     data: Optional[any] = None
     ''' Gets the recorded event's data, if any '''
     
-    metadadata: Optional[any]= None
+    metadata: Optional[any]= None
     ''' Gets the recorded event's metadadata, if any '''
     
     replayed: bool = False
@@ -75,6 +76,7 @@ class StreamReadDirection(Enum):
     BACKWARDS=1
     ''' Indicates a backwards direction ''' 
 
+
 @dataclass
 class EventStoreOptions:
 
@@ -85,26 +87,26 @@ class EventStore(ABC):
     ''' Defines the fundamentals of a service used to append and subscribe to sourced events '''
     
     @abstractmethod
-    def contains(self, stream_id: str) -> bool:
+    async def contains_async(self, stream_id: str) -> bool:
         ''' Determines whether or not the event store contains a stream with the specified id '''
         raise NotImplementedError()
 
     @abstractmethod
-    def append(self, streamId: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
+    async def append_async(self, streamId: str, events: List[EventDescriptor], expectedVersion: Optional[int] = None):
         ''' Appends a list of events to the specified stream '''
         raise NotImplementedError()
 
     @abstractmethod
-    def get(self, stream_id: str):
+    async def get_async(self, stream_id: str):
         ''' Gets information about the specified stream '''
         raise NotImplementedError()
     
     @abstractmethod
-    def read(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
+    async def read_async(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
         ''' Reads recorded events from the specified stream '''
         raise NotImplementedError()
 
-    def observe(self, stream_id: Optional[str], consumer_group: Optional[str] = None, offset: Optional[int]= None):
+    async def observe_async(self, stream_id: Optional[str], consumer_group: Optional[str] = None, offset: Optional[int]= None):
         ''' 
         Creates a new observable used to stream events published by the event store.
         Typically, this is used by some kind of reconciliation mechanism to consume domain events then publish them to their related handlers, if any.
@@ -119,4 +121,5 @@ class Aggregator:
         aggregate.state = aggregate.__orig_bases__[0].__args__[0]();
         for e in events:
             aggregate.state.on(e.data)
+            aggregate.state.state_version = e.data.aggregate_version
         return aggregate

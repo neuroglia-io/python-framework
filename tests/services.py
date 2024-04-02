@@ -34,7 +34,7 @@ class NullLogger(LoggerBase):
     
 class GreetCommandHandler(CommandHandler[GreetCommand, OperationResult[str]]):
     
-    def handle(self, command : GreetCommand) -> OperationResult[str]:
+    async def handle_async(self, command : GreetCommand) -> OperationResult[str]:
         result = OperationResult[str]('OK', 200)
         result.data = "Hello, world!"
         return result
@@ -47,6 +47,6 @@ class UserCreatedDomainEventV1Handler(DomainEventHandler[UserCreatedDomainEventV
 
     users : Repository[UserDto, str]
 
-    def handle(self, e : UserCreatedDomainEventV1):
-        self.users.add(UserDto(e.aggregate_id, e.name, e.email))
+    async def handle_async(self, e : UserCreatedDomainEventV1):
+        self.users.add_async(UserDto(e.aggregate_id, e.name, e.email))
   

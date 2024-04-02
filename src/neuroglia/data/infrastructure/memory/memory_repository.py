@@ -6,21 +6,21 @@ class MemoryRepository(Repository[TEntity, TKey]):
    
     entities: dict = {}
 
-    def contains(self, id: TKey) -> bool:
+    async def contains_async(self, id: TKey) -> bool:
         return self.entities.get(id) is not None
 
-    def get(self, id: TKey) -> Optional[TEntity]:
-        return self.entities[id];
+    async def get_async(self, id: TKey) -> Optional[TEntity]:
+        return self.entities.get(id, None);
 
-    def add(self, entity: TEntity) -> TEntity:
+    async def add_async(self, entity: TEntity) -> TEntity:
         if entity.id in self.entities: raise Exception();
         self.entities[entity.id] = entity;
         return entity;
 
-    def update(self, entity: TEntity) -> TEntity:
+    async def update_async(self, entity: TEntity) -> TEntity:
         self.entities[entity.id] = entity;
         return entity;
 
-    def remove(self, id: TKey) -> None:
+    async def remove_async(self, id: TKey) -> None:
         if not id in self.entities: raise Exception();
         del self.entities[id]

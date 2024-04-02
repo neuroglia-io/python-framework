@@ -1,16 +1,22 @@
+from datetime import date
+import datetime
 from uuid import uuid4
-from neuroglia.core.operation_result import OperationResult
+import uuid
 from neuroglia.data.infrastructure.abstractions import Repository
 from neuroglia.data.infrastructure.memory.memory_repository import MemoryRepository
 from neuroglia.dependency_injection.service_provider import ServiceCollection
 from neuroglia.mediation.mediator import Mediator, NotificationHandler, RequestHandler
+from samples.openbank.application.queries.generic import GetByIdQuery, GetByIdQueryHandler
+from samples.openbank.integration.models import AddressDto, PersonDto
+from samples.openbank.integration.person_gender import PersonGender
 from tests.data import GreetCommand, UserCreatedDomainEventV1, UserDto
 from tests.services import GreetCommandHandler, UserCreatedDomainEventV1Handler
-
+import pytest
 
 class TestMediator:
 
-    def test_execute_request_should_work(self):
+    @pytest.mark.asyncio
+    async def test_execute_command_should_work(self):
         # arrange
         services = ServiceCollection()
         services.add_singleton(Mediator, Mediator)
@@ -21,14 +27,36 @@ class TestMediator:
         command = GreetCommand(greetings= greetings)
         
         # act
-        result = mediator.execute(command)
+        result = await mediator.execute_async(command)
         
         # assert
         assert result is not None, 'result is none'
         assert result.status is 200, f"expected status '200', got '{result.status}'"
         assert result.data == greetings, f"expected greetings '{greetings}', got '{result.data}'"
         
-    def test_publish_notification_should_work(self):
+    @pytest.mark.asyncio
+    async def test_execute_query_should_work(self):
+        # arrange
+        services = ServiceCollection()
+        services.add_singleton(Mediator, Mediator)
+        services.add_singleton(RequestHandler, GetByIdQueryHandler[PersonDto, str])
+        services.add_singleton(Repository[PersonDto, str], MemoryRepository[PersonDto, str])
+        service_provider = services.build()
+        repository : Repository[PersonDto, str] = service_provider.get_required_service(Repository[PersonDto, str])
+        person = await repository.add_async(PersonDto(uuid.uuid4(), "John", "Doe", "Belgian", PersonGender.MALE, date.today(), AddressDto("FakeStreet", "69", "6969", "Unknown", "Not Set", "N/A")))
+        mediator : Mediator = service_provider.get_required_service(Mediator)
+        query = GetByIdQuery[PersonDto, str](person.id)
+        
+        # act
+        result = await mediator.execute_async(query)
+        
+        # assert
+        assert result is not None, 'result is none'
+        assert result.status is 200, f"expected status '200', got '{result.status}'"
+        assert result.data == person, f"expected person dto '{person}', got '{result.data}'"
+    
+    @pytest.mark.asyncio
+    async def test_publish_notification_should_work(self):
         # arrange
         services = ServiceCollection()
         services.add_singleton(Mediator, Mediator)
@@ -43,8 +71,8 @@ class TestMediator:
         e = UserCreatedDomainEventV1(user_id, user_name, user_email)
         
         # act
-        mediator.publish(e)
-        user = repository.get(user_id)
+        await mediator.publish_async(e)
+        user = repository.get_async(user_id)
         
         # assert
         assert user is not None, 'user is None'

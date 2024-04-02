@@ -1,6 +1,4 @@
-from re import T
-from sys import implementation
-from neuroglia.dependency_injection.service_provider import IServiceProvider, ServiceCollection, ServiceProvider
+from neuroglia.dependency_injection.service_provider import ServiceProviderBase, ServiceCollection
 from tests.services import FileLogger, LoggerBase, NullLogger, PrintLogger
 import pytest
 
@@ -98,4 +96,4 @@ class TestServiceProvider:
     def test_get_scoped_service_should_work(self):
         pass
 
-    def _build_null_logger(self, provider : IServiceProvider) -> NullLogger: return NullLogger()
+    def _build_null_logger(self, provider : ServiceProviderBase) -> NullLogger: return NullLogger()
