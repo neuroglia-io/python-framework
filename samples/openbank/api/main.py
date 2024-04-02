@@ -12,6 +12,7 @@ from neuroglia.serialization.json import JsonSerializer
 
 
 database_name = "openbank"
+consumer_group = "openbank1"
 application_module = "samples.openbank.application"
 
 builder = WebApplicationBuilder()
@@ -20,7 +21,7 @@ Mapper.configure(builder, [application_module])
 Mediator.configure(builder, [application_module])
 CloudEventIngestor.configure(builder, ["samples.openbank.integration.models"]) #replace application_module with name of module(s) defining cloud events to handle
 CloudEventPublisher.configure(builder)
-ESEventStore.configure(builder, EventStoreOptions(database_name))
+ESEventStore.configure(builder, EventStoreOptions(database_name, consumer_group))
 DataAccessLayer.WriteModel.configure(builder, [ "samples.openbank.domain.models" ], lambda builder_, entity_type, key_type: EventSourcingRepository.configure(builder_, entity_type, key_type))
 DataAccessLayer.ReadModel.configure(builder, [ "samples.openbank.integration.models" ], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))
 JsonSerializer.configure(builder)
