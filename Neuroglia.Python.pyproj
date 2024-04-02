@@ -166,6 +166,7 @@ CLOUD_EVENT_SOURCE=https://openbank.io</Environment>
     <Compile Include="tests\cases\test_event_sourcing_repository.py" />
     <Compile Include="tests\cases\test_mediator.py" />
     <Compile Include="tests\cases\test_mongo_repository.py" />
+    <Compile Include="tests\cases\test_serializer.py" />
     <Compile Include="tests\cases\test_service_provider.py" />
     <Compile Include="tests\cases\test_type_extensions.py" />
     <Compile Include="tests\data.py" />
