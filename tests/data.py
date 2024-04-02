@@ -70,3 +70,14 @@ class UserDto:
 class GreetCommand(Command):
         
     greetings: str
+    
+
+class TestData:
+
+    id : str
+    
+    name : str
+    
+    data : UserDto
+
+    properties : dict

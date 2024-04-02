@@ -20,6 +20,10 @@ TEntity = TypeVar("TEntity", bound=Identifiable)
 class Entity(Generic[TKey], Identifiable[TKey], ABC):
     ''' Represents the abstract class inherited by all entities in the application '''
     
+    def __init__(self) -> None:
+        super().__init__()
+        self.created_at = datetime.now()
+    
     created_at: datetime
     ''' Gets the date and time the entity has been created at '''
     
