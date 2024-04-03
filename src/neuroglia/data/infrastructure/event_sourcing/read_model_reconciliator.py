@@ -54,7 +54,6 @@ class ReadModelReconciliator(HostedService):
             #todo: migrate event
             await self._mediator.publish_async(e.data)
             if isinstance(e, AckableEventRecord):
-                print("ACKING")
                 await e.ack_async()
         except Exception as ex:
             logging.error(f"An exception occured while publishing an event of type '{type(e.data).__name__}': {ex}")

@@ -80,7 +80,6 @@ class AckableEventRecord(EventRecord):
     async def ack_async(self) -> None:
         ''' Acks the event record '''
         self._ack_delegate()
-        print("ACKED")
 
     async def nack_async(self) -> None:
         ''' Nacks the event record'''
