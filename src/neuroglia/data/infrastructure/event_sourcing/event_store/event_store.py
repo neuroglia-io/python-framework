@@ -95,7 +95,7 @@ class ESEventStore(EventStore):
         if consumer_group is None: 
             subscription = self._eventstore_client.subscribe_to_stream(stream_name = stream_name, resolve_links = True, stream_position = offset)
         else:
-            try : self._eventstore_client.create_subscription_to_stream(group_name = consumer_group, stream_name = stream_name, resolve_links = True, consumer_strategy = 'RoundRobin')
+            try : self._eventstore_client.create_subscription_to_stream(group_name = consumer_group, stream_name = stream_name, resolve_links = True, consumer_strategy = 'RoundRobin', min_checkpoint_count=1, max_checkpoint_count=1)
             except AlreadyExists: pass
             subscription = self._eventstore_client.read_subscription_to_stream(group_name = consumer_group, stream_name = stream_name)
         subject = Subject()
