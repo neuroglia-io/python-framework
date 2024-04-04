@@ -75,7 +75,7 @@ class ESEventStore(EventStore):
         )
         recorded_events = tuple(read_response)
         last_event = recorded_events[0]
-        return StreamDescriptor(stream_id, last_event.stream_position, None, None) #todo: esdbclient does not provide timestamps
+        return StreamDescriptor(stream_id, last_event.stream_position, first_event.recorded_at, last_event.recorded_at)
     
     async def read_async(self, stream_id: str, read_direction: StreamReadDirection, offset: int, length: Optional[int] = None) -> List[EventRecord]:
         stream_name = self._get_stream_name(stream_id)
