@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neuroglia"
-version = "0.0.9"
+version = "0.0.10"
 description = "Port from .NET to Python of the Neuroglia Framework"
 authors = ["Charles d'Avernas <charles.davernas@neuroglia.io>"]
 license = "Apache"
@@ -34,10 +34,10 @@ python-dotenv = "^1.0.1"
 rx = "^3.2.0"
 uvicorn = "^0.27.1"
 typing-extensions = "^4.9.0"
-pytest-asyncio = "^0.23.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.1"
+pytest-asyncio = "^0.23.5"
 mypy = "^1.8.0"
 autopep8 = "^2.0.4"
 coverage = "^7.4.1"
