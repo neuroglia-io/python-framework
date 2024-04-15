@@ -23,7 +23,7 @@ services:
     volumes:
       - .:/app
     networks:
-      - metanet1
+      - openbankdevnet
 
   eventstoredb:
     image: eventstore/eventstore:latest
@@ -44,7 +44,7 @@ services:
       EVENTSTORE_ENABLE_EXTERNAL_TCP: true
       EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: true
     networks:
-      - metanet1
+      - openbankdevnet
 
   mongodb:
     image: mongo:latest
@@ -62,7 +62,7 @@ services:
     # secrets:
     #   - db_root_password
     networks:
-      - metanet1
+      - openbankdevnet
 
   mongo-express:
     image: mongo-express:latest
@@ -77,7 +77,7 @@ services:
     # secrets:
     #   - db_root_password
     networks:
-      - metanet1
+      - openbankdevnet
 
   event-player:
     image: ccie-gitlab.ccie.cisco.com:4567/mozart/infrastructure/eventing/cloudevent-player:latest
@@ -91,7 +91,7 @@ services:
       api_default_generator_gateways: '{"urls": ["http://localhost/events/pub", "http://event-player/events/pub", "http://openbank-app:8899/api/v1/events/pub", "http://k.ccie.cisco.com:32051/events/pub", "https://events-player.k.ccie.cisco.com/events/pub", "https://pubhook.k.certs.cloud/c3c588d1-dc7f-424e-ad22-dbd4e6ebcbd9"]}'
       api_browser_queue_size: 2000
     networks:
-      - metanet1
+      - openbankdevnet
 
 volumes:
   mongodb_data:
@@ -106,5 +106,5 @@ secrets:
     file: ./deployment/secrets/eventstoredb-password.txt
 
 networks:
-  metanet1:
+  openbankdevnet:
     driver: bridge
