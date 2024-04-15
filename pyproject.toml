@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neuroglia"
-version = "0.0.8"
+version = "0.0.9"
 description = "Port from .NET to Python of the Neuroglia Framework"
 authors = ["Charles d'Avernas <charles.davernas@neuroglia.io>"]
 license = "Apache"
@@ -9,6 +9,15 @@ packages = [
     { include = "neuroglia", from = "src" },
 ]
 
+
+[[tool.poetry.source]]
+name = "gitlab"
+url = "https://ccie-gitlab.ccie.cisco.com/api/v4/projects/703/packages/pypi"
+priority = "supplemental"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -26,7 +35,6 @@ rx = "^3.2.0"
 uvicorn = "^0.27.1"
 typing-extensions = "^4.9.0"
 pytest-asyncio = "^0.23.5"
-
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.1"

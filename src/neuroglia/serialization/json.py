@@ -2,7 +2,7 @@ from enum import Enum
 import json
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 from neuroglia.serialization.abstractions import Serializer, TextSerializer
-from typing import Any, Optional, Type
+from typing import Any, Dict, Optional, Type
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -46,6 +46,8 @@ class JsonSerializer(TextSerializer):
 
     def _deserialize_nested(self, value: Any, expected_type: Type) -> Any:
         ''' Deserializes a nested object '''
+        if isinstance(value, dict) and isinstance(expected_type, Dict):
+            return value
         if isinstance(value, dict) and expected_type != dict:
             fields = {}
             for base_type in reversed(expected_type.__mro__):
@@ -56,7 +58,9 @@ class JsonSerializer(TextSerializer):
             value = object.__new__(expected_type)
             value.__dict__ = fields
             return value
-        else: return value
+        else:
+            return value
+    
         
     def configure(builder : ApplicationBuilderBase) -> ApplicationBuilderBase:
         ''' Configures the specified application builder to use the JsonSerializer '''
