@@ -58,9 +58,10 @@ class JsonSerializer(TextSerializer):
     def _deserialize_nested(self, value: Any, expected_type: Type) -> Any:
         ''' Deserializes a nested object '''
         if isinstance(value, dict):
-            if hasattr(expected_type, '_name') and expected_type._name == "Dict":
+            # if expected_type is typing.Dict[] or dict, return value directly...
+            if (hasattr(expected_type, '_name') and expected_type._name == "Dict") or expected_type == dict:
                 return value
-            else:
+            if expected_type != dict:
                 fields = {}
                 for base_type in reversed(expected_type.__mro__):
                     if not hasattr(base_type, "__annotations__"):
