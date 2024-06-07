@@ -44,6 +44,7 @@ class CloudEventIngestor(HostedService):
         try:
             e = object.__new__(event_type)
             e.__dict__ = cloud_event.data
+            e.__cloudevent__source__ = cloud_event.source
         except Exception as ex:
             logging.error(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'")
             raise
@@ -63,8 +64,8 @@ class CloudEventIngestor(HostedService):
         '''
         options: CloudEventIngestionOptions = CloudEventIngestionOptions()
         for module in [ModuleLoader.load(module_name) for module_name in modules]:
-            for cloud_event_clr_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and hasattr(cls, "__cloudevent__")):
-                cloud_event_type = cloud_event_clr_type.__cloudevent__
+            for cloud_event_clr_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and hasattr(cls, "__cloudevent__type__")):
+                cloud_event_type = cloud_event_clr_type.__cloudevent__type__
                 options.type_maps[cloud_event_type] = cloud_event_clr_type
         builder.services.try_add_singleton(CloudEventBus)
         builder.services.add_singleton(CloudEventIngestionOptions, singleton=options)

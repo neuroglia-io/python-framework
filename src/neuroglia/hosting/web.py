@@ -22,7 +22,7 @@ class WebHostBase(HostBase, FastAPI):
         ''' Configures FastAPI routes for registered controller services '''
         controller: ControllerBase
         for controller in self.services.get_services(ControllerBase):
-            self.include_router(controller.router)
+            self.include_router(controller.router, prefix="/api/v1")
 
 
 class WebHost(WebHostBase, Host):

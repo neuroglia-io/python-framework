@@ -22,4 +22,4 @@ class TestRequestedIntegrationEventHandler(IntegrationEventHandler[TestRequested
 
     @dispatch(TestRequestedIntegrationEventV1)
     async def handle_async(self, e: TestRequestedIntegrationEventV1) -> None:
-        log.info(f"Handling event type: {e.__cloudevent__}")
+        log.info(f"Handling event type: {e.__cloudevent__type__} source: {e.__cloudevent__source__}")
