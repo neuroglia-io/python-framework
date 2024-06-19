@@ -41,6 +41,12 @@ class CloudEvent:
     specversion: str = '1.0'  # Default value for specversion
     ''' Gets/sets the version of the CloudEvents specification which the event uses. Defaults to '1.0'. '''
 
+    sequencetype: Optional[str] = None
+    ''' Gets/sets the type of the sequence. '''
+
+    sequence: Optional[int] = None
+    ''' Gets/sets the sequence of the event. '''
+
     time: Optional[datetime] = None
     ''' Gets/sets the date and time at which the event has been produced. '''
 
