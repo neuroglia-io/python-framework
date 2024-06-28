@@ -72,6 +72,8 @@ class JsonSerializer(TextSerializer):
                 value = object.__new__(expected_type)
                 value.__dict__ = fields
                 return value
+        elif isinstance(value, str) and expected_type == datetime:
+            return datetime.fromisoformat(value)
         else:
             return value
 
