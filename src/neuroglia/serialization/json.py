@@ -1,10 +1,10 @@
 import json
-import typing
 from datetime import datetime
 from enum import Enum
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 from neuroglia.serialization.abstractions import Serializer, TextSerializer
-from typing import Any, Dict, Optional, Type, get_args
+from typing import Any, Dict, Optional, Type, Union, get_args, get_origin
+from dataclasses import is_dataclass, fields
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -57,24 +57,43 @@ class JsonSerializer(TextSerializer):
 
     def _deserialize_nested(self, value: Any, expected_type: Type) -> Any:
         ''' Deserializes a nested object '''
+        if value is None:
+            # Handle None for Optional types
+            return None
+
+        origin_type = get_origin(expected_type)
+        if origin_type is not None:
+            # This is a generic type (e.g., Optional[SomeType], List[SomeType])
+            type_args = get_args(expected_type)
+            if origin_type is Union and type(None) in type_args:
+                # This is an Optional type
+                non_optional_type = next(t for t in type_args if t is not type(None))
+                return self._deserialize_nested(value, non_optional_type)
+            # Add more handling for other generic types like List, Dict, etc. if needed
+
         if isinstance(value, dict):
-            # if expected_type is typing.Dict[] or dict, return value directly...
-            if (hasattr(expected_type, '_name') and expected_type._name == "Dict") or expected_type == dict:
-                return value
-            if expected_type != dict:
-                fields = {}
-                for base_type in reversed(expected_type.__mro__):
-                    if not hasattr(base_type, "__annotations__"):
-                        continue
-                    for key, field_type in base_type.__annotations__.items():
-                        if key in value:
-                            fields[key] = self._deserialize_nested(value[key], field_type)
-                value = object.__new__(expected_type)
-                value.__dict__ = fields
-                return value
+            # Handle dict deserialization
+            if is_dataclass(expected_type):
+                field_dict = {}
+                for field in fields(expected_type):
+                    if field.name in value:
+                        field_value = self._deserialize_nested(value[field.name], field.type)
+                        field_dict[field.name] = field_value
+                return expected_type(**field_dict)
+            # Add more handling for non-dataclass types if needed
+
         elif isinstance(value, str) and expected_type == datetime:
             return datetime.fromisoformat(value)
+
+        elif hasattr(expected_type, '__bases__') and expected_type.__bases__ and issubclass(expected_type, Enum):
+            # Handle Enum deserialization
+            for enum_member in expected_type:
+                if enum_member.value == value:
+                    return enum_member
+            raise ValueError(f"Invalid enum value for {expected_type.__name__}: {value}")
+
         else:
+            # Return the value as is for types that do not require deserialization
             return value
 
     def configure(builder : ApplicationBuilderBase) -> ApplicationBuilderBase:
