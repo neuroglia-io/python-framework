@@ -79,7 +79,9 @@ class JsonSerializer(TextSerializer):
                     if field.name in value:
                         field_value = self._deserialize_nested(value[field.name], field.type)
                         field_dict[field.name] = field_value
-                return expected_type(**field_dict)
+                value = object.__new__(expected_type)
+                value.__dict__ = field_dict
+                return value
             # Add more handling for non-dataclass types if needed
 
         elif isinstance(value, str) and expected_type == datetime:
