@@ -72,6 +72,8 @@ class JsonSerializer(TextSerializer):
             # Add more handling for other generic types like List, Dict, etc. if needed
 
         if isinstance(value, dict):
+            if isinstance(expected_type, dict):
+                return dict(value)
             # Handle dict deserialization
             if is_dataclass(expected_type):
                 field_dict = {}
