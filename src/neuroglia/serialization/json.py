@@ -72,8 +72,6 @@ class JsonSerializer(TextSerializer):
             # Add more handling for other generic types like List, Dict, etc. if needed
 
         if isinstance(value, dict):
-            if isinstance(expected_type, dict):
-                return dict(value)
             # Handle dict deserialization
             if is_dataclass(expected_type):
                 field_dict = {}
@@ -84,7 +82,15 @@ class JsonSerializer(TextSerializer):
                 value = object.__new__(expected_type)
                 value.__dict__ = field_dict
                 return value
-            # Add more handling for non-dataclass types if needed
+
+            # If the expected type is a plain dict, we need to deserialize each value in the dict.
+            if hasattr(expected_type, '__args__') and expected_type.__args__:
+                # Dictionary with type hints
+                key_type, val_type = expected_type.__args__
+                return {self._deserialize_nested(k, key_type): self._deserialize_nested(v, val_type) for k, v in value.items()}
+            else:
+                # Dictionary without type hints, use the actual type of each value
+                return {k: self._deserialize_nested(v, type(v)) for k, v in value.items()}
 
         elif isinstance(value, str) and expected_type == datetime:
             return datetime.fromisoformat(value)
