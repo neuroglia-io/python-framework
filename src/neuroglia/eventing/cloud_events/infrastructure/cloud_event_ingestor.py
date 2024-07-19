@@ -45,6 +45,7 @@ class CloudEventIngestor(HostedService):
             e = object.__new__(event_type)
             e.__dict__ = cloud_event.data
             e.__cloudevent__source__ = cloud_event.source
+            e.__cloudevent__subject__ = cloud_event.subject
         except Exception as ex:
             logging.error(f"An error occured while reading a cloud event of type '{cloud_event.type}': '{ex}'")
             raise
