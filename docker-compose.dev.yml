@@ -2,6 +2,7 @@ version: '3.4'
 
 name: pyneuro
 services:
+  # http://localhost:8899/api/docs
   openbank-app:
     image: openbank-app
     build:

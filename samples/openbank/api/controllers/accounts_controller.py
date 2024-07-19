@@ -13,20 +13,45 @@ from samples.openbank.integration.models.bank import BankAccountDto
 
 class AccountsController(ControllerBase):
 
-    def __init__(self, service_provider: ServiceProviderBase, mapper: Mapper, mediator: Mediator):
+    def __init__(
+        self, service_provider: ServiceProviderBase, mapper: Mapper, mediator: Mediator
+    ):
         ControllerBase.__init__(self, service_provider, mapper, mediator)
 
-    @post("/", response_model=BankAccountDto, status_code=201, responses=ControllerBase.error_responses)
-    async def create_bank_account(self, command: CreateBankAccountCommandDto) -> BankAccountDto:
-        ''' Creates a new bank account '''
-        return self.process(await self.mediator.execute_async(self.mapper.map(command, CreateBankAccountCommand)))
+    @post(
+        "/create/",
+        response_model=BankAccountDto,
+        status_code=201,
+        responses=ControllerBase.error_responses,
+    )
+    async def create_bank_account(
+        self, command: CreateBankAccountCommandDto
+    ) -> BankAccountDto:
+        """Creates a new bank account"""
+        return self.process(
+            await self.mediator.execute_async(
+                self.mapper.map(command, CreateBankAccountCommand)
+            )
+        )
 
-    @get("/byid/{id}", response_model=BankAccountDto, responses=ControllerBase.error_responses)
+    @get(
+        "/byid/{id}",
+        response_model=BankAccountDto,
+        responses=ControllerBase.error_responses,
+    )
     async def get_bank_account_by_id(self, id: str) -> BankAccountDto:
-        ''' Gets the bank account with the specified id '''
-        return self.process(await self.mediator.execute_async(GetByIdQuery[BankAccountDto, str](id)))
+        """Gets the bank account with the specified id"""
+        return self.process(
+            await self.mediator.execute_async(GetByIdQuery[BankAccountDto, str](id))
+        )
 
-    @get("/byowner/{owner_id}", response_model=List[BankAccountDto], responses=ControllerBase.error_responses)
+    @get(
+        "/byowner/{owner_id}",
+        response_model=List[BankAccountDto],
+        responses=ControllerBase.error_responses,
+    )
     async def get_bank_account_by_owner_id(self, owner_id: str) -> List[BankAccountDto]:
-        ''' Gets the bank account for the given owner id '''
-        return self.process(await self.mediator.execute_async(AccountsByOwnerQuery(owner_id=owner_id)))
+        """Gets the bank account for the given owner id"""
+        return self.process(
+            await self.mediator.execute_async(AccountsByOwnerQuery(owner_id=owner_id))
+        )
