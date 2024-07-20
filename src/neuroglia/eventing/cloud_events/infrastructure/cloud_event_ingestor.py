@@ -11,14 +11,14 @@ from neuroglia.reactive import AsyncRx
 
 
 class CloudEventIngestionOptions:
-    ''' Represents the service used to configure how the application should ingest incoming cloud events '''
+    """Represents the service used to configure how the application should ingest incoming cloud events"""
 
     type_maps: dict[str, Type] = dict[str, Type]()
-    ''' Gets/sets a cloud event type/CLR type mapping of all supported cloud events'''
+    """ Gets/sets a cloud event type/CLR type mapping of all supported cloud events"""
 
 
 class CloudEventIngestor(HostedService):
-    ''' Represents the service used to ingest cloud events '''
+    """Represents the service used to ingest cloud events"""
 
     def __init__(self, options: CloudEventIngestionOptions, cloud_event_bus: CloudEventBus, mediator: Mediator):
         self._options = options
@@ -57,12 +57,12 @@ class CloudEventIngestor(HostedService):
 
     @staticmethod
     def configure(builder: ApplicationBuilderBase, modules: List[str]) -> ApplicationBuilderBase:
-        ''' Registers and configures cloud event related services to the specified service collection.
+        """Registers and configures cloud event related services to the specified service collection.
 
-            Args:
-                services (ServiceCollection): the service collection to configure
-                modules (List[str]): a list containing the names of the modules to scan for classes marked with the 'cloudevent' decorator. Marked classes as used to configure the mapping of cloud events consumed by the cloud event ingestor
-        '''
+        Args:
+            services (ServiceCollection): the service collection to configure
+            modules (List[str]): a list containing the names of the modules to scan for classes marked with the 'cloudevent' decorator. Marked classes as used to configure the mapping of cloud events consumed by the cloud event ingestor
+        """
         options: CloudEventIngestionOptions = CloudEventIngestionOptions()
         for module in [ModuleLoader.load(module_name) for module_name in modules]:
             for cloud_event_clr_type in TypeFinder.get_types(module, lambda cls: inspect.isclass(cls) and hasattr(cls, "__cloudevent__type__")):

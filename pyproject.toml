@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neuroglia"
-version = "0.0.22"
+version = "0.0.23"
 description = "Port from .NET to Python of the Neuroglia Framework"
 authors = ["Charles d'Avernas <charles.davernas@neuroglia.io>"]
 license = "Apache"
@@ -47,3 +47,6 @@ mypy-extensions = "^1.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 300

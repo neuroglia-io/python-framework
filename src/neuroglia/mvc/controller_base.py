@@ -29,16 +29,12 @@ def generate_unique_id_function(route: APIRoute) -> str | APIRoute:
 class ControllerBase(Routable):
     """Represents the base class of all API controllers"""
 
-    def __init__(
-        self, service_provider: ServiceProviderBase, mapper: Mapper, mediator: Mediator
-    ):
+    def __init__(self, service_provider: ServiceProviderBase, mapper: Mapper, mediator: Mediator):
         """Initializes a new ControllerBase"""
         self.service_provider = service_provider
         self.mapper = mapper
         self.mediator = mediator
-        self.json_serializer = self.service_provider.get_required_service(
-            JsonSerializer
-        )
+        self.json_serializer = self.service_provider.get_required_service(JsonSerializer)
         self.name = self.__class__.__name__.replace("Controller", "").strip()
         super().__init__(
             prefix=f"/{self.name.lower()}",
@@ -62,16 +58,12 @@ class ControllerBase(Routable):
 
     def process(self, result: OperationResult):
         """Processes the specified operation result"""
-        content = (
-            result.data if result.status >= 200 and result.status < 300 else result
-        )
+        content = result.data if result.status >= 200 and result.status < 300 else result
         media_type = "application/json"
         if content is not None:
             content = self.json_serializer.serialize_to_text(content)
             media_type = "application/json"
-        return Response(
-            status_code=result.status, content=content, media_type=media_type
-        )
+        return Response(status_code=result.status, content=content, media_type=media_type)
 
     error_responses: Dict[int | str, Dict[str, Any]] | None = {
         400: {"model": ProblemDetails, "description": "Bad Request"},
