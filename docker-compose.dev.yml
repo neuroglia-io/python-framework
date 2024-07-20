@@ -1,0 +1,111 @@
+version: '3.4'
+
+name: pyneuro
+services:
+  # http://localhost:8899/api/docs
+  openbank-app:
+    image: openbank-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn samples.openbank.api.main:app --host 0.0.0.0 --port 8899 --reload"]
+    ports:
+      - 8899:8899
+      - 5699:5678
+    environment:
+      LOG_LEVEL: DEBUG
+      CONSUMER_GROUP: openbank-0
+      CONNECTION_STRINGS: '{"mongo": "mongodb://mongodb:27017", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
+      CLOUD_EVENT_SINK: http://event-player/events/pub
+      CLOUD_EVENT_SOURCE: https://openbank.io
+      CLOUD_EVENT_TYPE_PREFIX: io.openbank
+    secrets:
+      - db_root_password
+    volumes:
+      - .:/app
+    networks:
+      - openbankdevnet
+
+  eventstoredb:
+    image: eventstore/eventstore:latest
+    ports:
+      - "2113:2113" # HTTP port
+      - "1113:1113" # WebSocket port
+    # secrets:
+    #   - eventstoredb-password
+    volumes:
+      - eventstoredb_data:/var/lib/eventstore
+    environment:
+      EVENTSTORE_INSECURE: true
+      EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_START_STANDARD_PROJECTIONS: true
+      EVENTSTORE_EXT_TCP_PORT: 1113
+      EVENTSTORE_HTTP_PORT: 2113     
+      EVENTSTORE_ENABLE_EXTERNAL_TCP: true
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: true
+    networks:
+      - openbankdevnet
+
+  mongodb:
+    image: mongo:latest
+    restart: always
+    # environment:
+      # MONGO_INITDB_ROOT_USERNAME: root
+      # MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    # command: mongod --auth --bind_ip_all --keyFile /etc/mongo-keyfile/keyfile
+    command: mongod --bind_ip_all
+    ports:
+      - 27099:27017
+    volumes:
+      - mongodb_data:/data/db
+      # - ./deployment/mongo/replica-key:/etc/mongo-keyfile/keyfile
+    # secrets:
+    #   - db_root_password
+    networks:
+      - openbankdevnet
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - 8111:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      # ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      # ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/db_root_password
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+    # secrets:
+    #   - db_root_password
+    networks:
+      - openbankdevnet
+
+  event-player:
+    image: ccie-gitlab.ccie.cisco.com:4567/mozart/infrastructure/eventing/cloudevent-player:latest
+    ports:
+      - 8885:80
+    environment:
+      api_tag: "0.2.30"
+      api_repository_url: "https://ccie-gitlab.ccie.cisco.com/mozart/infrastructure/eventing/cloudevent-player"
+      api_log_level: DEBUG
+      api_log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      api_default_generator_gateways: '{"urls": ["http://localhost/events/pub", "http://event-player/events/pub", "http://openbank-app:8899/api/v1/events/pub", "http://k.ccie.cisco.com:32051/events/pub", "https://events-player.k.ccie.cisco.com/events/pub", "https://pubhook.k.certs.cloud/c3c588d1-dc7f-424e-ad22-dbd4e6ebcbd9"]}'
+      api_browser_queue_size: 2000
+    networks:
+      - openbankdevnet
+
+volumes:
+  mongodb_data:
+  eventstoredb_data:
+
+secrets:
+  db_root_password:
+    file: ./deployment/secrets/db_root_password.txt
+  db_user_password:
+    file: ./deployment/secrets/db_user_password.txt
+  eventstoredb-password:
+    file: ./deployment/secrets/eventstoredb-password.txt
+
+networks:
+  openbankdevnet:
+    driver: bridge

@@ -30,7 +30,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
-[Ll]ogs/
+[Ll]ogs/**
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -326,6 +326,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+.pytest_cache
 
 # Cake - Uncomment if you are using it
 # tools/**
@@ -396,3 +397,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+dist/
+.DS_Store
+
+.local_note.md

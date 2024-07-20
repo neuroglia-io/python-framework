@@ -1,0 +1,3 @@
+from .bank_account_event_handlers import BankAccountCreatedIntegrationEventV1
+from .person_event_handlers import PersonRegisteredIntegrationEvent
+from .test_event_handlers import TestRequestedIntegrationEventV1

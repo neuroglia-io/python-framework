@@ -4,16 +4,19 @@ import pytest
 from neuroglia.data.infrastructure.abstractions import QueryableRepository, Repository
 from neuroglia.data.infrastructure.mongo.mongo_repository import MongoRepository, MongoRepositoryOptions
 from neuroglia.dependency_injection.service_provider import ServiceCollection, ServiceProvider
+from neuroglia.serialization.json import JsonSerializer
+from neuroglia.serialization.abstractions import Serializer, TextSerializer
+
 from tests.data import UserDto
 
 
 class TestMongoRepository:
-    
+
     _mongo_database_name = 'test'
-    
-    _service_provider : ServiceProvider
-    _mongo_client : MongoClient
-    _repository : QueryableRepository[UserDto, str]
+
+    _service_provider: ServiceProvider
+    _mongo_client: MongoClient
+    _repository: QueryableRepository[UserDto, str]
 
     @pytest.mark.asyncio
     async def test_add_should_work(self):
@@ -27,26 +30,26 @@ class TestMongoRepository:
         # act
         await self._repository.add_async(user)
         result = await self._repository.get_async(user.id)
-        
+
         # assert
         assert result is not None, f"failed to find the user with the specified id '{user.id}'"
         assert result.id == user_id, f"expected id '{user_id}', got '{result.id}' instead"
         assert result.name == user_name, f"expected id '{user_name}', got '{result.name}' instead"
         assert result.email == user_email, f"expected id '{user_email}', got '{result.email}' instead"
-        
+
         # clean
         self._teardown()
-        
+
     @pytest.mark.asyncio
     async def test_contains_should_work(self):
         # arrange
         self._setup()
         user = UserDto(str(uuid4()), 'John Doe', 'john.doe@email.com')
         await self._repository.add_async(user)
-        
+
         # act
         exists = await self._repository.contains_async(user.id)
-        
+
         # assert
         assert exists, f"failed to find the user with the specified id '{user.id}'"
 
@@ -59,13 +62,13 @@ class TestMongoRepository:
 
         # act
         result = await self._repository.get_async(user.id)
-        
+
         # assert
         assert result is not None, f"failed to find the user with the specified id '{user.id}'"
-        
+
         # clean
         self._teardown()
-        
+
     @pytest.mark.asyncio
     async def test_update_should_work(self):
         # arrange
@@ -77,20 +80,20 @@ class TestMongoRepository:
         updated_user_email = "jane.doe@email.com"
         user.name = updated_user_name
         user.email = updated_user_email
-        
+
         # act
         await self._repository.update_async(user)
         result = await self._repository.get_async(user.id)
-        
+
         # assert
         assert result is not None, f"failed to find the user with the specified id '{user.id}'"
         assert result.id == user_id, f"expected id '{user_id}', got '{result.id}' instead"
         assert result.name == updated_user_name, f"expected id '{updated_user_name}', got '{result.name}' instead"
         assert result.email == updated_user_email, f"expected id '{updated_user_email}', got '{result.email}' instead"
-        
+
         # clean
         self._teardown()
-        
+
     @pytest.mark.asyncio
     async def test_query_should_work(self):
         # arrange
@@ -99,7 +102,7 @@ class TestMongoRepository:
         count = 10
         for i in range(count):
             await self._repository.add_async(UserDto(str(uuid4()), f'{prefix}_name_{i}', f'{prefix}_email_{i}'))
-            
+
         # act
         query = await self._repository.query_async()
         query = query.where(lambda u: u.name.startswith('fake'))
@@ -107,39 +110,43 @@ class TestMongoRepository:
 
         # assert
         assert len(results) == count, f"expected to match {count} items, matched '{len(results)}' instead"
-        
+
         # clean
         self._teardown()
-        
+
     @pytest.mark.asyncio
     async def test_remove_should_work(self):
         # arrange
         self._setup()
         user = UserDto(str(uuid4()), 'John Doe', 'john.doe@email.com')
         await self._repository.add_async(user)
-        
+
         # act
         await self._repository.remove_async(user.id)
         result = await self._repository.get_async(user.id)
-        
+
         # assert
         assert result is None, f"expected None, got removed user"
 
         # clean
         self._teardown()
-        
+
     def _setup(self) -> None:
         self._service_provider = TestMongoRepository._build_services()
         self._mongo_client = self._service_provider.get_required_service(MongoClient)
         self._repository = self._service_provider.get_required_service(QueryableRepository[UserDto, str])
 
+    @staticmethod
     def _build_services() -> ServiceProvider:
-        connection_string = 'mongodb://localhost:27017'
+        connection_string = 'mongodb://localhost:27099'
         services = ServiceCollection()
-        services.add_singleton(MongoRepositoryOptions[UserDto, str], singleton= MongoRepositoryOptions[UserDto, str](TestMongoRepository._mongo_database_name))
+        services.add_singleton(JsonSerializer)
+        services.add_singleton(Serializer, implementation_factory=lambda provider: provider.get_required_service(JsonSerializer))
+        services.add_singleton(TextSerializer, implementation_factory=lambda provider: provider.get_required_service(JsonSerializer))
+        services.add_singleton(MongoRepositoryOptions[UserDto, str], singleton=MongoRepositoryOptions[UserDto, str](TestMongoRepository._mongo_database_name))
         services.add_singleton(MongoClient, singleton=MongoClient(connection_string))
         services.add_singleton(Repository[UserDto, str], MongoRepository[UserDto, str])
-        services.add_singleton(QueryableRepository[UserDto, str], implementation_factory= lambda provider: provider.get_required_service(Repository[UserDto, str]))
+        services.add_singleton(QueryableRepository[UserDto, str], implementation_factory=lambda provider: provider.get_required_service(Repository[UserDto, str]))
         return services.build()
 
     def _teardown(self):
