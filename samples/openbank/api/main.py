@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 log.debug("Bootstraping the app...")
 
 database_name = "openbank"
+consumer_group = "openbank1"
 application_module = "samples.openbank.application"
 
 builder = WebApplicationBuilder()

@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 import logging
 from rx.core.typing import Disposable
-from neuroglia.data.infrastructure.event_sourcing.abstractions import EventRecord, EventStore, EventStoreOptions
+from neuroglia.data.infrastructure.event_sourcing.abstractions import AckableEventRecord, EventRecord, EventStore, EventStoreOptions
 from neuroglia.dependency_injection.service_provider import ServiceProviderBase
 from neuroglia.hosting.abstractions import HostedService
 from neuroglia.mediation.mediator import Mediator
@@ -46,7 +46,7 @@ class ReadModelReconciliator(HostedService):
         self._subscription.dispose()
 
     async def subscribe_async(self):
-        observable = await self._event_store.observe_async(f'$ce-{self._event_store_options.database_name}')
+        observable = await self._event_store.observe_async(f'$ce-{self._event_store_options.database_name}', self._event_store_options.consumer_group)
         self._subscription = AsyncRx.subscribe(observable, lambda e: asyncio.run(self.on_event_record_stream_next_async(e)))
 
     async def on_event_record_stream_next_async(self, e: EventRecord):

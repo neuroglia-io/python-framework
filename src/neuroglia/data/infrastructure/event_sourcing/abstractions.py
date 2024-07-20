@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type
 from neuroglia.data.abstractions import AggregateRoot
 
 
@@ -69,6 +69,23 @@ class EventRecord:
     ''' Gets a boolean indicating whether or not the recorded event is being replayed to its consumer/consumer group '''
 
 
+@dataclass
+class AckableEventRecord(EventRecord):
+    ''' Represents an ackable recorded event '''
+    
+    _ack_delegate : Callable = None
+
+    _nack_delegate : Callable= None
+
+    async def ack_async(self) -> None:
+        ''' Acks the event record '''
+        self._ack_delegate()
+
+    async def nack_async(self) -> None:
+        ''' Nacks the event record'''
+        self._nack_delegate()
+        
+
 class StreamReadDirection(Enum):
     ''' Enumerates all directions in which a event sourcing stream can be read '''
     FORWARDS = 0,
@@ -82,6 +99,9 @@ class EventStoreOptions:
 
     database_name: str
     ''' Gets/sets the name of the database to use, if any '''
+    
+    consumer_group: str
+    ''' Gets/sets the name of the consumer group to use, if any '''
 
 
 class EventStore(ABC):

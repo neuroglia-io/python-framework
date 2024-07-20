@@ -3,10 +3,11 @@ import logging
 import sys
 import threading
 from typing import Dict, List, Optional
+from esdbclient.persistent import PersistentSubscription
 import rx
 from rx.disposable.disposable import Disposable
 from neuroglia.data.abstractions import DomainEvent
-from neuroglia.data.infrastructure.event_sourcing.abstractions import Aggregator, EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamDescriptor, StreamReadDirection
+from neuroglia.data.infrastructure.event_sourcing.abstractions import AckableEventRecord, Aggregator, EventDescriptor, EventRecord, EventStore, EventStoreOptions, StreamDescriptor, StreamReadDirection
 from neuroglia.hosting.abstractions import ApplicationBuilderBase
 from neuroglia.serialization.json import JsonSerializer
 from esdbclient import EventStoreDBClient, NewEvent, StreamState, RecordedEvent
@@ -98,8 +99,14 @@ class ESEventStore(EventStore):
         else:
             try:
                 self._eventstore_client.create_subscription_to_stream(stream_name=stream_name, resolve_links=True)  # todo: persistence
+                # self._eventstore_client.create_subscription_to_stream(group_name = consumer_group, stream_name = stream_name, resolve_links = True, consumer_strategy = 'RoundRobin', min_checkpoint_count=1, max_checkpoint_count=1)
             except AlreadyExists:
                 pass
+          # subscription = self._eventstore_client.read_subscription_to_stream(group_name = consumer_group, stream_name = stream_name)
+
+            try : self._eventstore_client.create_subscription_to_stream(group_name = consumer_group, stream_name = stream_name, resolve_links = True, consumer_strategy = 'RoundRobin', min_checkpoint_count=1, max_checkpoint_count=1)
+            except AlreadyExists: pass
+
         subject = Subject()
         thread = threading.Thread(target=self._consume_events_async, kwargs={'stream_id': stream_id, 'subject': subject, 'subscription': subscription})
         thread.start()
@@ -144,7 +151,7 @@ class ESEventStore(EventStore):
             e: RecordedEvent
             for e in subscription:
                 try:
-                    decoded_event = self._decode_recorded_event(stream_id, e)
+                    decoded_event = self._decode_recorded_event(stream_id, e, subscription)
                 except Exception as ex:
                     logging.error(f"An exception occured while decoding event with offset '{e.stream_position}' from stream '{e.stream_name}': {ex}")
                     raise
