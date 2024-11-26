@@ -1,6 +1,0 @@
-site_name: Neuroglia Python Framework
-docs_dir: docs
-nav:
-  - Home: index.md
-theme:
-  name: material

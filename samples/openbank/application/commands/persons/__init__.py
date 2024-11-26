@@ -1,1 +1,0 @@
-from .register_person_command import RegisterPersonCommand as RegisterPersonCommand

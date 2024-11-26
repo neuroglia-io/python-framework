@@ -1,1 +1,0 @@
-from . import persons as persons
