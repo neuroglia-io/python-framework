@@ -402,3 +402,4 @@ dist/
 .DS_Store
 
 .local_note.md
+old_*
