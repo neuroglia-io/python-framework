@@ -1,0 +1,279 @@
+# Shared Infrastructure - Docker Compose Configuration
+# This file contains services shared by all sample applications
+# Usage: docker-compose -f docker-compose.shared.yml -f docker-compose.<sample>.yml up
+
+name: pyneuro
+services:
+  # 🗄️ MongoDB Database
+  # mongodb://localhost:${MONGODB_PORT}
+  # Shared database server for all samples
+  mongodb:
+    image: mongo:6.0.21
+    restart: always
+    runtime: runc
+    command: mongod --bind_ip_all
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-neuroglia123}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-neuroglia}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+
+  # 📊 MongoDB Express (Database Admin UI)
+  # http://localhost:${MONGODB_EXPRESS_PORT}
+  # No authentication required (development only!)
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - "${MONGODB_EXPRESS_PORT:-8081}:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_ROOT_USERNAME:-root}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_ROOT_PASSWORD:-neuroglia123}
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_MONGODB_AUTH_DATABASE: admin
+      ME_CONFIG_BASICAUTH: "false"
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+    depends_on:
+      - mongodb
+
+    # �️ Redis (Session Store & Cache)
+  # In-memory data store for session management and caching
+  # redis://localhost:${REDIS_PORT}
+  redis:
+    image: redis:7.4-alpine
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # 🔐 Keycloak (Identity & Access Management)
+  # OAuth2/OIDC Provider for authentication and authorization
+  # http://localhost:${KEYCLOAK_PORT}
+  # Default credentials: admin/${KEYCLOAK_ADMIN_PASSWORD}
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    restart: always
+    environment:
+      # Use H2 file database for persistence across restarts
+      KC_DB: dev-file
+      # Use new bootstrap variables (Keycloak 26+)
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      # HTTP configuration
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_PROXY: "edge"
+      KC_HTTP_RELATIVE_PATH: "/"
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "${KEYCLOAK_PORT:-8090}:8080"
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ../keycloak/pyneuro-realm-export.json:/opt/keycloak/data/import/pyneuro-realm-export.json:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  # 🎬 Event Player (Event Visualization & Replay)
+  # http://localhost:${EVENT_PLAYER_PORT}
+  # Shared event visualization and replay service for all samples
+  event-player:
+    image: ghcr.io/bvandewe/events-player:v0.4.11
+    runtime: runc
+    ports:
+      - "${EVENT_PLAYER_PORT:-8085}:8080"
+    environment:
+      tag: "v0.4.11"
+      log_level: INFO
+
+      # Authentication & Authorization
+      auth_required: "true"
+      auth_audience: events-player-web
+      auth_algorithm: RS256
+
+      # Role Mapping Configuration
+      auth_role_admin: "manager" # Role name in JWT that grants admin privileges
+      auth_role_operator: "chef" # Role name in JWT that grants operator privileges
+      auth_role_user: "driver" # Role name in JWT that grants user privileges
+
+      # OAuth/OIDC Configuration
+      # oauth_server_url: URL accessible from browser (external)
+      # oauth_server_url_backend: URL accessible from backend container (internal Docker network)
+      oauth_server_url: http://localhost:${KEYCLOAK_PORT:-8090}
+      oauth_server_url_backend: http://keycloak:8080
+      oauth_legacy_keycloak: "false"
+      oauth_realm: ${KEYCLOAK_REALM:-pyneuro}
+      oauth_client_id: pyneuro-public
+      oauth_client_secret: ""
+
+      # HTTP Client Configuration
+      http_client_timeout: 30.0
+
+      # Default Generator Settings
+      default_generator_gateways: '{"urls": ["http://localhost:${EVENT_PLAYER_PORT:-8085}/events/pub", "http://event-player:8080/events/pub"]}'
+      default_generator_event: '{"event_source": "https://dummy.source.com/sys-admin", "event_type": "com.source.dummy.test.requested.v1", "event_subject": "some.interesting.concept.key_abcde12345", "event_data": {"foo": "bar"}}'
+
+      # Frontend Storage Configuration
+      browser_queue_size: 1000
+      storage_max_recent_events: 5000
+      storage_max_metadata_events: 100000
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+    depends_on:
+      - keycloak
+
+  # 🔭 OpenTelemetry Collector (All-in-One)
+  # Receives, processes, and exports telemetry data (traces, metrics, logs)
+  # Ports: ${OTEL_COLLECTOR_GRPC_PORT} (OTLP gRPC), ${OTEL_COLLECTOR_HTTP_PORT} (OTLP HTTP)
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    runtime: runc
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317" # OTLP gRPC receiver
+      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318" # OTLP HTTP receiver
+      - "${OTEL_COLLECTOR_METRICS_PORT:-8888}:8888" # Prometheus metrics about the collector itself
+      - "${OTEL_COLLECTOR_HEALTH_PORT:-13133}:13133" # Health check endpoint
+    volumes:
+      - ../otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+
+  # 📊 Grafana (Observability Dashboard)
+  # http://localhost:${GRAFANA_PORT} (admin/admin - change on first login)
+  # Unified dashboard for traces (Tempo), metrics (Prometheus), and logs (Loki)
+  grafana:
+    image: grafana/grafana-enterprise:latest
+    runtime: runc
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      GF_SECURITY_ADMIN_USER: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      GF_FEATURE_TOGGLES_ENABLE: traceqlEditor
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+
+  # 🔍 Grafana Tempo (Distributed Tracing Backend)
+  # Stores and queries distributed traces
+  # http://localhost:${TEMPO_PORT}
+  tempo:
+    image: grafana/tempo:2.9.0
+    runtime: runc
+    command: ["-config.file=/etc/tempo.yaml"]
+    user: root
+    ports:
+      - "${TEMPO_PORT:-3200}:3200" # Tempo HTTP API
+      - "9095:9095" # Tempo gRPC
+      - 4317 # OTLP gRPC receiver (internal)
+      - 4318 # OTLP HTTP receiver (internal)
+    volumes:
+      - ../tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+
+  # 📈 Prometheus (Metrics Storage & Query)
+  # Time-series database for metrics
+  # http://localhost:${PROMETHEUS_PORT}
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    runtime: runc
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
+      - "--storage.tsdb.retention.time=30d"
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+
+  # 📝 Grafana Loki (Log Aggregation)
+  # Stores and queries logs with trace correlation
+  # http://localhost:${LOKI_PORT}
+  loki:
+    image: grafana/loki:3.2.0
+    runtime: runc
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    volumes:
+      - ../loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - ${DOCKER_NETWORK_NAME:-pyneuro-net}
+
+volumes:
+  # Database volumes
+  mongodb_data:
+    driver: local
+  # Keycloak H2 database (persists configuration across container restarts)
+  keycloak_data:
+    driver: local
+  # Redis AOF persistence (session data and cache)
+  redis_data:
+    driver: local
+  # OpenTelemetry & Observability volumes
+  grafana_data:
+    driver: local
+  tempo_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  loki_data:
+    driver: local
+
+networks:
+  pyneuro-net:
+    driver: bridge
+    name: ${DOCKER_NETWORK_NAME:-pyneuro-net}

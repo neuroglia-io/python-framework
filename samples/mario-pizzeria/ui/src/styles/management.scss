@@ -1,0 +1,202 @@
+/**
+ * Mario's Pizzeria - Management Dashboard Styles
+ *
+ * Styles for the management dashboard including statistics cards,
+ * status sections, and real-time connection indicators.
+ */
+
+// Variables
+$kitchen-gradient-start: #667eea;
+$kitchen-gradient-end: #764ba2;
+$delivery-gradient-start: #f093fb;
+$delivery-gradient-end: #f5576c;
+
+$stat-card-border-color: #007bff;
+$stat-card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+$metric-bg-overlay: rgba(255, 255, 255, 0.2);
+$metric-border-overlay: rgba(255, 255, 255, 0.3);
+
+// Stat Cards
+.stat-card {
+  border-left: 4px solid $stat-card-border-color;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $stat-card-hover-shadow;
+  }
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  transition: transform 0.2s;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-change {
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &.positive {
+    color: #28a745;
+  }
+
+  &.negative {
+    color: #dc3545;
+  }
+}
+
+// Status Badge
+.status-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 500;
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
+}
+
+// Kitchen Section
+.kitchen-section {
+  background: linear-gradient(135deg, $kitchen-gradient-start 0%, $kitchen-gradient-end 100%);
+  color: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  h4 {
+    margin-bottom: 1rem;
+  }
+}
+
+// Delivery Section
+.delivery-section {
+  background: linear-gradient(135deg, $delivery-gradient-start 0%, $delivery-gradient-end 100%);
+  color: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  h4 {
+    margin-bottom: 1rem;
+  }
+}
+
+// Metric Grid
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.metric-item {
+  background: $metric-bg-overlay;
+  padding: 1rem;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  transition: transform 0.2s;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+// Quick Action Cards
+.quick-action-card {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: all 0.3s;
+
+  &:hover {
+    transform: scale(1.05);
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+// Connection Status Indicator
+.connection-status {
+  position: fixed;
+  top: 70px;
+  left: 20px;
+  z-index: 1000;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.connected {
+    color: #28a745;
+    border: 2px solid #28a745;
+  }
+
+  &.disconnected {
+    color: #dc3545;
+    border: 2px solid #dc3545;
+    animation: pulse 2s infinite;
+  }
+
+  &.connecting {
+    color: #ffa000;
+    border: 2px solid #ffa000;
+  }
+}
+
+// Pulse animation for disconnected state
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .connection-status {
+    top: 60px;
+    left: 10px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}

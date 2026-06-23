@@ -1,0 +1,260 @@
+{
+    "id": null,
+    "title": "Mario's Pizzeria - HTTP Performance",
+    "tags": [
+        "mario",
+        "http",
+        "performance"
+    ],
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "panels": [
+        {
+            "id": 1,
+            "title": "HTTP Request Rate",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\"}[5m]))",
+                    "legendFormat": "Requests/sec",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 0
+            }
+        },
+        {
+            "id": 2,
+            "title": "Average Response Time",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(http_server_duration_milliseconds_sum{job=\"mario-pizzeria-app\"}[5m])) / sum(rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\"}[5m]))",
+                    "legendFormat": "Avg Response Time",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 6,
+                "y": 0
+            }
+        },
+        {
+            "id": 3,
+            "title": "Active Requests",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(http_server_active_requests{job=\"mario-pizzeria-app\"})",
+                    "legendFormat": "Active",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 0
+            }
+        },
+        {
+            "id": 4,
+            "title": "Error Rate",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\",http_status_code=~\"[45].*\"}[5m])) / sum(rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\"}[5m])) * 100",
+                    "legendFormat": "Error %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 0
+            }
+        },
+        {
+            "id": 5,
+            "title": "Request Rate by Endpoint",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "sum by (http_target) (rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\"}[5m]))",
+                    "legendFormat": "{{http_target}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            }
+        },
+        {
+            "id": 6,
+            "title": "Response Time by Endpoint",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "sum by (http_target) (rate(http_server_duration_milliseconds_sum{job=\"mario-pizzeria-app\"}[5m])) / sum by (http_target) (rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\"}[5m]))",
+                    "legendFormat": "{{http_target}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            }
+        },
+        {
+            "id": 7,
+            "title": "HTTP Status Codes",
+            "type": "piechart",
+            "targets": [
+                {
+                    "expr": "sum by (http_status_code) (rate(http_server_duration_milliseconds_count{job=\"mario-pizzeria-app\"}[5m]))",
+                    "legendFormat": "{{http_status_code}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 8,
+                "x": 0,
+                "y": 17
+            }
+        },
+        {
+            "id": 8,
+            "title": "Response Time Histogram",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_server_duration_milliseconds_bucket{job=\"mario-pizzeria-app\"}[5m])) by (le))",
+                    "legendFormat": "p50",
+                    "refId": "A"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_milliseconds_bucket{job=\"mario-pizzeria-app\"}[5m])) by (le))",
+                    "legendFormat": "p95",
+                    "refId": "B"
+                },
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_server_duration_milliseconds_bucket{job=\"mario-pizzeria-app\"}[5m])) by (le))",
+                    "legendFormat": "p99",
+                    "refId": "C"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 16,
+                "x": 8,
+                "y": 17
+            }
+        }
+    ],
+    "templating": {
+        "list": []
+    },
+    "annotations": {
+        "list": []
+    },
+    "schemaVersion": 30,
+    "version": 1,
+    "links": []
+}

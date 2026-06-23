@@ -1,0 +1,2 @@
+# Favicon placeholder for Mario's Pizzeria
+# This would be replaced with an actual favicon.ico file in production

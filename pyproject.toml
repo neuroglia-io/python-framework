@@ -1,52 +1,98 @@
 [tool.poetry]
-name = "neuroglia"
-version = "0.0.23"
+name = "neuroglia-python"
+version = "0.9.3"
 description = "Port from .NET to Python of the Neuroglia Framework"
-authors = ["Charles d'Avernas <charles.davernas@neuroglia.io>"]
+authors = ["Charles d'Avernas <charles.davernas@neuroglia.io>", "Bruno van de Werve <bvandewe@gmail.com>"]
 license = "Apache"
 readme = "README.md"
 packages = [
     { include = "neuroglia", from = "src" },
 ]
-
-
-[[tool.poetry.source]]
-name = "gitlab"
-url = "https://ccie-gitlab.ccie.cisco.com/api/v4/projects/703/packages/pypi"
-priority = "supplemental"
-
-[[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
+package-mode = true
 
 [tool.poetry.dependencies]
-python = "^3.12"
-annotated-types = "^0.6.0"
-classy-fastapi = "^0.6.1"
-esdbclient = "^1.0.17"
-fastapi = "^0.109.2"
-grpcio = "^1.60.1"
-httpx = "^0.26.0"
-multipledispatch = "^1.0.0"
-pydantic-settings = "^2.2.0"
-pymongo = "^4.6.1"
-python-dotenv = "^1.0.1"
-rx = "^3.2.0"
-uvicorn = "^0.27.1"
-typing-extensions = "^4.9.0"
-pytest = "^8.1.1"
+python = "^3.9"
+# Core framework dependencies - always required
+annotated-types = "0.7.0"
+classy-fastapi = "0.6.1"
+fastapi = "0.115.5"
+multipledispatch = "1.0.0"
+pydantic-settings = ">=2.7.1,<2.8.0"
+python-dotenv = "1.0.1"
+typing-extensions = "4.12.2"
+rx = { version = "3.2.0" }
+uvicorn = { version = "0.35.0" }
+httpx = { version = "0.27.2" }
+grpcio = { version = "1.76.0" }
+h11 = { version = "0.16.0" }  # Security fix for CVE-2025-43859
+
+# Authentication dependencies
+pyjwt = "2.10.1"
+passlib = { extras = ["bcrypt"], version = "1.7.4" }
+python-multipart = ">=0.0.17,<0.1.0"
+itsdangerous = "2.2.0"
+
+# Core dependencies
+protobuf = "6.33.1"  # Pinned for compatibility with kurrentdbclient, OpenTelemetry, and etcd3-py
+pydantic = {extras = ["email"], version = ">=2.11.7,<2.12.0"}
+email-validator = "2.2.0"
+jinja2 = "3.1.4"
+
+# Optional dependencies - install with extras
+apscheduler = { version = "3.11.0", optional = true }
+redis = { version = "5.2.0", optional = true }
+pymongo = { version = "4.15.4", optional = true }
+motor = { version = "3.7.0", optional = true }
+kurrentdbclient = "1.1.2"
+etcd3-py = { version = "0.1.6", optional = true }  # Maintained fork with protobuf 5.x/6.x support
+
+# OpenTelemetry dependencies - pinned versions for protobuf 6.x compatibility
+opentelemetry-api = "1.38.0"
+opentelemetry-sdk = "1.38.0"
+opentelemetry-exporter-otlp-proto-grpc = "1.38.0"
+opentelemetry-exporter-otlp-proto-http = "1.38.0"
+opentelemetry-instrumentation = "0.59b0"
+opentelemetry-instrumentation-fastapi = "0.59b0"
+opentelemetry-instrumentation-httpx = "0.59b0"
+opentelemetry-instrumentation-logging = "0.59b0"
+opentelemetry-instrumentation-system-metrics = "0.59b0"
+opentelemetry-exporter-prometheus = "0.59b0"  # Prometheus /metrics endpoint support
+prometheus-client = "0.21.0"  # Required by opentelemetry-exporter-prometheus
+boto3 = { version = "1.40.64", optional = true }
+
+[tool.poetry.extras]
+mongodb = ["pymongo", "motor"]
+eventstore = ["kurrentdbclient"]  # Formerly esdbclient
+redis = ["redis"]
+etcd = ["etcd3-py", "protobuf"]
+aws = ["boto3"]
+scheduler = ["apscheduler"]
+all = ["pymongo", "motor", "kurrentdbclient", "redis", "etcd3-py", "protobuf", "boto3", "apscheduler"]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.1"
-pytest-asyncio = "^0.23.5"
-mypy = "^1.8.0"
-autopep8 = "^2.0.4"
-coverage = "^7.4.1"
+# Development and testing dependencies
+pre-commit = "^4.0.1"
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
+mypy = "^1.13.0"
+autopep8 = "^2.3.1"
+coverage = "^7.6.9"
 mypy-extensions = "^1.0.0"
+flake8 = "^7.1.1"
+isort = "^5.13.2"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+# Documentation dependencies
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.5.48"
+mkdocs-mermaid2-plugin = "^1.2.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-line-length = 300
+line-length = 500

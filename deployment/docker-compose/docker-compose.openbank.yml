@@ -1,0 +1,86 @@
+# OpenBank Sample Application - Docker Compose Configuration
+# This file should be used together with docker-compose.shared.yml
+# Usage: docker-compose -f docker-compose.shared.yml -f docker-compose.openbank.yml up
+
+services:
+  # 🏦 OpenBank Application
+  # http://localhost:8899/
+  # http://localhost:8899/docs
+  # http://localhost:8899/api/docs
+  openbank-app:
+    image: openbank-app
+    build:
+      context: ../../ # Project root
+      dockerfile: samples/openbank/Dockerfile
+    command:
+      [
+        "sh",
+        "-c",
+        "pip install debugpy -t /tmp && cd samples/openbank && PYTHONPATH=/tmp:/app/src:/app/samples/openbank python -m debugpy --listen 0.0.0.0:5678 -m uvicorn api.main:app --host 0.0.0.0 --port 8080 --reload --reload-dir /app/samples/openbank --reload-dir /app/src",
+      ]
+    ports:
+      - ${OPENBANK_PORT:-8899}:8080 # Main application port
+      - ${OPENBANK_DEBUG_PORT:-5699}:5678 # Debug port
+    environment:
+      LOCAL_DEV: true
+      LOG_LEVEL: DEBUG
+      PYTHONPATH: "src"
+      CONSUMER_GROUP: openbank-0
+      # Database connections
+      CONNECTION_STRINGS: '{"mongo": "mongodb://root:neuroglia123@mongodb:27017/?authSource=admin", "eventstore": "esdb://eventstoredb:2113?Tls=false"}'
+      # Event streaming
+      CLOUD_EVENT_SINK: http://event-player:8080/events/pub
+      CLOUD_EVENT_SOURCE: https://openbank.io
+      CLOUD_EVENT_TYPE_PREFIX: io.openbank
+      # Authentication
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-pyneuro}
+      KEYCLOAK_CLIENT_ID: openbank-app
+      # Application settings
+      DATA_DIR: /app/data
+      ENABLE_CORS: "true"
+      # OpenTelemetry configuration - Metrics & Traces only (no logging)
+      OTEL_SERVICE_NAME: openbank
+      OTEL_SERVICE_VERSION: 1.0.0
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      # Performance optimizations - DISABLED resource-heavy features:
+      # OTEL_LOGS_EXPORTER: none (no log export)
+      # OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: false (no auto-logging)
+      # OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_*: not set (no header capture)
+    volumes:
+      - ../../:/app # Project root
+      - ../../data/:/app/data
+    networks:
+      - pyneuro-net
+    depends_on:
+      - mongodb
+      - eventstoredb
+      - keycloak
+      - event-player
+
+  # 📊 EventStoreDB (Event Sourcing Database)
+  # http://localhost:2113
+  # Shared event store for event sourcing patterns
+  eventstoredb:
+    image: eventstore/eventstore:24.10.4
+    runtime: runc
+    ports:
+      - "${EVENTSTOREDB_HTTP_PORT:-2113}:2113" # HTTP port
+      - "${EVENTSTOREDB_TCP_PORT:-1113}:1113" # TCP port
+    environment:
+      EVENTSTORE_INSECURE: true
+      EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_START_STANDARD_PROJECTIONS: true
+      EVENTSTORE_HTTP_PORT: 2113
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: true
+    volumes:
+      - eventstoredb_data:/var/lib/eventstore
+    networks:
+      - pyneuro-net
+
+volumes:
+  eventstoredb_data:

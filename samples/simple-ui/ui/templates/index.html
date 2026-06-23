@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Task Manager - Home{% endblock %}
+
+{% block content %}
+    {% include 'components/login_form.html' %}
+    {% include 'components/tasks_section.html' %}
+{% endblock %}
+
+{% block modals %}
+    {% include 'modals/create_task_modal.html' %}
+    {% include 'modals/task_details_modal.html' %}
+    {% include 'modals/confirm_delete_modal.html' %}
+{% endblock %}

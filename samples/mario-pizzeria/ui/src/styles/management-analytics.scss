@@ -1,0 +1,444 @@
+// ============================================================================
+// Management Analytics Dashboard Styles
+// ============================================================================
+
+// Variables
+$analytics-card-bg: #ffffff;
+$analytics-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+$analytics-card-border-radius: 8px;
+$analytics-card-padding: 1.5rem;
+
+$chart-height: 400px;
+$chart-height-mobile: 300px;
+
+$control-section-bg: #f8f9fa;
+$control-section-padding: 1.5rem;
+
+$table-header-bg: #f1f3f5;
+$table-header-font-weight: 600;
+
+$percentage-bar-gradient-start: #007bff;
+$percentage-bar-gradient-end: #0056b3;
+
+// Analytics Dashboard Layout
+.analytics-dashboard {
+    padding: 2rem 0;
+
+    // Section Spacing
+    .analytics-section {
+        margin-bottom: 2rem;
+    }
+
+    // Control Section
+    .controls-section {
+        background: $control-section-bg;
+        padding: $control-section-padding;
+        border-radius: $analytics-card-border-radius;
+        margin-bottom: 2rem;
+
+        .control-group {
+            margin-bottom: 1rem;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: #495057;
+            }
+
+            select,
+            input[type="date"] {
+                width: 100%;
+                padding: 0.5rem;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                font-size: 1rem;
+
+                &:focus {
+                    outline: none;
+                    border-color: #80bdff;
+                    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+                }
+            }
+        }
+
+        .date-range-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+
+            @media (max-width: 768px) {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .apply-filters-btn {
+            margin-top: 1rem;
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+
+            &:disabled {
+                background: #6c757d;
+                cursor: not-allowed;
+                transform: none;
+            }
+        }
+    }
+
+    // Analytics Card
+    .analytics-card {
+        background: $analytics-card-bg;
+        border-radius: $analytics-card-border-radius;
+        padding: $analytics-card-padding;
+        box-shadow: $analytics-card-shadow;
+        margin-bottom: 2rem;
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+
+            h3 {
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: #212529;
+            }
+
+            .card-subtitle {
+                font-size: 0.875rem;
+                color: #6c757d;
+                margin-top: 0.25rem;
+            }
+
+            .card-actions {
+                display: flex;
+                gap: 0.5rem;
+
+                button {
+                    padding: 0.5rem 1rem;
+                    border: 1px solid #dee2e6;
+                    background: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        background: #f8f9fa;
+                        border-color: #adb5bd;
+                    }
+
+                    &.active {
+                        background: #007bff;
+                        color: white;
+                        border-color: #007bff;
+                    }
+                }
+            }
+        }
+
+        .card-body {
+            position: relative;
+        }
+    }
+
+    // Chart Containers
+    .chart-container {
+        position: relative;
+        height: $chart-height;
+        margin-bottom: 1rem;
+
+        @media (max-width: 768px) {
+            height: $chart-height-mobile;
+        }
+
+        canvas {
+            max-height: 100%;
+        }
+
+        .chart-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+
+            .spinner {
+                width: 3rem;
+                height: 3rem;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #007bff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        }
+
+        .chart-no-data {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #6c757d;
+
+            svg {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 1rem;
+                opacity: 0.5;
+            }
+
+            p {
+                margin: 0;
+                font-size: 1rem;
+            }
+        }
+    }
+
+    // Pizza Analytics Table
+    .pizza-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+            tr {
+                background: $table-header-bg;
+
+                th {
+                    padding: 1rem;
+                    text-align: left;
+                    font-weight: $table-header-font-weight;
+                    color: #495057;
+                    border-bottom: 2px solid #dee2e6;
+
+                    &.text-right {
+                        text-align: right;
+                    }
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                border-bottom: 1px solid #dee2e6;
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: #f8f9fa;
+                }
+
+                td {
+                    padding: 1rem;
+
+                    &.text-right {
+                        text-align: right;
+                    }
+
+                    &.pizza-name {
+                        font-weight: 600;
+                        color: #212529;
+                    }
+
+                    &.revenue {
+                        color: #28a745;
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+
+        .percentage-cell {
+            .percentage-value {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: #495057;
+            }
+
+            .percentage-bar-container {
+                width: 100%;
+                height: 8px;
+                background: #e9ecef;
+                border-radius: 4px;
+                overflow: hidden;
+
+                .percentage-bar {
+                    height: 100%;
+                    background: linear-gradient(
+                        90deg,
+                        $percentage-bar-gradient-start 0%,
+                        $percentage-bar-gradient-end 100%
+                    );
+                    border-radius: 4px;
+                    transition: width 0.3s ease-in-out;
+                }
+            }
+        }
+    }
+
+    // Summary Stats Row
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+
+        .stat-box {
+            background: $analytics-card-bg;
+            border-radius: $analytics-card-border-radius;
+            padding: 1.5rem;
+            box-shadow: $analytics-card-shadow;
+            text-align: center;
+
+            .stat-label {
+                font-size: 0.875rem;
+                color: #6c757d;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #212529;
+                margin-bottom: 0.25rem;
+            }
+
+            .stat-change {
+                font-size: 0.875rem;
+                font-weight: 600;
+
+                &.positive {
+                    color: #28a745;
+
+                    &::before {
+                        content: "↑ ";
+                    }
+                }
+
+                &.negative {
+                    color: #dc3545;
+
+                    &::before {
+                        content: "↓ ";
+                    }
+                }
+
+                &.neutral {
+                    color: #6c757d;
+
+                    &::before {
+                        content: "→ ";
+                    }
+                }
+            }
+        }
+    }
+
+    // Responsive Grid for Charts
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+
+        @media (max-width: 1200px) {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-card {
+            // Inherits from .analytics-card
+        }
+    }
+
+    // Empty State
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+
+        svg {
+            width: 128px;
+            height: 128px;
+            margin-bottom: 2rem;
+            opacity: 0.3;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+
+            &:hover {
+                background: #0056b3;
+            }
+        }
+    }
+}
+
+// Print Styles
+@media print {
+    .analytics-dashboard {
+        .controls-section {
+            display: none;
+        }
+
+        .analytics-card {
+            page-break-inside: avoid;
+            box-shadow: none;
+            border: 1px solid #dee2e6;
+        }
+
+        .card-actions {
+            display: none;
+        }
+    }
+}

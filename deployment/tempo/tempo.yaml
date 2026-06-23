@@ -1,0 +1,71 @@
+# Grafana Tempo Configuration
+# Distributed tracing backend for storing and querying traces
+
+server:
+  http_listen_port: 3200
+  log_level: info
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+ingester:
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 48h
+
+querier:
+  frontend_worker:
+    frontend_address: localhost:9095
+  search:
+    query_timeout: 30s
+
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 1.073741824e+09
+  trace_by_id:
+    duration_slo: 5s
+  metrics:
+    concurrent_jobs: 8
+    target_bytes_per_job: 1.25e+09  # ~1.25GB for on-prem
+    max_duration: 3h
+
+# metrics_generator temporarily disabled due to WAL configuration issues
+# metrics_generator:
+#   registry:
+#     external_labels:
+#       source: tempo
+#       cluster: mario-pizzeria
+#   storage:
+#     path: /tmp/tempo/generator/wal
+#     remote_write:
+#       - url: http://prometheus:9090/api/v1/write
+#         send_exemplars: true
+#   processor:
+#     local_blocks:
+#       filter_server_spans: false
+#       flush_to_storage: true
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /tmp/tempo/wal
+    local:
+      path: /tmp/tempo/blocks
+
+overrides:
+  metrics_generator_processors:
+    - service-graphs
+    - span-metrics
+    - local-blocks

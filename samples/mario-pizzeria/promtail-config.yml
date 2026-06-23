@@ -1,0 +1,94 @@
+# Promtail Configuration for Mario's Pizzeria
+# Collects logs from Docker containers and forwards to Loki
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker container logs
+  - job_name: docker-containers
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: dockerlogs
+          __path__: /var/lib/docker/containers/*/*-json.log
+
+    pipeline_stages:
+      # Parse Docker JSON log format
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            time: time
+            container_name: attrs.name
+            image_name: attrs.image
+
+      # Extract service name from container
+      - regex:
+          expression: '^mario-pizzeria-(?P<service>.+)-\d+$'
+          source: container_name
+
+      # Add labels based on extracted info
+      - labels:
+          stream:
+          service:
+          container_name:
+          image_name:
+
+      # Parse application JSON logs if present
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            trace_id: trace_id
+            span_id: span_id
+            operation: operation
+            duration_ms: duration_ms
+          source: output
+
+      # Add structured log labels
+      - labels:
+          level:
+          operation:
+
+      # Parse timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+          fallback_formats:
+            - '2006-01-02T15:04:05.000Z'
+            - '2006-01-02 15:04:05,000'
+
+  # System logs (optional)
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          __path__: /var/log/*log
+
+    pipeline_stages:
+      - match:
+          selector: '{job="varlogs"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\S+\s+\d+\s+\S+)\s+(?P<level>\S+)?\s*(?P<message>.*)'
+
+            - labels:
+                level:
+
+# Limits to prevent resource exhaustion
+limits_config:
+  readline_rate: 100
+  readline_burst: 1000
+  max_concurrent_tail: 100

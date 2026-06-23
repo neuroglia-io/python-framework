@@ -9,7 +9,7 @@ from neuroglia.eventing.cloud_events.infrastructure import CloudEventIngestor, C
 from neuroglia.eventing.cloud_events.infrastructure.cloud_event_publisher import CloudEventPublisher
 from neuroglia.hosting.configuration.data_access_layer import DataAccessLayer
 from neuroglia.hosting.web import ExceptionHandlingMiddleware, WebApplicationBuilder
-from neuroglia.log.logger import configure_logging
+from neuroglia.logging.logger import configure_logging
 from neuroglia.mapping.mapper import Mapper
 from neuroglia.mediation.mediator import Mediator, RequestHandler
 from neuroglia.serialization.json import JsonSerializer
@@ -33,7 +33,7 @@ JsonSerializer.configure(builder)
 builder.services.add_transient(RequestHandler, AccountsByOwnerQueryHandler)  # todo: remove when mediator is fixed
 CloudEventIngestor.configure(builder, ["samples.openbank.application.events.integration"])
 CloudEventPublisher.configure(builder)
-ESEventStore.configure(builder, EventStoreOptions(database_name))
+ESEventStore.configure(builder, EventStoreOptions(database_name, consumer_group))
 DataAccessLayer.WriteModel.configure(builder, ["samples.openbank.domain.models"], lambda builder_, entity_type, key_type: EventSourcingRepository.configure(builder_, entity_type, key_type))
 DataAccessLayer.ReadModel.configure(builder, ["samples.openbank.integration.models", "samples.openbank.application.events"], lambda builder_, entity_type, key_type: MongoRepository.configure(builder_, entity_type, key_type, database_name))
 

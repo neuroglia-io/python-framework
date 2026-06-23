@@ -1,0 +1,296 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Menu Management - Mario's Pizzeria{% endblock %}
+
+{% block content %}
+<div class="menu-management">
+    <div class="page-header">
+        <div>
+            <h1>🍕 Menu Management</h1>
+            <p class="subtitle">Manage your pizza menu - add, edit, or remove items</p>
+        </div>
+        <button class="btn btn-primary" onclick="showAddPizzaModal()">
+            <i class="icon">➕</i> Add New Pizza
+        </button>
+    </div>
+
+    <!-- Notification Area -->
+    <div id="notification-area"></div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="loading-state" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading pizzas...</p>
+    </div>
+
+    <!-- Pizza Grid -->
+    <div id="pizza-grid" class="pizza-grid">
+        <!-- Pizzas will be dynamically loaded here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-icon">🍕</div>
+        <h3>No pizzas in the menu</h3>
+        <p>Start by adding your first pizza to the menu</p>
+        <button class="btn btn-primary" onclick="showAddPizzaModal()">
+            Add Your First Pizza
+        </button>
+    </div>
+</div>
+
+<!-- Modals (at body level for proper overlay, but inside content block so they render) -->
+<!-- Add Pizza Modal -->
+<div id="add-pizza-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Pizza</h2>
+            <button class="modal-close" onclick="closeAddPizzaModal()">&times;</button>
+        </div>
+        <form id="add-pizza-form" onsubmit="handleAddPizza(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="add-name">Pizza Name *</label>
+                    <input
+                        type="text"
+                        id="add-name"
+                        name="name"
+                        required
+                        placeholder="e.g., Margherita"
+                        class="form-control"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="add-base-price">Base Price ($) *</label>
+                        <input
+                            type="number"
+                            id="add-base-price"
+                            name="basePrice"
+                            step="0.01"
+                            min="0.01"
+                            required
+                            placeholder="12.99"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="add-size">Size *</label>
+                        <select id="add-size" name="size" required class="form-control">
+                            <option value="">Select size...</option>
+                            <option value="SMALL">Small</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="LARGE">Large</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Toppings</label>
+                    <div class="toppings-selector">
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Cheese">
+                            <span>Cheese</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Tomato Sauce">
+                            <span>Tomato Sauce</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Pepperoni">
+                            <span>Pepperoni</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Mushrooms">
+                            <span>Mushrooms</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Onions">
+                            <span>Onions</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Bell Peppers">
+                            <span>Bell Peppers</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Olives">
+                            <span>Olives</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Sausage">
+                            <span>Sausage</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Bacon">
+                            <span>Bacon</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Ham">
+                            <span>Ham</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Pineapple">
+                            <span>Pineapple</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Spinach">
+                            <span>Spinach</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddPizzaModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="icon">✓</i> Add Pizza
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Pizza Modal -->
+<div id="edit-pizza-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Pizza</h2>
+            <button class="modal-close" onclick="closeEditPizzaModal()">&times;</button>
+        </div>
+        <form id="edit-pizza-form" onsubmit="handleEditPizza(event)">
+            <input type="hidden" id="edit-pizza-id" name="pizzaId">
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-name">Pizza Name *</label>
+                    <input
+                        type="text"
+                        id="edit-name"
+                        name="name"
+                        required
+                        class="form-control"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-base-price">Base Price ($) *</label>
+                        <input
+                            type="number"
+                            id="edit-base-price"
+                            name="basePrice"
+                            step="0.01"
+                            min="0.01"
+                            required
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-size">Size *</label>
+                        <select id="edit-size" name="size" required class="form-control">
+                            <option value="SMALL">Small</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="LARGE">Large</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Toppings</label>
+                    <div class="toppings-selector">
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Cheese">
+                            <span>Cheese</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Tomato Sauce">
+                            <span>Tomato Sauce</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Pepperoni">
+                            <span>Pepperoni</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Mushrooms">
+                            <span>Mushrooms</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Onions">
+                            <span>Onions</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Bell Peppers">
+                            <span>Bell Peppers</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Olives">
+                            <span>Olives</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Sausage">
+                            <span>Sausage</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Bacon">
+                            <span>Bacon</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Ham">
+                            <span>Ham</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Pineapple">
+                            <span>Pineapple</span>
+                        </label>
+                        <label class="topping-option">
+                            <input type="checkbox" name="toppings" value="Spinach">
+                            <span>Spinach</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditPizzaModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="icon">✓</i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-pizza-modal" class="modal">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h2>Confirm Delete</h2>
+            <button class="modal-close" onclick="closeDeletePizzaModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to remove <strong id="delete-pizza-name"></strong> from the menu?</p>
+            <p class="text-muted">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeletePizzaModal()">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeletePizza()">
+                <i class="icon">🗑️</i> Delete Pizza
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/dist/scripts/management-menu.js"></script>
+{% endblock %}

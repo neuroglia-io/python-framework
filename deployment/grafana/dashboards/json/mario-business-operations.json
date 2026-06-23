@@ -1,0 +1,536 @@
+{
+    "id": null,
+    "title": "Mario's Pizzeria - Business Operations",
+    "tags": [
+        "mario",
+        "pizzeria",
+        "business",
+        "kpi"
+    ],
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 1,
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+        "list": []
+    },
+    "annotations": {
+        "list": []
+    },
+    "panels": [
+        {
+            "id": 1,
+            "title": "Orders Created (Total)",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(mario_orders_created_orders_total)",
+                    "legendFormat": "Total Orders",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 0
+            }
+        },
+        {
+            "id": 2,
+            "title": "Orders Completed (Total)",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(mario_orders_completed_orders_total)",
+                    "legendFormat": "Completed Orders",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 6,
+                "y": 0
+            }
+        },
+        {
+            "id": 3,
+            "title": "Total Revenue (USD)",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(mario_orders_value_USD_sum)",
+                    "legendFormat": "Total Revenue",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "currencyUSD"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 0
+            }
+        },
+        {
+            "id": 4,
+            "title": "Pizzas Ordered (Total)",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(mario_pizzas_ordered_pizzas_total)",
+                    "legendFormat": "Total Pizzas",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 0
+            }
+        },
+        {
+            "id": 5,
+            "title": "Order Rate (per minute)",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "rate(mario_orders_created_orders_total[1m]) * 60",
+                    "legendFormat": "Orders/min",
+                    "refId": "A"
+                }
+            ],
+            "yAxes": [
+                {
+                    "label": "Orders per Minute",
+                    "show": true
+                },
+                {
+                    "show": true
+                }
+            ],
+            "xAxis": {
+                "show": true
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            }
+        },
+        {
+            "id": 6,
+            "title": "Revenue Rate (USD per minute)",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "rate(mario_orders_value_USD_sum[1m]) * 60",
+                    "legendFormat": "Revenue/min (USD)",
+                    "refId": "A"
+                }
+            ],
+            "yAxes": [
+                {
+                    "label": "USD per Minute",
+                    "show": true
+                },
+                {
+                    "show": true
+                }
+            ],
+            "xAxis": {
+                "show": true
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            }
+        },
+        {
+            "id": 7,
+            "title": "Orders by Payment Method",
+            "type": "piechart",
+            "targets": [
+                {
+                    "expr": "sum by (payment_method) (mario_orders_created_orders_total)",
+                    "legendFormat": "{{payment_method}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        }
+                    },
+                    "mappings": []
+                }
+            },
+            "options": {
+                "pieType": "pie",
+                "tooltip": {
+                    "mode": "single"
+                },
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 16
+            }
+        },
+        {
+            "id": 8,
+            "title": "Pizzas by Size Distribution",
+            "type": "piechart",
+            "targets": [
+                {
+                    "expr": "sum by (size) (mario_pizzas_by_size_pizzas_total)",
+                    "legendFormat": "{{size}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        }
+                    },
+                    "mappings": []
+                }
+            },
+            "options": {
+                "pieType": "pie",
+                "tooltip": {
+                    "mode": "single"
+                },
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 16
+            }
+        },
+        {
+            "id": 9,
+            "title": "Pizza Orders by Type",
+            "type": "barchart",
+            "targets": [
+                {
+                    "expr": "sum by (pizza_name) (mario_pizzas_ordered_pizzas_total)",
+                    "legendFormat": "{{pizza_name}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 24
+            }
+        },
+        {
+            "id": 10,
+            "title": "Average Order Value",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(mario_orders_value_USD_sum) / sum(mario_orders_value_USD_count)",
+                    "legendFormat": "Avg Order Value",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 15
+                            },
+                            {
+                                "color": "red",
+                                "value": 25
+                            }
+                        ]
+                    },
+                    "unit": "currencyUSD"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 24
+            }
+        },
+        {
+            "id": 11,
+            "title": "Completion Rate (%)",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "(sum(mario_orders_completed_orders_total) / sum(mario_orders_created_orders_total)) * 100",
+                    "legendFormat": "Completion %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "green",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 24
+            }
+        },
+        {
+            "id": 12,
+            "title": "Average Cooking Time",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "rate(mario_kitchen_cooking_duration_seconds_sum[5m]) / rate(mario_kitchen_cooking_duration_seconds_count[5m])",
+                    "legendFormat": "Avg Cooking Time (seconds)",
+                    "refId": "A"
+                }
+            ],
+            "yAxes": [
+                {
+                    "label": "Seconds",
+                    "show": true
+                },
+                {
+                    "show": true
+                }
+            ],
+            "xAxis": {
+                "show": true
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 32
+            }
+        }
+    ]
+}

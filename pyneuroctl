@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+# PyNeuroctl - Neuroglia Python Framework CLI Wrapper
+# This allows calling "pyneuroctl" directly instead of "python src/cli/pyneuroctl.py"
+
+# Resolve symlinks to get the actual script location
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+PYTHON_CLI="$SCRIPT_DIR/src/cli/pyneuroctl.py"
+
+# Check if Python CLI exists
+if [ ! -f "$PYTHON_CLI" ]; then
+    echo "❌ Error: Python CLI not found at $PYTHON_CLI"
+    exit 1
+fi
+
+# Function to find the best Python executable
+find_python() {
+    # Check for local virtual environment first (faster)
+    if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
+        echo "$SCRIPT_DIR/.venv/bin/python"
+        return
+    fi
+    
+    # Check for Poetry
+    if command -v poetry >/dev/null 2>&1 && [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
+        # Change to the script directory for Poetry operations
+        cd "$SCRIPT_DIR"
+        # Check if Poetry can find environment (Poetry handles virtual env location)
+        if poetry env info --path >/dev/null 2>&1; then
+            echo "poetry" "run" "python"
+            return
+        fi
+    fi
+    
+    # Check for pyenv with pyneuro environment
+    if command -v pyenv >/dev/null 2>&1; then
+        if pyenv versions | grep -q "pyneuro"; then
+            # Try to activate pyneuro environment
+            export PYENV_VERSION=pyneuro
+            if command -v python >/dev/null 2>&1; then
+                echo "python"
+                return
+            fi
+        fi
+    fi
+    
+    # Check if Python 3 is available
+    if command -v python3 >/dev/null 2>&1; then
+        echo "python3"
+        return
+    fi
+    
+    # Fallback to python
+    if command -v python >/dev/null 2>&1; then
+        echo "python"
+        return
+    fi
+    
+    echo ""
+}
+
+# Get the Python command
+PYTHON_CMD=$(find_python)
+
+if [ -z "$PYTHON_CMD" ]; then
+    echo "❌ Error: No suitable Python interpreter found"
+    echo "💡 Please install Python 3 or set up a virtual environment"
+    echo "   For pyneuro development, try: pyenv activate pyneuro"
+    exit 1
+fi
+
+# Set up Python path to include src directory for proper imports
+export PYTHONPATH="$SCRIPT_DIR/src:$PYTHONPATH"
+
+# Execute the Python CLI with all arguments
+if [ "$PYTHON_CMD" = "poetry run python" ]; then
+    cd "$SCRIPT_DIR"
+    exec poetry run python "$PYTHON_CLI" "$@"
+else
+    exec $PYTHON_CMD "$PYTHON_CLI" "$@"
+fi

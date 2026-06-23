@@ -1,0 +1,251 @@
+{
+    "realm": "pyneuro",
+    "displayName": "Neuroglia Python Framework",
+    "enabled": true,
+    "sslRequired": "none",
+    "registrationAllowed": true,
+    "loginWithEmailAllowed": true,
+    "duplicateEmailsAllowed": false,
+    "resetPasswordAllowed": true,
+    "editUsernameAllowed": false,
+    "bruteForceProtected": false,
+    "rememberMe": true,
+    "verifyEmail": false,
+    "loginTheme": "keycloak",
+    "adminTheme": "keycloak",
+    "emailTheme": "keycloak",
+    "accessTokenLifespan": 1500,
+    "ssoSessionIdleTimeout": 1800,
+    "ssoSessionMaxLifespan": 36000,
+    "offlineSessionIdleTimeout": 2592000,
+    "offlineSessionMaxLifespanEnabled": false,
+    "offlineSessionMaxLifespan": 5184000,
+    "internationalizationEnabled": true,
+    "roles": {
+        "realm": [
+            {
+                "name": "admin",
+                "description": "Administrator role with full access to all applications"
+            },
+            {
+                "name": "manager",
+                "description": "Manager role with elevated privileges"
+            },
+            {
+                "name": "user",
+                "description": "Standard user role for general application access"
+            },
+            {
+                "name": "customer",
+                "description": "Customer role for ordering pizzas (Mario's Pizzeria)"
+            },
+            {
+                "name": "delivery_driver",
+                "description": "Delivery driver role (Mario's Pizzeria)"
+            },
+            {
+                "name": "chef",
+                "description": "Kitchen staff role (Mario's Pizzeria)"
+            },
+            {
+                "name": "operator",
+                "description": "Operator role for system operations"
+            }
+        ]
+    },
+    "users": [
+        {
+            "username": "admin",
+            "email": "admin@pyneuro.io",
+            "firstName": "System",
+            "lastName": "Administrator",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "test",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "admin",
+                "manager"
+            ]
+        },
+        {
+            "username": "manager",
+            "email": "manager@pyneuro.io",
+            "firstName": "System",
+            "lastName": "Manager",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "test",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "manager"
+            ]
+        },
+        {
+            "username": "customer",
+            "email": "customer@mario-pizzeria.com",
+            "firstName": "Mario",
+            "lastName": "Customer",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "test",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "customer"
+            ]
+        },
+        {
+            "username": "driver",
+            "email": "driver@mario-pizzeria.com",
+            "firstName": "Mario",
+            "lastName": "Driver",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "test",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "delivery_driver"
+            ]
+        },
+        {
+            "username": "chef",
+            "email": "chef@mario-pizzeria.com",
+            "firstName": "Luigi",
+            "lastName": "Chef",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "test",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "chef",
+                "operator"
+            ]
+        },
+        {
+            "username": "user",
+            "email": "user@mario-pizzeria.com",
+            "firstName": "Roberto",
+            "lastName": "User",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "test",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "user"
+            ]
+        }
+    ],
+    "clients": [
+        {
+            "clientId": "mario-app",
+            "name": "Mario's Pizzeria Application",
+            "enabled": true,
+            "publicClient": false,
+            "secret": "mario-secret-123",
+            "redirectUris": [
+                "http://localhost:8080/*",
+                "http://localhost:8085/*",
+                "http://localhost:3000/*"
+            ],
+            "webOrigins": [
+                "http://localhost:8080",
+                "http://localhost:8085",
+                "http://localhost:3000"
+            ],
+            "standardFlowEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "serviceAccountsEnabled": true
+        },
+        {
+            "clientId": "mario-public-app",
+            "name": "Mario's Pizzeria Public Client",
+            "enabled": true,
+            "publicClient": true,
+            "protocol": "openid-connect",
+            "redirectUris": [
+                "http://localhost:8080/*",
+                "http://localhost:8085/*",
+                "http://localhost:3000/*"
+            ],
+            "webOrigins": [
+                "http://localhost:8080",
+                "http://localhost:8085",
+                "http://localhost:3000"
+            ],
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": true,
+            "fullScopeAllowed": true
+        },
+        {
+            "clientId": "simple-ui-app",
+            "name": "Simple UI Application",
+            "enabled": true,
+            "publicClient": true,
+            "protocol": "openid-connect",
+            "redirectUris": [
+                "http://localhost:8082/*",
+                "http://localhost:3000/*"
+            ],
+            "webOrigins": [
+                "http://localhost:8082",
+                "http://localhost:3000"
+            ],
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": true,
+            "fullScopeAllowed": true
+        },
+        {
+            "clientId": "pyneuro-public",
+            "name": "Pyneuro Framework Public Client",
+            "enabled": true,
+            "publicClient": true,
+            "protocol": "openid-connect",
+            "redirectUris": [
+                "http://localhost:*/*",
+                "http://localhost:8085/*",
+                "http://127.0.0.1:*/*"
+            ],
+            "webOrigins": [
+                "http://localhost:*",
+                "http://localhost:8085",
+                "http://127.0.0.1:*"
+            ],
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": true,
+            "fullScopeAllowed": true
+        }
+    ]
+}

@@ -1,0 +1,220 @@
+{% extends "layouts/base.html" %}
+
+{% block head %}
+<!-- Management analytics styles are loaded from ui/src/styles/management-analytics.scss via Parcel -->
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid analytics-dashboard mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-graph-up"></i> Sales Analytics</h2>
+            <p class="text-muted">Analyze orders, revenue, and pizza popularity trends</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/management" class="btn btn-outline-primary">
+                <i class="bi bi-speedometer2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range and Period Controls -->
+    <div class="controls-section">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="control-group">
+                    <label for="dateRange">
+                        <i class="bi bi-calendar-range"></i> Date Range
+                    </label>
+                    <select id="dateRange" class="form-select">
+                        <option value="today">Today</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month" selected>Last 30 Days</option>
+                        <option value="quarter">Last 90 Days</option>
+                        <option value="year">Last Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="control-group">
+                    <label for="periodType">
+                        <i class="bi bi-graph-up-arrow"></i> Group By
+                    </label>
+                    <select id="periodType" class="form-select">
+                        <option value="day" selected>Daily</option>
+                        <option value="week">Weekly</option>
+                        <option value="month">Monthly</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4" id="customDateInputs" style="display: none;">
+                <div class="control-group">
+                    <label>Custom Date Range</label>
+                    <div class="date-range-inputs">
+                        <input type="date" id="startDate" class="form-control" />
+                        <input type="date" id="endDate" class="form-control" />
+                    </div>
+                    <button id="applyFilters" class="apply-filters-btn">
+                        <i class="bi bi-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="summary-stats">
+        <div class="stat-box">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value" id="summaryTotalOrders">-</div>
+            <div class="stat-change neutral" id="summaryOrdersChange">Loading...</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="summaryTotalRevenue">$0.00</div>
+            <div class="stat-change neutral" id="summaryRevenueChange">Loading...</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Avg Order Value</div>
+            <div class="stat-value" id="summaryAvgOrderValue">$0.00</div>
+            <div class="stat-change neutral">-</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Orders Delivered</div>
+            <div class="stat-value" id="summaryDelivered">-</div>
+            <div class="stat-change neutral" id="summaryDeliveryRate">-</div>
+        </div>
+    </div>
+
+    <!-- Revenue and Orders Trend Charts -->
+    <div class="charts-grid">
+        <div class="analytics-card chart-card">
+            <div class="card-header">
+                <div>
+                    <h3>Revenue Trends</h3>
+                    <div class="card-subtitle">Total revenue over selected period</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-card chart-card">
+            <div class="card-header">
+                <div>
+                    <h3>Order Volume</h3>
+                    <div class="card-subtitle">Orders, deliveries, and cancellations</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pizza Popularity Section -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Pizza Popularity</h3>
+                        <div class="card-subtitle">Revenue by pizza type</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="pizzaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Top Pizzas</h3>
+                        <div class="card-subtitle">By revenue contribution</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="pizza-table" id="pizzaTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Pizza</th>
+                                <th class="text-right">Orders</th>
+                                <th class="text-right">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="bi bi-hourglass-split"></i> Loading data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Pizza Analytics Table -->
+    <div class="analytics-card">
+        <div class="card-header">
+            <div>
+                <h3>Detailed Pizza Analytics</h3>
+                <div class="card-subtitle">Complete breakdown with percentages</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="pizza-table" id="pizzaTableDetailed">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Pizza Name</th>
+                            <th class="text-right">Total Orders</th>
+                            <th class="text-right">Total Revenue</th>
+                            <th class="text-right">Avg Price</th>
+                            <th class="text-right">% of Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="bi bi-hourglass-split"></i> Loading data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State (hidden by default, shown when no data) -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <h3>No Data Available</h3>
+        <p>There are no orders in the selected date range.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('dateRange').value='month'; document.getElementById('dateRange').dispatchEvent(new Event('change'));">
+            View Last 30 Days
+        </button>
+    </div>
+</div>
+
+<!-- Load analytics JavaScript module -->
+<script type="module" src="/static/dist/scripts/management-analytics.js"></script>
+{% endblock %}

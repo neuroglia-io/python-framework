@@ -1,0 +1,109 @@
+# OpenTelemetry Collector Configuration
+# This collector receives telemetry from the Mario Pizzeria application
+# and exports it to Tempo (traces), Prometheus (metrics), and Loki (logs)
+
+receivers:
+  # OTLP receiver for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://localhost:*"
+            - "http://127.0.0.1:*"
+
+  # Prometheus receiver for scraping the collector's own metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+
+processors:
+  # Batch processor - batches telemetry data before export (reduces network calls)
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  # Memory limiter - prevents collector from running out of memory
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Resource processor - adds/modifies resource attributes
+  resource:
+    attributes:
+      - key: service.name
+        value: mario-pizzeria
+        action: upsert
+      - key: deployment.environment
+        value: development
+        action: upsert
+
+  # Attributes processor - adds custom attributes to spans
+  attributes:
+    actions:
+      - key: collector.version
+        value: "0.110.0"
+        action: insert
+
+exporters:
+  # Console exporter for debugging (logs telemetry to collector stdout)
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # Tempo exporter for distributed tracing
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Prometheus exporter for metrics
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      collector: "mario-pizzeria-otel"
+
+  # Loki exporter for logs
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    tls:
+      insecure: true
+
+service:
+  # Telemetry configuration for the collector itself
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888
+
+  # Pipeline definitions
+  pipelines:
+    # Traces pipeline: OTLP receiver → processors → Tempo exporter
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, attributes]
+      exporters: [otlp/tempo, debug]
+
+    # Metrics pipeline: OTLP + Prometheus receivers → processors → Prometheus exporter
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, batch, resource]
+      exporters: [prometheus, debug]
+
+    # Logs pipeline: OTLP receiver → processors → Loki exporter
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [loki, debug]
+
+  extensions: []

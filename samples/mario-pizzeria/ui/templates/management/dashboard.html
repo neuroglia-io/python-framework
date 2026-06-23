@@ -1,0 +1,198 @@
+{% extends "layouts/base.html" %}
+
+{% block head %}
+<!-- Management dashboard styles are loaded from ui/src/styles/management.scss via Parcel -->
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Connection Status Indicator -->
+    <div id="connectionStatus" class="connection-status connected">
+        <span id="statusText">Live Updates Active</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-speedometer2"></i> Management Dashboard</h2>
+            <p class="text-muted">Real-time overview of restaurant operations</p>
+        </div>
+    </div>
+
+    {% if statistics %}
+    <!-- Today's Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Total Orders Today</div>
+                    <p class="stat-value" id="totalOrdersToday">{{ statistics.total_orders_today }}</p>
+                    <div class="stat-change {% if statistics.orders_change_percent >= 0 %}positive{% else %}negative{% endif %}">
+                        <i class="bi {% if statistics.orders_change_percent >= 0 %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <span id="ordersChange">{{ statistics.orders_change_percent }}%</span> vs yesterday
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Revenue Today</div>
+                    <p class="stat-value" id="revenueToday">${{ statistics.revenue_today }}</p>
+                    <div class="stat-change {% if statistics.revenue_change_percent >= 0 %}positive{% else %}negative{% endif %}">
+                        <i class="bi {% if statistics.revenue_change_percent >= 0 %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <span id="revenueChange">{{ statistics.revenue_change_percent }}%</span> vs yesterday
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Avg Order Value</div>
+                    <p class="stat-value">${{ statistics.average_order_value_today }}</p>
+                    <div class="text-muted small">Per order today</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Active Orders</div>
+                    <p class="stat-value text-warning" id="activeOrders">{{ statistics.active_orders }}</p>
+                    <div class="text-muted small">Currently in pipeline</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kitchen Status Section -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="kitchen-section">
+                <h4><i class="bi bi-shop"></i> Kitchen Status</h4>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-value" id="ordersConfirmed">{{ statistics.orders_confirmed }}</div>
+                        <div class="metric-label">Confirmed</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="ordersCooking">{{ statistics.orders_cooking }}</div>
+                        <div class="metric-label">Cooking</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="ordersReady">{{ statistics.orders_ready }}</div>
+                        <div class="metric-label">Ready</div>
+                    </div>
+                </div>
+                {% if statistics.average_prep_time_minutes %}
+                <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.3);">
+                    <i class="bi bi-clock"></i> Avg Prep Time:
+                    <strong>{{ statistics.average_prep_time_minutes }} minutes</strong>
+                </div>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="/kitchen" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-right"></i> Go to Kitchen Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Status Section -->
+        <div class="col-lg-6">
+            <div class="delivery-section">
+                <h4><i class="bi bi-truck"></i> Delivery Status</h4>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-value" id="ordersDelivering">{{ statistics.orders_delivering }}</div>
+                        <div class="metric-label">Out for Delivery</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">{{ statistics.orders_delivered_today }}</div>
+                        <div class="metric-label">Delivered Today</div>
+                    </div>
+                </div>
+                {% if statistics.average_delivery_time_minutes %}
+                <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.3);">
+                    <i class="bi bi-clock"></i> Avg Delivery Time:
+                    <strong>{{ statistics.average_delivery_time_minutes }} minutes</strong>
+                </div>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="/delivery" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-right"></i> Go to Delivery Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col">
+            <h4 class="mb-3">Quick Actions</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="/management/operations" class="quick-action-card">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3" style="font-size: 3rem;">📊</div>
+                        <h5 class="card-title">Operations Monitor</h5>
+                        <p class="card-text text-muted">View kitchen & delivery in real-time</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="/management/menu" class="quick-action-card">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3" style="font-size: 3rem;">🍕</div>
+                        <h5 class="card-title">Menu Management</h5>
+                        <p class="card-text text-muted">Add, edit, or remove menu items</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="/management/analytics" class="quick-action-card">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3" style="font-size: 3rem;">📈</div>
+                        <h5 class="card-title">Analytics</h5>
+                        <p class="card-text text-muted">Charts, trends, and insights</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="/kitchen" class="quick-action-card">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3" style="font-size: 3rem;">👨‍🍳</div>
+                        <h5 class="card-title">Kitchen Dashboard</h5>
+                        <p class="card-text text-muted">Manage order preparation</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> Unable to load statistics. Please try again.
+    </div>
+    {% endif %}
+</div>
+
+<!-- Management Dashboard Script (loaded from ui/src/scripts/management-dashboard.js via Parcel) -->
+<script type="module" src="/static/dist/scripts/management-dashboard.js"></script>
+{% endblock %}

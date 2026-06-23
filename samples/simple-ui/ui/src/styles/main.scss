@@ -1,0 +1,44 @@
+/**
+ * Main Stylesheet
+ * Imports Bootstrap and all custom component styles
+ */
+
+// Import custom variables first (to override Bootstrap defaults)
+@import "variables";
+
+// Import Bootstrap
+@import "~bootstrap/scss/bootstrap";
+
+// Note: Bootstrap Icons are loaded separately via CDN in HTML
+// This avoids font loading issues with Parcel
+
+// Import custom component styles
+@import "components/navbar";
+@import "components/login";
+@import "components/tasks";
+@import "components/spinner";
+
+// Global styles
+body {
+  font-family: $font-family-base;
+  background-color: $body-bg;
+}
+
+// Utility classes
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

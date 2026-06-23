@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario's Pizzeria - Order Online</title>
+    <style>
+        :root {
+            --primary-color: #d32f2f;
+            --secondary-color: #2e7d32;
+            --background-color: #f8f8f8;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        .section {
+            background-color: white;
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pizza-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .pizza-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .pizza-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .pizza-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            float: right;
+        }
+
+        .pizza-toppings {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #b71c1c;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #1b5e20;
+        }
+
+        .orders-section {
+            display: none;
+        }
+
+        .order-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cooking {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-ready {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        footer {
+            background-color: var(--text-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">🍕 Mario's Pizzeria</div>
+            <div class="subtitle">Authentic Italian Pizza Since 1952</div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('menu')" class="active" id="menu-link">Menu</a></li>
+                <li><a href="#" onclick="showSection('orders')" id="orders-link">My Orders</a></li>
+                <li><a href="#" onclick="showSection('kitchen')" id="kitchen-link">Kitchen Status</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <!-- Menu Section -->
+            <div id="menu-section" class="section">
+                <h2>Our Delicious Pizzas</h2>
+                <div id="menu-grid" class="menu-grid">
+                    <div class="loading">Loading menu...</div>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="orders-section" class="section orders-section">
+                <h2>Your Orders</h2>
+                <div id="orders-list">
+                    <div class="loading">Loading orders...</div>
+                </div>
+            </div>
+
+            <!-- Kitchen Status Section -->
+            <div id="kitchen-section" class="section orders-section">
+                <h2>Kitchen Status</h2>
+                <div id="kitchen-status">
+                    <div class="loading">Loading kitchen status...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Mario's Pizzeria. Built with Neuroglia Framework. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE_URL = '/api';
+
+        // Navigation
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+
+            // Show selected section
+            document.getElementById(`${section}-section`).style.display = 'block';
+            document.getElementById(`${section}-link`).classList.add('active');
+
+            // Load section data
+            switch(section) {
+                case 'menu':
+                    loadMenu();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'kitchen':
+                    loadKitchenStatus();
+                    break;
+            }
+        }
+
+        // Load menu from API
+        async function loadMenu() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/menu/`);
+                const menu = await response.json();
+
+                const menuGrid = document.getElementById('menu-grid');
+                menuGrid.innerHTML = menu.map(pizza => `
+                    <div class="pizza-card">
+                        <div class="pizza-name">${pizza.name}</div>
+                        <div class="pizza-price">$${pizza.base_price}</div>
+                        <div class="pizza-toppings">
+                            <strong>Size:</strong> ${pizza.size}<br>
+                            <strong>Toppings:</strong> ${pizza.toppings.join(', ')}
+                        </div>
+                        <button class="btn" onclick="orderPizza('${pizza.id}', '${pizza.name}')">
+                            Order Now
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('menu-grid').innerHTML =
+                    `<div class="error">Failed to load menu: ${error.message}</div>`;
+            }
+        }
+
+        // Load orders from API
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/`);
+                const orders = await response.json();
+
+                const ordersList = document.getElementById('orders-list');
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<p>No orders found. Order some delicious pizza!</p>';
+                    return;
+                }
+
+                ordersList.innerHTML = orders.map(order => `
+                    <div class="order-item">
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div>
+                                <strong>Order #${order.id.substring(0, 8)}</strong><br>
+                                <span class="order-status status-${order.status}">${order.status}</span><br>
+                                <strong>Customer:</strong> ${order.customer_name}<br>
+                                <strong>Total:</strong> $${order.total_amount}<br>
+                                <strong>Pizzas:</strong> ${order.pizza_count}<br>
+                                <strong>Ordered:</strong> ${new Date(order.order_time).toLocaleString()}
+                                ${order.notes ? `<br><strong>Notes:</strong> ${order.notes}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('orders-list').innerHTML =
+                    `<div class="error">Failed to load orders: ${error.message}</div>`;
+            }
+        }
+
+        // Load kitchen status from API
+        async function loadKitchenStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitchen/status`);
+                const status = await response.json();
+
+                const kitchenStatus = document.getElementById('kitchen-status');
+                kitchenStatus.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <h3>Pending Orders</h3>
+                            <div style="font-size: 2rem; font-weight: bold; color: #856404;">${status.total_pending}</div>
+                        </div>
+                        <div style="background: #d1ecf1; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <h3>Cooking</h3>
+                            <div style="font-size: 2rem; font-weight: bold; color: #0c5460;">${status.total_cooking}</div>
+                        </div>
+                        <div style="background: #d4edda; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <h3>Ready</h3>
+                            <div style="font-size: 2rem; font-weight: bold; color: #155724;">${status.total_ready}</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <h3>Avg Wait Time</h3>
+                            <div style="font-size: 2rem; font-weight: bold; color: #6c757d;">${status.average_wait_time_minutes} min</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('kitchen-status').innerHTML =
+                    `<div class="error">Failed to load kitchen status: ${error.message}</div>`;
+            }
+        }
+
+        // Simple order function (just for demonstration)
+        function orderPizza(pizzaId, pizzaName) {
+            const customerName = prompt(`Order ${pizzaName}?\n\nEnter your name:`);
+            if (!customerName) return;
+
+            const customerPhone = prompt('Enter your phone number (10 digits):');
+            if (!customerPhone) return;
+
+            const customerAddress = prompt('Enter your address:');
+            if (!customerAddress) return;
+
+            // Simple order creation
+            const orderData = {
+                customer_name: customerName,
+                customer_phone: customerPhone,
+                customer_address: customerAddress,
+                pizzas: [{
+                    name: pizzaName,
+                    size: "large",
+                    toppings: ["cheese"]
+                }],
+                payment_method: "cash",
+                notes: `Ordered via web interface`
+            };
+
+            fetch(`${API_BASE_URL}/orders/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    alert(`Order placed successfully! Order ID: ${data.id.substring(0, 8)}`);
+                } else {
+                    alert('Failed to place order: ' + (data.detail || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Failed to place order: ' + error.message);
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('menu');
+        });
+
+        // Auto-refresh orders and kitchen status every 30 seconds
+        setInterval(() => {
+            const activeSection = document.querySelector('.nav-links a.active').id.replace('-link', '');
+            if (activeSection === 'orders') {
+                loadOrders();
+            } else if (activeSection === 'kitchen') {
+                loadKitchenStatus();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

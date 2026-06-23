@@ -1,0 +1,74 @@
+# Prometheus Configuration
+# Scrapes metrics from OTEL collector and application services
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'mario-pizzeria'
+    environment: 'development'
+
+# Alertmanager configuration (optional - for production alerting)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+# rule_files:
+#   - "alerts/*.yml"
+
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape OTEL Collector metrics endpoint
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8888']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'otel-collector'
+
+  # Scrape OTEL Collector Prometheus exporter
+  - job_name: 'mario-pizzeria-metrics'
+    static_configs:
+      - targets: ['otel-collector:8889']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'mario-pizzeria'
+
+  # Scrape Tempo metrics
+  - job_name: 'tempo'
+    static_configs:
+      - targets: ['tempo:3200']
+
+  # Scrape Loki metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+
+  # Scrape Grafana metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+
+  # Scrape Mario's Pizzeria app HTTP metrics directly
+  - job_name: 'mario-pizzeria-app'
+    static_configs:
+      - targets: ['mario-pizzeria-app:8080']
+    metrics_path: '/metrics'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'mario-pizzeria-app'
+
+  # Scrape MongoDB metrics (if mongo_exporter is added later)
+  # - job_name: 'mongodb'
+  #   static_configs:
+  #     - targets: ['mongo-exporter:9216']

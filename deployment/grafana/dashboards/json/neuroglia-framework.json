@@ -1,0 +1,255 @@
+{
+    "annotations": {
+        "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "CQRS Command operations from Neuroglia framework - Table view for multiple traces",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\" && name=~\".*Command.*\"}",
+                    "queryType": "traceql",
+                    "refId": "A",
+                    "limit": 20
+                }
+            ],
+            "title": "🎯 CQRS Command Traces (Table View)",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "CQRS Query operations from Neuroglia framework - Table view for multiple traces",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "id": 2,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\" && name=~\".*Query.*\"}",
+                    "queryType": "traceql",
+                    "refId": "A"
+                }
+            ],
+            "title": "🔍 CQRS Query Traces (Table View)",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Repository operations and database access - Table view for multiple traces",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "purple",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 18
+            },
+            "id": 3,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\" && name=~\".*Repository.*|.*Database.*\"}",
+                    "queryType": "traceql",
+                    "refId": "A"
+                }
+            ],
+            "title": "💾 Repository & Database Operations (Table View)",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "gridPos": {
+                "h": 12,
+                "w": 24,
+                "x": 0,
+                "y": 27
+            },
+            "id": 4,
+            "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": true,
+                "prettifyLogMessage": false,
+                "showCommonLabels": false,
+                "showLabels": true,
+                "showTime": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "{service_name=\"mario-pizzeria\"} |= \"MEDIATOR\" or \"Repository\" or \"Event\"",
+                    "refId": "A"
+                }
+            ],
+            "title": "Framework Operations Log",
+            "type": "logs"
+        }
+    ],
+    "refresh": "5s",
+    "schemaVersion": 39,
+    "tags": [
+        "neuroglia",
+        "framework",
+        "cqrs",
+        "tracing"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-30m",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Neuroglia Framework - CQRS & Tracing",
+    "uid": "neuroglia-framework",
+    "version": 1,
+    "weekStart": ""
+}

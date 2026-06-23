@@ -1,0 +1,74 @@
+// Task Card Component Styles
+
+.task-card {
+  transition: $transition-base;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.priority-high {
+    border-left-color: $danger-color;
+  }
+
+  &.priority-medium {
+    border-left-color: $warning-color;
+  }
+
+  &.priority-low {
+    border-left-color: $success-color;
+  }
+}
+
+// Task status badges
+.badge {
+  &.status-pending {
+    background-color: $secondary-color;
+  }
+
+  &.status-in_progress {
+    background-color: $primary-color;
+  }
+
+  &.status-completed {
+    background-color: $success-color;
+  }
+
+  &.status-cancelled {
+    background-color: $danger-color;
+  }
+}
+
+// Priority badges
+.badge-priority {
+  &.high {
+    background-color: $danger-color;
+  }
+
+  &.medium {
+    background-color: $warning-color;
+  }
+
+  &.low {
+    background-color: $success-color;
+  }
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: $secondary-color;
+
+  i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin-bottom: 0.5rem;
+  }
+}

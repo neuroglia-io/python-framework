@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# openbank - OpenBank Sample Management CLI Wrapper
+# This allows calling "openbank" directly instead of "python src/cli/openbank.py"
+
+# Resolve symlinks to get the actual script location
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+PYTHON_CLI="$SCRIPT_DIR/src/cli/openbank.py"
+
+# Check if Python CLI exists
+if [ ! -f "$PYTHON_CLI" ]; then
+    echo "❌ Error: Python CLI not found at $PYTHON_CLI"
+    exit 1
+fi
+
+# Function to find the best Python executable
+find_python() {
+    # Check for local virtual environment first (faster)
+    if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
+        echo "$SCRIPT_DIR/.venv/bin/python"
+        return
+    fi
+
+    # Check for Poetry
+    if command -v poetry >/dev/null 2>&1; then
+        # Try to get Python from Poetry (if in a Poetry project)
+        if [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
+            POETRY_PYTHON=$(poetry env info --path 2>/dev/null)
+            if [ -n "$POETRY_PYTHON" ] && [ -d "$POETRY_PYTHON" ]; then
+                echo "$POETRY_PYTHON/bin/python"
+                return
+            fi
+        fi
+    fi
+
+    # Fallback to system Python 3
+    if command -v python3 >/dev/null 2>&1; then
+        echo "python3"
+        return
+    elif command -v python >/dev/null 2>&1; then
+        # Check if this Python is version 3
+        if python --version 2>&1 | grep -q "Python 3"; then
+            echo "python"
+            return
+        fi
+    fi
+
+    # No suitable Python found
+    echo ""
+}
+
+# Find Python executable
+PYTHON_BIN=$(find_python)
+
+if [ -z "$PYTHON_BIN" ]; then
+    echo "❌ Error: Python 3 not found. Please install Python 3.10 or later."
+    exit 1
+fi
+
+# Execute the Python CLI with all arguments
+exec "$PYTHON_BIN" "$PYTHON_CLI" "$@"

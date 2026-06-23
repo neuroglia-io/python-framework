@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Task Manager{% endblock %}</title>
+
+    <!-- Parcel-bundled CSS (includes Bootstrap and custom SASS) -->
+    <link rel="stylesheet" href="/static/dist/styles/main.css">
+    <!-- Bootstrap Icons from CDN (fonts work better from CDN) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% include 'components/navbar.html' %}
+
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block modals %}{% endblock %}
+
+    <!-- Parcel-bundled JavaScript (includes Bootstrap and all application logic) -->
+    <script src="/static/dist/scripts/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

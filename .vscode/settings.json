@@ -1,6 +1,122 @@
 {
-    "python.formatting.provider": "black",
-    "python.linting.mypyEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.languageServer": "Pylance",
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.mypy_cache": true,
+        ".git": true
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/src"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src"
+    ],
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.shellIntegration.enabled": true,
+    "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+    "terminal.integrated.profiles.osx": {
+        "Poetry Environment": {
+            "path": "zsh",
+            "args": [
+                "-c",
+                "source .vscode/activate-poetry.sh && exec zsh"
+            ]
+        }
+    },
+    "terminal.integrated.profiles.linux": {
+        "Poetry Environment": {
+            "path": "bash",
+            "args": [
+                "-c",
+                "source .vscode/activate-poetry.sh && exec bash"
+            ]
+        }
+    },
+    "terminal.integrated.profiles.windows": {
+        "Poetry Environment": {
+            "path": "cmd.exe",
+            "args": [
+                "/c",
+                "bash .vscode/activate-poetry.sh && cmd"
+            ]
+        },
+        "Git Bash Poetry": {
+            "path": "C:\\Program Files\\Git\\bin\\bash.exe",
+            "args": [
+                "-c",
+                "source .vscode/activate-poetry.sh && exec bash"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.osx": "Poetry Environment",
+    "terminal.integrated.defaultProfile.linux": "Poetry Environment",
+    "terminal.integrated.defaultProfile.windows": "Git Bash Poetry",
+    "black-formatter.args": [
+        "--line-length",
+        "500"
+    ],
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "[mdc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.markdownlint": "explicit"
+        }
+    },
+    "markdownlint.config": {
+        "MD022": true,
+        "MD031": true,
+        "MD032": true,
+        "MD040": true,
+        "MD047": true
+    },
+    "makefile.configureOnOpen": false,
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.pythonProjects": [],
+    "github.copilot.enable": {
+        "*": true,
+        "yaml": true,
+        "plaintext": true,
+        "markdown": true,
+        "python": true
+    },
+    "github.copilot.advanced": {
+        "length": 250,
+        "temperature": 0.1
+    },
+    "chat.mcp.serverSampling": {
+        "pyneuro/.vscode/mcp.json: deepcontext": {
+            "allowedModels": [
+                "copilot/claude-sonnet-4.5"
+            ]
+        }
+    }
 }

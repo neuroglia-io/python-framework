@@ -1,0 +1,42 @@
+<!-- Login Form Component -->
+<div id="loginSection" class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-center mb-4">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </h2>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginUsername" class="form-label">Username</label>
+                        <input type="text"
+                               class="form-control"
+                               id="loginUsername"
+                               name="username"
+                               required
+                               autocomplete="username">
+                        <small class="form-text text-muted">
+                            Try: admin, manager, john.doe, jane.smith, customer, chef, or driver
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password"
+                               class="form-control"
+                               id="loginPassword"
+                               name="password"
+                               required
+                               autocomplete="current-password">
+                        <small class="form-text text-muted">
+                            Passwords: admin123, manager123, user123 (john/jane), test (customer/chef/driver)
+                        </small>
+                    </div>
+                    <div id="loginError" class="alert alert-danger d-none"></div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

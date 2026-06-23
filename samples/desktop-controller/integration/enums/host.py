@@ -1,0 +1,11 @@
+from enum import Enum
+
+
+class HostState(str, Enum):
+    PENDING = "PENDING"
+    REGISTRATION_REQUESTED = "REGISTRATION_REQUESTED"
+    REGISTERED = "REGISTERED"
+    READY = "READY"
+    BUSY = "BUSY"
+    LOCKED = "LOCKED"
+    UNREGISTERED = "UNREGISTERED"

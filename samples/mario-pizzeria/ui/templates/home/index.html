@@ -1,0 +1,147 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <!-- Hero Section -->
+    <div class="text-center py-5 mb-4 bg-white rounded shadow-sm">
+        <h1 class="display-4 mb-3">🍕 Welcome to Mario's Pizzeria!</h1>
+        <p class="lead text-muted">Authentic Italian Pizza Made Fresh Daily</p>
+
+        {% if not authenticated %}
+        <div class="mt-4">
+            <p class="mb-3">Sign in to order your favorite pizzas and track your orders</p>
+            <a href="/auth/login" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In to Order
+            </a>
+        </div>
+        {% else %}
+        <div class="mt-4">
+            <p class="lead">Welcome back, <strong>{{ username }}</strong>!</p>
+            <a href="/menu" class="btn btn-primary btn-lg">
+                <i class="bi bi-list-ul"></i> View Menu
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Features Section -->
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">🍕</div>
+                    <h5 class="card-title">Browse Our Menu</h5>
+                    <p class="card-text">Explore our delicious selection of pizzas, from classic Margherita to specialty creations.</p>
+                    <a href="/menu" class="btn btn-primary">View Menu</a>
+                </div>
+            </div>
+        </div>
+
+        {% if authenticated %}
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">📦</div>
+                    <h5 class="card-title">My Orders</h5>
+                    <p class="card-text">Track your current orders and view your order history.</p>
+                    <a href="/orders" class="btn btn-primary">View Orders</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">🔔</div>
+                    <h5 class="card-title">My Notifications</h5>
+                    <p class="card-text">Check your order updates and notifications.</p>
+                    <a href="/notifications" class="btn btn-primary">View Notifications</a>
+                </div>
+            </div>
+        </div>
+
+        {% if 'manager' in roles %}
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">📊</div>
+                    <h5 class="card-title">Management Dashboard</h5>
+                    <p class="card-text">Monitor operations, analytics, and manage your restaurant!</p>
+                    <a href="/management" class="btn btn-primary">View Dashboard</a>
+                </div>
+            </div>
+        </div>
+        {% elif 'chef' in roles %}
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">👨‍🍳</div>
+                    <h5 class="card-title">Kitchen Status</h5>
+                    <p class="card-text">See what's cooking in our kitchen right now!</p>
+                    <a href="/kitchen" class="btn btn-primary">View Kitchen</a>
+                </div>
+            </div>
+        </div>
+        {% elif 'delivery_driver' in roles %}
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">🚚</div>
+                    <h5 class="card-title">Delivery Dashboard</h5>
+                    <p class="card-text">Manage your deliveries and track your route!</p>
+                    <a href="/delivery" class="btn btn-primary">View Deliveries</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">⚡</div>
+                    <h5 class="card-title">Fast Delivery</h5>
+                    <p class="card-text">Hot and fresh pizza delivered to your door in 30 minutes or less!</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">⚡</div>
+                    <h5 class="card-title">Fast Delivery</h5>
+                    <p class="card-text">Hot and fresh pizza delivered to your door in 30 minutes or less!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 pizza-card">
+                <div class="card-body text-center">
+                    <div class="mb-3" style="font-size: 3rem;">🔥</div>
+                    <h5 class="card-title">Fresh Ingredients</h5>
+                    <p class="card-text">We use only the finest, locally-sourced ingredients for authentic taste.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- API Documentation Card (for developers) -->
+    <div class="row mt-4">
+        <div class="col-md-6 mx-auto">
+            <div class="card border-secondary">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        <i class="bi bi-code-square"></i> For Developers
+                    </h5>
+                    <p class="card-text">Integrate with our ordering API for custom applications</p>
+                    <a href="/api/docs" class="btn btn-outline-secondary" target="_blank">
+                        View API Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

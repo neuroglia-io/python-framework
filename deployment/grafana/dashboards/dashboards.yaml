@@ -1,0 +1,16 @@
+# Dashboard provisioning configuration
+# Tells Grafana where to find dashboard JSON files
+
+apiVersion: 1
+
+providers:
+  - name: 'Mario Pizzeria Dashboards'
+    orgId: 1
+    folder: 'Mario Pizzeria'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
+      foldersFromFilesStructure: true

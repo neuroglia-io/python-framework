@@ -1,0 +1,102 @@
+# Lab Resource Manager Sample Application - Docker Compose Configuration
+# This file should be used together with docker-compose.shared.yml
+# Usage: docker-compose -f docker-compose.shared.yml -f docker-compose.lab-resource-manager.yml up
+
+services:
+  # 🔗 etcd for distributed configuration and coordination
+  # Provides watchable key-value store for resource persistence
+  # http://localhost:2479 (client API)
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.10
+    container_name: lab-resource-manager-etcd
+    environment:
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd:2380
+      - ETCD_INITIAL_CLUSTER=default=http://etcd:2380
+      - ETCD_NAME=default
+      - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster-1
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    ports:
+      - "${ETCD_CLIENT_PORT:-2479}:2379" # Client port
+      - "${ETCD_PEER_PORT:-2480}:2380" # Peer port
+    volumes:
+      - etcd_data:/etcd-data
+    networks:
+      - pyneuro-net
+    labels:
+      com.docker.compose.project: "lab-resource-manager"
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 🧪 Lab Resource Manager Application
+  # http://localhost:8000/
+  # http://localhost:8000/docs
+  # http://localhost:8000/api/docs
+  lab-resource-manager-app:
+    image: lab-resource-manager-app
+    build:
+      context: ../../ # Project root
+      dockerfile: samples/lab_resource_manager/Dockerfile
+    command:
+      [
+        "sh",
+        "-c",
+        "pip install debugpy -t /tmp && cd samples/lab_resource_manager && PYTHONPATH=/tmp:/app/src:/app/samples/lab_resource_manager python -m debugpy --listen 0.0.0.0:5678 -m uvicorn main:app --host 0.0.0.0 --port 8080 --reload --reload-dir /app/samples/lab_resource_manager --reload-dir /app/src",
+      ]
+    ports:
+      - ${LAB_MANAGER_PORT:-8003}:8080 # Main application port
+      - ${LAB_MANAGER_DEBUG_PORT:-5679}:5678 # Debug port (different from mario)
+    environment:
+      LOCAL_DEV: true
+      LOG_LEVEL: INFO
+      PYTHONPATH: "src"
+      # etcd connection for resource persistence
+      ETCD_HOST: etcd
+      ETCD_PORT: 2379
+      ETCD_PREFIX: /lab-resource-manager
+      # Database connections (MongoDB may be used for read models/projections)
+      CONNECTION_STRINGS: '{"mongo": "mongodb://root:neuroglia123@mongodb:27017/?authSource=admin"}'
+      # Event streaming
+      CLOUD_EVENT_SINK: http://event-player:8080/events/pub
+      CLOUD_EVENT_SOURCE: https://lab-resource-manager.io
+      CLOUD_EVENT_TYPE_PREFIX: io.lab-resource-manager
+      # Authentication
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-pyneuro}
+      KEYCLOAK_CLIENT_ID: lab-manager-app
+      # Application settings
+      ENABLE_CORS: "true"
+      # OpenTelemetry configuration - Metrics & Traces only (no logging)
+      OTEL_SERVICE_NAME: lab-resource-manager
+      OTEL_SERVICE_VERSION: 1.0.0
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      # Performance optimizations - DISABLED resource-heavy features:
+      # OTEL_LOGS_EXPORTER: none (no log export)
+      # OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: false (no auto-logging)
+      # OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_*: not set (no header capture)
+    volumes:
+      - ../../:/app # Project root
+      - ../../data/:/app/data
+      # Mount Docker socket for container management (if needed)
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - pyneuro-net
+    depends_on:
+      - etcd
+      - mongodb
+      - keycloak
+      - event-player
+      - otel-collector
+
+volumes:
+  etcd_data:
+    name: lab-resource-manager-etcd-data

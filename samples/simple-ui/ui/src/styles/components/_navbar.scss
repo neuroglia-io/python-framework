@@ -1,0 +1,27 @@
+// Navbar Component Styles
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+
+    i {
+      font-size: 1.5rem;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+  }
+
+  &-text {
+    i {
+      font-size: 1.25rem;
+      vertical-align: middle;
+    }
+  }
+}
+
+#userInfo {
+  align-items: center;
+}

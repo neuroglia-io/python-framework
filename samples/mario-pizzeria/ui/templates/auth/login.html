@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card shadow">
+        <div class="card-body p-5">
+            <div class="auth-header">
+                <h2>🍕 Welcome to Mario's Pizzeria</h2>
+                <p class="text-muted">Please sign in to continue</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/auth/login">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control form-control-lg" id="username" name="username" required autofocus>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                </div>
+
+                <input type="hidden" name="next_url" value="{{ request.query_params.get('next', '/') }}">
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-4">
+                <div class="alert alert-info">
+                    <strong>Demo Credentials:</strong><br>
+                    <code>customer</code>:<code>test</code><br>
+                    <code>chef</code>:<code>test</code><br>
+                    <code>driver</code>:<code>test</code><br>
+                    <code>manager</code>:<code>test</code><br>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="/" class="text-muted">
+                    <i class="bi bi-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+site_name: Neuroglia Python Framework
+site_description: A lightweight, opinionated Python framework built on FastAPI that enforces clean architecture principles
+site_url: https://bvandewe.github.io/pyneuro
+docs_dir: docs
+site_dir: site
+
+repo_name: bvandewe/pyneuro
+repo_url: https://github.com/bvandewe/pyneuro
+edit_uri: edit/main/docs/
+
+nav:
+  - Home:
+      - Welcome: index.md
+      - "⚠️ Documentation Philosophy": documentation-philosophy.md
+      - Getting Started: getting-started.md
+      - Local Dev Setup: guides/local-development.md
+      - Tutorials:
+          - Overview: tutorials/index.md
+          - "1. Project Setup": tutorials/mario-pizzeria-01-setup.md
+          - "2. Domain Model": tutorials/mario-pizzeria-02-domain.md
+          - "3. CQRS & Commands": tutorials/mario-pizzeria-03-cqrs.md
+          - "4. API Controllers": tutorials/mario-pizzeria-04-api.md
+          - "5. Event-Driven Workflows": tutorials/mario-pizzeria-05-events.md
+          - "6. Data Persistence": tutorials/mario-pizzeria-06-persistence.md
+          - "7. Authentication & Security": tutorials/mario-pizzeria-07-auth.md
+          - "8. Observability": tutorials/mario-pizzeria-08-observability.md
+          - "9. Production Deployment": tutorials/mario-pizzeria-09-deployment.md
+      - Sample Applications:
+          - Overview: samples/index.md
+          - "🍕 Mario's Pizzeria - CQRS & Event-Driven": mario-pizzeria.md
+          - "🏦 OpenBank - Event Sourcing": samples/openbank.md
+          - "🎨 Simple UI - SubApp Pattern": samples/simple-ui.md
+          - API Gateway: samples/api_gateway.md
+          - Desktop Controller: samples/desktop_controller.md
+  - "Mario's Pizzeria":
+      - Overview: mario-pizzeria.md
+      - Business Analysis: mario-pizzeria/business-analysis.md
+      - Domain Design: mario-pizzeria/domain-design.md
+      - Technical Architecture: mario-pizzeria/technical-architecture.md
+      - Implementation Guide: mario-pizzeria/implementation-guide.md
+      - Testing & Deployment: mario-pizzeria/testing-deployment.md
+  - Patterns:
+      - Overview: patterns/index.md
+      - Foundation:
+          - Clean Architecture: patterns/clean-architecture.md
+          - Domain-Driven Design: patterns/domain-driven-design.md
+          - CQRS: patterns/cqrs.md
+          - Event-Driven Architecture: patterns/event-driven.md
+          - Repository Pattern: patterns/repository.md
+          - Dependency Injection: patterns/dependency-injection.md
+      - Implementation:
+          - Unit of Work: patterns/unit-of-work.md
+          - Pipeline Behaviors: patterns/pipeline-behaviors.md
+          - Event Sourcing: patterns/event-sourcing.md
+          - Reactive Programming: patterns/reactive-programming.md
+      - Advanced:
+          - Resource-Oriented Architecture: patterns/resource-oriented-architecture.md
+          - Watcher-Reconciliation Patterns: patterns/watcher-reconciliation-patterns.md
+          - Watcher-Reconciliation Execution: patterns/watcher-reconciliation-execution.md
+          - Persistence Patterns: patterns/persistence-patterns.md
+  - Features:
+      - Overview: features/index.md
+      - Core:
+          - Simple CQRS: features/simple-cqrs.md
+          - MVC Controllers: features/mvc-controllers.md
+          - Data Access: features/data-access.md
+          - Object Mapping: features/object-mapping.md
+          - Serialization: features/serialization.md
+      - Observability: features/observability.md
+      - Validation & Utilities:
+          - Model Validation: features/enhanced-model-validation.md
+          - Case Conversion: features/case-conversion-utilities.md
+          - Type Discovery: features/configurable-type-discovery.md
+      - Integration:
+          - HTTP Client: features/http-service-client.md
+          - Redis Cache: features/redis-cache-repository.md
+          - Background Tasks: features/background-task-scheduling.md
+      - Dev Tools:
+          - Handler Discovery: features/resilient-handler-discovery.md
+          - Mermaid Diagrams: features/mermaid-diagrams.md
+  - Guides:
+      - Overview: guides/index.md
+      - Getting Started:
+          - Project Setup: guides/project-setup.md
+          - Testing Setup: guides/testing-setup.md
+          - Local Development: guides/local-development.md
+      - Development:
+        #   - Mario's Tutorial: guides/mario-pizzeria-tutorial.md
+          - Simple UI Development: guides/simple-ui-app.md
+          - JsonSerializer Config: guides/jsonserializer-configuration.md
+          - Motor Queryable Repositories: guides/motor-queryable-repositories.md
+          - Custom Repository Mappings: guides/custom-repository-mappings.md
+      - Operations:
+          - OpenTelemetry Integration: guides/opentelemetry-integration.md
+          - RBAC & Authorization: guides/rbac-authorization.md
+  - References:
+    #   - Core Concepts:
+    #       - Overview: concepts/index.md
+    #       - Clean Architecture: concepts/clean-architecture.md
+    #       - Domain-Driven Design: concepts/domain-driven-design.md
+    #       - CQRS Pattern: concepts/cqrs.md
+    #       - Mediator Pattern: concepts/mediator.md
+    #       - Event-Driven Architecture: concepts/event-driven.md
+    #       - Repository Pattern: concepts/repository.md
+    #       - Aggregates & Entities: concepts/aggregates-entities.md
+    #       - Dependency Injection: concepts/dependency-injection.md
+    #   - Technical References:
+          - OAuth & JWT: references/oauth-oidc-jwt.md
+          - 12-Factor App: references/12-factor-app.md
+          - Persistence Guide: references/persistence-documentation-guide.md
+          - Etcd Cheat Sheet: references/etcd_cheat_sheet.md
+          - Naming Conventions: references/source_code_naming_convention.md
+          - Python Typing: references/python_typing_guide.md
+          - Modular Code: references/python_modular_code.md
+          - OOP Guide: references/python_object_oriented.md
+          - Mermaid Reference: references/test-mermaid.md
+          - AI Agent Guide: ai-agent-guide.md
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - mermaid2:
+      arguments:
+        theme: auto
+        themeVariables:
+          primaryColor: '#1976d2'
+          primaryTextColor: '#ffffff'
+          primaryBorderColor: '#1976d2'
+          lineColor: '#1976d2'
+          secondaryColor: '#f5f5f5'
+          tertiaryColor: '#ffffff'
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bvandewe/pyneuro

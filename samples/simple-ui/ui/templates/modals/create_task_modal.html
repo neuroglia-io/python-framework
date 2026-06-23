@@ -1,0 +1,54 @@
+<!-- Create Task Modal Component -->
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTaskModalLabel">
+                    <i class="bi bi-plus-circle"></i> Create New Task
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createTaskForm">
+                    <div class="mb-3">
+                        <label for="taskTitle" class="form-label">Title</label>
+                        <input type="text"
+                               class="form-control"
+                               id="taskTitle"
+                               name="title"
+                               required
+                               maxlength="100"
+                               placeholder="Enter task title"
+                               tabindex="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Description</label>
+                        <textarea class="form-control"
+                                  id="taskDescription"
+                                  name="description"
+                                  rows="3"
+                                  placeholder="Enter task description (optional)"
+                                  tabindex="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskStatus" class="form-label">Status</label>
+                        <select class="form-select" id="taskStatus" name="status" tabindex="3">
+                            <option value="pending" selected>Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div id="createTaskError" class="alert alert-danger d-none" role="alert"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="5">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <button type="submit" form="createTaskForm" class="btn btn-primary" tabindex="4">
+                    <i class="bi bi-check-circle"></i> Create Task
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

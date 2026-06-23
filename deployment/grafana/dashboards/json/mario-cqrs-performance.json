@@ -1,0 +1,573 @@
+{
+    "id": null,
+    "uid": "cqrs-performance-mario",
+    "title": "Mario's Pizzeria - CQRS Performance",
+    "tags": [
+        "mario-pizzeria",
+        "cqrs",
+        "performance"
+    ],
+    "timezone": "browser",
+    "panels": [
+        {
+            "id": 1,
+            "title": "📊 Total CQRS Executions",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(cqrs_executions_total[5m]))",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "basic",
+                        "orientation": "auto"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "auto"
+            }
+        },
+        {
+            "id": 2,
+            "title": "⚡ Average Execution Duration",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(cqrs_execution_duration_milliseconds_sum[5m])) / sum(rate(cqrs_execution_duration_milliseconds_count[5m]))",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 50
+                            },
+                            {
+                                "color": "red",
+                                "value": 100
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 6,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "background",
+                "graphMode": "area"
+            }
+        },
+        {
+            "id": 3,
+            "title": "✅ Success Rate",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(cqrs_executions_success_executions_total[5m])) / sum(rate(cqrs_executions_total[5m])) * 100",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 95
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    },
+                    "unit": "percent",
+                    "max": 100,
+                    "min": 0
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "background",
+                "graphMode": "area"
+            }
+        },
+        {
+            "id": 4,
+            "title": "🔥 Active Operations",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "count(count by (operation, type)(rate(cqrs_executions_total[1m]) > 0))",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "background"
+            }
+        },
+        {
+            "id": 5,
+            "title": "📈 CQRS Execution Rate by Type",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "sum(rate(cqrs_executions_total[5m])) by (operation)",
+                    "refId": "A",
+                    "legendFormat": "{{operation}}"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            }
+        },
+        {
+            "id": 6,
+            "title": "⏱️ Execution Duration Percentiles",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(cqrs_execution_duration_milliseconds_bucket[5m])) by (le))",
+                    "refId": "A",
+                    "legendFormat": "p50"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(cqrs_execution_duration_milliseconds_bucket[5m])) by (le))",
+                    "refId": "B",
+                    "legendFormat": "p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(cqrs_execution_duration_milliseconds_bucket[5m])) by (le))",
+                    "refId": "C",
+                    "legendFormat": "p99"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            }
+        },
+        {
+            "id": 7,
+            "title": "🎯 Top Commands by Execution Count",
+            "type": "barchart",
+            "targets": [
+                {
+                    "expr": "topk(5, sum(cqrs_executions_total{operation=\"command\"}) by (type))",
+                    "refId": "A",
+                    "legendFormat": "{{type}}"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "displayMode": "list",
+                        "orientation": "horizontal"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 16
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "value"
+            }
+        },
+        {
+            "id": 8,
+            "title": "🔍 Top Queries by Execution Count",
+            "type": "barchart",
+            "targets": [
+                {
+                    "expr": "topk(5, sum(cqrs_executions_total{operation=\"query\"}) by (type))",
+                    "refId": "A",
+                    "legendFormat": "{{type}}"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "displayMode": "list",
+                        "orientation": "horizontal"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 16
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "value"
+            }
+        },
+        {
+            "id": 9,
+            "title": "⚡ Average Duration by Operation Type",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "sum(rate(cqrs_execution_duration_milliseconds_sum[5m])) by (type) / sum(rate(cqrs_execution_duration_milliseconds_count[5m])) by (type)",
+                    "refId": "A",
+                    "legendFormat": "{{type}}"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 24
+            },
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            }
+        }
+    ],
+    "time": {
+        "from": "now-5m",
+        "to": "now"
+    },
+    "timepicker": {},
+    "refresh": "5s",
+    "schemaVersion": 27,
+    "version": 1
+}

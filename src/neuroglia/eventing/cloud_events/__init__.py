@@ -1,1 +1,3 @@
-from .cloud_event import CloudEvent as CloudEvent
+from .cloud_event import CloudEvent
+
+__all__ = ["CloudEvent"]

@@ -1,0 +1,14 @@
+{
+  "include": ["src/neuroglia"],
+  "exclude": ["samples", "**/node_modules", "**/__pycache__"],
+  "extraPaths": ["src/neuroglia"],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "All",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "none",
+  "reportUnusedImport": "warning",
+  "reportUnusedVariable": "warning",
+  "venvPath": "src/neuroglia",
+  "venv": ".venv"
+}

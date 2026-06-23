@@ -1,0 +1,27 @@
+// Login Form Component Styles
+
+#loginSection {
+  margin-top: 100px;
+
+  .card {
+    border: none;
+    border-radius: $border-radius-lg;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-title {
+    color: $primary-color;
+
+    i {
+      font-size: 1.5rem;
+      vertical-align: middle;
+    }
+  }
+
+  .form-control {
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.25rem rgba($primary-color, 0.25);
+    }
+  }
+}

@@ -1,0 +1,174 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="connection-status disconnected">
+        <span id="statusText"><i class="bi bi-wifi-off"></i> Connecting...</span>
+    </div>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5">
+                <i class="bi bi-box-seam"></i> Ready for Delivery
+            </h1>
+            <p class="text-muted">Orders ready for pickup and delivery</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="card bg-success text-white mb-2">
+                <div class="card-body py-2">
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-seam"></i> Ready: <span id="readyOrderCount">{{ orders|length }}</span>
+                    </h5>
+                </div>
+            </div>
+            <a href="/delivery/tour" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-truck"></i> My Delivery Tour
+            </a>
+        </div>
+    </div>
+
+    <!-- Orders Grid -->
+    <div id="ordersContainer" class="row g-4">
+        {% if not orders or orders|length == 0 %}
+        <div class="col-12">
+            <div class="card text-center py-5">
+                <div class="card-body">
+                    <i class="bi bi-check-circle" style="font-size: 4rem; color: #198754;"></i>
+                    <h3 class="mt-3">All Clear!</h3>
+                    <p class="text-muted">No orders ready for delivery at the moment</p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        {% for order in orders %}
+        <div class="col-12 col-lg-6 col-xl-4" data-order-id="{{ order.id }}">
+            <div class="card order-card h-100">
+                <div class="card-body">
+                    <!-- Order Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="bi bi-receipt"></i> Order #{{ order.id[:8] }}
+                            </h5>
+                            <span class="ready-badge">
+                                <i class="bi bi-check-circle-fill"></i> Ready
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <div class="h4 mb-0 text-success">${{ "%.2f"|format(order.total_amount) }}</div>
+                            <small class="text-muted">{{ order.pizza_count }} pizza(s)</small>
+                        </div>
+                    </div>
+
+                    <!-- Customer Info -->
+                    <div class="address-block">
+                        <h6 class="mb-2">
+                            <i class="bi bi-person-fill"></i> {{ order.customer_name or "Customer" }}
+                        </h6>
+                        <p class="mb-2">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <strong>{{ order.customer_address or "No address" }}</strong>
+                        </p>
+                        {% if order.customer_phone %}
+                        <p class="mb-0">
+                            <i class="bi bi-telephone-fill text-primary"></i>
+                            <a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a>
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pizzas List -->
+                    <div class="mt-3">
+                        <h6 class="mb-2"><i class="bi bi-list-ul"></i> Items:</h6>
+                        {% for pizza in order.pizzas %}
+                        <div class="pizza-item">
+                            <strong>{{ pizza.name }}</strong> ({{ pizza.size }})
+                            {% if pizza.toppings %}
+                            <br><small class="text-muted">+ {{ pizza.toppings|join(", ") }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Chef/Staff Attribution -->
+                    {% if order.chef_name or order.ready_by_name %}
+                    <div class="mt-3 pt-2 border-top">
+                        {% if order.chef_name %}
+                        <small class="text-muted">
+                            <i class="bi bi-person-badge"></i> Prepared by: <strong>{{ order.chef_name }}</strong>
+                        </small>
+                        {% endif %}
+                        {% if order.ready_by_name %}
+                        <br><small class="text-muted">
+                            <i class="bi bi-check-circle"></i> Ready by: <strong>{{ order.ready_by_name }}</strong>
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Waiting Time -->
+                    <div class="mt-3 waiting-time" data-ready-time="{{ order.actual_ready_time }}">
+                        <i class="bi bi-clock"></i> Ready since: <span class="elapsed-time">calculating...</span>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="mt-3">
+                        <button
+                            class="btn btn-success btn-pickup w-100"
+                            onclick="assignOrder('{{ order.id }}')">
+                            <i class="bi bi-truck"></i> Add to My Tour
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="bi bi-check-circle-fill"></i> Success
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-truck" style="font-size: 3rem; color: #198754;"></i>
+                <h4 class="mt-3" id="successMessage">Order added to your delivery tour!</h4>
+                <p class="text-muted mb-0">Reloading page to update your tour...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Error
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-x-circle" style="font-size: 3rem; color: #dc3545;"></i>
+                <h4 class="mt-3" id="errorMessage">An error occurred</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

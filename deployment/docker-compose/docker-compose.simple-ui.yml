@@ -1,0 +1,77 @@
+# Simple UI Sample Application - Docker Compose Configuration
+# This file should be used together with docker-compose.shared.yml
+# Usage: docker-compose -f docker-compose.shared.yml -f docker-compose.simple-ui.yml up
+
+services:
+  # 🎨 UI Builder (Parcel Watch Mode)
+  # Automatically rebuilds UI assets on file changes
+  simple-ui-builder:
+    image: node:20-alpine
+    working_dir: /app/samples/simple-ui/ui
+    command: npm run dev
+    volumes:
+      - ../../:/app # Project root
+      - /app/samples/simple-ui/ui/node_modules # Anonymous volume for node_modules
+    networks:
+      - pyneuro-net
+    environment:
+      NODE_ENV: development
+    # Ensure node_modules is installed first
+    entrypoint: >
+      sh -c "
+      npm install &&
+      npm run dev
+      "
+
+  # 📱 Simple UI Application
+  # http://localhost:8082/
+  simple-ui-app:
+    image: simple-ui-app
+    build:
+      context: ../../ # Project root
+      dockerfile: samples/simple-ui/Dockerfile
+    command:
+      [
+        "sh",
+        "-c",
+        "pip install debugpy -t /tmp && cd samples/simple-ui && PYTHONPATH=/tmp:/app/src:/app/samples/simple-ui python -m debugpy --listen 0.0.0.0:5679 -m uvicorn main:create_app --factory --host 0.0.0.0 --port 8082 --reload --reload-dir /app/samples/simple-ui --reload-dir /app/src",
+      ]
+    ports:
+      - ${SIMPLE_UI_PORT:-8082}:8082 # Main application port
+      - ${SIMPLE_UI_DEBUG_PORT:-5679}:5679 # Debug port
+    environment:
+      LOCAL_DEV: true
+      LOG_LEVEL: DEBUG
+      PYTHONPATH: "src"
+      # Database connections
+      CONNECTION_STRINGS: '{"mongo": "mongodb://root:${MONGODB_PASSWORD:-neuroglia123}@mongodb:27017/?authSource=admin"}'
+      # Event streaming (optional - not used in this simple sample)
+      CLOUD_EVENT_SINK: http://localhost:8082/events/pub
+      CLOUD_EVENT_SOURCE: https://simple-ui.neuroglia.io
+      CLOUD_EVENT_TYPE_PREFIX: io.neuroglia.simple-ui
+      # Authentication (optional - Keycloak integration)
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-pyneuro}
+      KEYCLOAK_CLIENT_ID: simple-ui-app
+      # Application settings
+      DATA_DIR: /app/data # TODO: remove
+      ENABLE_CORS: "true"
+      # OpenTelemetry configuration - Metrics & Traces only (no logging)
+      OTEL_SERVICE_NAME: simple-ui
+      OTEL_SERVICE_VERSION: 1.0.0
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      # Performance optimizations - DISABLED resource-heavy features:
+      OTEL_LOGS_EXPORTER: none
+      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "false"
+    volumes:
+      - ../../:/app # Project root
+      - ../../data/:/app/data
+    networks:
+      - pyneuro-net
+    depends_on:
+      - mongodb
+      - keycloak
+      - simple-ui-builder # Ensure UI is built before app starts

@@ -1,0 +1,229 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="/orders" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Order History
+        </a>
+    </div>
+
+    {% if error %}
+    <!-- Error Message -->
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="text-center py-5">
+        <i class="bi bi-receipt-cutoff" style="font-size: 4rem; color: #6c757d;"></i>
+        <h3 class="mt-3">Order Not Found</h3>
+        <p class="text-muted">The order you're looking for doesn't exist or you don't have permission to view it.</p>
+        <a href="/orders" class="btn btn-primary mt-3">
+            <i class="bi bi-clock-history"></i> View Order History
+        </a>
+    </div>
+    {% elif order %}
+    <!-- Order Details -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Order Header Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="mb-0">
+                                <i class="bi bi-receipt"></i> Order #{{ order.id[:8] }}
+                            </h4>
+                        </div>
+                        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                            {% if order.status == "pending" %}
+                            <span class="badge bg-warning text-dark fs-6">
+                                <i class="bi bi-clock"></i> Pending
+                            </span>
+                            {% elif order.status == "preparing" %}
+                            <span class="badge bg-info fs-6">
+                                <i class="bi bi-hourglass-split"></i> Preparing
+                            </span>
+                            {% elif order.status == "ready" %}
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-check-circle"></i> Ready for Pickup
+                            </span>
+                            {% elif order.status == "completed" %}
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-check-all"></i> Completed
+                            </span>
+                            {% elif order.status == "cancelled" %}
+                            <span class="badge bg-danger fs-6">
+                                <i class="bi bi-x-circle"></i> Cancelled
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary fs-6">
+                                <i class="bi bi-question-circle"></i> {{ order.status|title }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-calendar3"></i> Order Date</h6>
+                            <p class="text-muted">{{ order.order_time.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                        {% if order.estimated_ready_time %}
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-clock"></i> Estimated Ready Time</h6>
+                            <p class="text-muted">{{ order.estimated_ready_time.strftime('%I:%M %p') }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if order.notes %}
+                    <hr>
+                    <h6><i class="bi bi-sticky"></i> Special Instructions</h6>
+                    <p class="text-muted">{{ order.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Items Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Order Items ({{ order.pizza_count }} pizza{{ 's' if order.pizza_count != 1 else '' }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Pizza</th>
+                                    <th>Size</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pizza in order.pizzas %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ pizza.name }}</strong>
+                                        {% if pizza.toppings and pizza.toppings|length > 0 %}
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-plus-circle"></i> {{ pizza.toppings|join(', ') }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ pizza.size|upper }}</span>
+                                    </td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end"><strong>${{ "%.2f"|format(pizza.total_price) }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end">
+                                        <strong class="fs-5 text-primary">${{ "%.2f"|format(order.total_amount) }}</strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Customer Information Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Customer Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if order.customer_name %}
+                    <p class="mb-2">
+                        <strong><i class="bi bi-person-fill"></i> Name:</strong><br>
+                        {{ order.customer_name }}
+                    </p>
+                    {% endif %}
+
+                    {% if order.customer_phone %}
+                    <p class="mb-2">
+                        <strong><i class="bi bi-telephone-fill"></i> Phone:</strong><br>
+                        {{ order.customer_phone }}
+                    </p>
+                    {% endif %}
+
+                    {% if order.customer_address %}
+                    <p class="mb-0">
+                        <strong><i class="bi bi-geo-alt-fill"></i> Address:</strong><br>
+                        {{ order.customer_address }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Timeline Card (if available) -->
+            {% if order.confirmed_time or order.cooking_started_time or order.actual_ready_time %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Order Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <strong>Order Placed</strong><br>
+                            <small class="text-muted ms-4">{{ order.order_time.strftime('%I:%M %p') }}</small>
+                        </li>
+
+                        {% if order.confirmed_time %}
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <strong>Order Confirmed</strong><br>
+                            <small class="text-muted ms-4">{{ order.confirmed_time.strftime('%I:%M %p') }}</small>
+                        </li>
+                        {% endif %}
+
+                        {% if order.cooking_started_time %}
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <strong>Cooking Started</strong><br>
+                            <small class="text-muted ms-4">{{ order.cooking_started_time.strftime('%I:%M %p') }}</small>
+                        </li>
+                        {% endif %}
+
+                        {% if order.actual_ready_time %}
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <strong>Order Ready</strong><br>
+                            <small class="text-muted ms-4">{{ order.actual_ready_time.strftime('%I:%M %p') }}</small>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <a href="/orders" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="bi bi-clock-history"></i> View All Orders
+                    </a>
+                    <a href="/menu" class="btn btn-primary w-100">
+                        <i class="bi bi-shop"></i> Order More Pizzas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

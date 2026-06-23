@@ -1,0 +1,224 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="connection-status disconnected">
+        <span id="statusText"><i class="bi bi-wifi-off"></i> Connecting...</span>
+    </div>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5">
+                <i class="bi bi-truck"></i> My Delivery Tour
+            </h1>
+            <p class="text-muted">Active deliveries in your route</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="card bg-warning text-dark mb-2">
+                <div class="card-body py-2">
+                    <h5 class="mb-0">
+                        <i class="bi bi-truck"></i> Delivering: <span id="tourOrderCount">{{ orders|length }}</span>
+                    </h5>
+                </div>
+            </div>
+            <a href="/delivery" class="btn btn-success btn-lg w-100">
+                <i class="bi bi-box-seam"></i> Ready for Pickup
+            </a>
+        </div>
+    </div>
+
+    <!-- Orders Grid -->
+    <div id="ordersContainer" class="row g-4">
+        {% if not orders or orders|length == 0 %}
+        <div class="col-12">
+            <div class="card text-center empty-state">
+                <div class="card-body">
+                    <i class="bi bi-truck" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h3 class="mt-3">No Active Deliveries</h3>
+                    <p class="text-muted mb-4">Pick up orders from the ready list to start your delivery tour</p>
+                    <a href="/delivery" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-seam"></i> View Ready Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        {% for order in orders %}
+        <div class="col-12 col-lg-6" data-order-id="{{ order.id }}">
+            <div class="card order-card h-100 position-relative">
+                <!-- Delivery Order Number -->
+                <!-- <div class="order-number">{{ loop.index }}</div> -->
+
+                <div class="card-body">
+                    <!-- Order Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="bi bi-receipt"></i> Order #{{ order.id[:8] }}
+                            </h5>
+                            <span class="delivering-badge">
+                                <i class="bi bi-truck"></i> Out for Delivery
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <div class="h4 mb-0 text-warning">${{ "%.2f"|format(order.total_amount) }}</div>
+                            <small class="text-muted">{{ order.pizza_count }} pizza(s)</small>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address (Prominent) -->
+                    <div class="address-block">
+                        <h6 class="mb-3">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> <strong>Delivery Address:</strong>
+                        </h6>
+                        <div class="address-text mb-3">
+                            {{ order.customer_address or "No address provided" }}
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <h6 class="mb-1">
+                                    <i class="bi bi-person-fill"></i> Customer:
+                                </h6>
+                                <div>{{ order.customer_name or "Customer" }}</div>
+                            </div>
+                            {% if order.customer_phone %}
+                            <div class="col-6 text-end">
+                                <a href="tel:{{ order.customer_phone }}" class="btn btn-primary phone-btn w-100">
+                                    <i class="bi bi-telephone-fill"></i> Call Customer
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Pizzas List -->
+                    <div class="mt-3">
+                        <h6 class="mb-2"><i class="bi bi-list-ul"></i> Order Items:</h6>
+                        {% for pizza in order.pizzas %}
+                        <div class="pizza-item">
+                            <strong>{{ pizza.name }}</strong> ({{ pizza.size }})
+                            {% if pizza.toppings %}
+                            <br><small class="text-muted">+ {{ pizza.toppings|join(", ") }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Chef/Staff Attribution -->
+                    {% if order.chef_name or order.ready_by_name %}
+                    <div class="mt-3 pt-2 border-top">
+                        {% if order.chef_name %}
+                        <small class="text-muted">
+                            <i class="bi bi-person-badge"></i> Prepared by: <strong>{{ order.chef_name }}</strong>
+                        </small>
+                        {% endif %}
+                        {% if order.ready_by_name %}
+                        <br><small class="text-muted">
+                            <i class="bi bi-check-circle"></i> Ready by: <strong>{{ order.ready_by_name }}</strong>
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if order.notes %}
+                    <div class="mt-3">
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle-fill"></i> <strong>Note:</strong> {{ order.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="mt-3 d-grid gap-2">
+                        <button
+                            class="btn btn-success btn-deliver"
+                            onclick="markDelivered('{{ order.id }}')">
+                            <i class="bi bi-check-circle-fill"></i> Mark as Delivered
+                        </button>
+                        {% if order.customer_address %}
+                        <a
+                            href="https://maps.google.com/?q={{ order.customer_address|urlencode }}"
+                            target="_blank"
+                            class="btn btn-outline-primary">
+                            <i class="bi bi-map"></i> Open in Maps
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="bi bi-question-circle-fill"></i> Confirm Delivery
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check2-square" style="font-size: 3rem; color: #fd7e14;"></i>
+                <h4 class="mt-3">Mark this order as delivered?</h4>
+                <p class="text-muted">This action will complete the delivery.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmDeliveryBtn">
+                    <i class="bi bi-check-lg"></i> Confirm Delivery
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="bi bi-check-circle-fill"></i> Success
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check-circle" style="font-size: 3rem; color: #198754;"></i>
+                <h4 class="mt-3" id="successMessage">Order marked as delivered!</h4>
+                <p class="text-muted mb-0">Reloading page to update your tour...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Error
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-x-circle" style="font-size: 3rem; color: #dc3545;"></i>
+                <h4 class="mt-3" id="errorMessage">An error occurred</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

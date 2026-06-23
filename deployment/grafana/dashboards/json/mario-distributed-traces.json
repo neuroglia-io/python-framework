@@ -1,0 +1,282 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 123,
+    "links": [
+        {
+            "asDropdown": false,
+            "icon": "external link",
+            "includeVars": false,
+            "keepTime": false,
+            "tags": [],
+            "targetBlank": true,
+            "title": "🔍 Explore Traces (Full TraceQL Analysis)",
+            "tooltip": "Open Tempo Explore for advanced trace analysis with full TraceQL support",
+            "type": "link",
+            "url": "http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22query%22:%22%7Bresource.service.name%3D%5C%22mario-pizzeria%5C%22%7D%22,%22queryType%22:%22traceql%22%7D%5D,%22range%22:%7B%22from%22:%22now-30m%22,%22to%22:%22now%22%7D%7D"
+        },
+        {
+            "asDropdown": false,
+            "icon": "doc",
+            "includeVars": false,
+            "keepTime": false,
+            "tags": [],
+            "targetBlank": true,
+            "title": "📊 Metrics Dashboard",
+            "tooltip": "View application metrics and performance data",
+            "type": "dashboards",
+            "tags": [
+                "mario-pizzeria",
+                "metrics"
+            ]
+        }
+    ],
+    "panels": [
+        {
+            "datasource": {
+                "type": "text",
+                "uid": "-- Grafana --"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 3,
+            "options": {
+                "content": "## 🍕 Mario's Pizzeria - Distributed Traces\n\n**Status:** ✅ Traces are being collected successfully | **Issue:** Dashboard trace panels only support single trace IDs | **Solution:** Use table view below or Explore interface above\n\n**Quick Actions:** Click \"🔍 Explore Traces\" above for full TraceQL analysis | Use table below for trace overview and filtering",
+                "mode": "markdown"
+            },
+            "pluginVersion": "12.2.1",
+            "title": "Tracing Status & Usage Guide",
+            "type": "text"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Multiple traces displayed in table format. Click trace IDs to view individual traces. Use Explore link above for advanced analysis.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 14,
+                "w": 24,
+                "x": 0,
+                "y": 4
+            },
+            "id": 1,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\"}",
+                    "refId": "A",
+                    "queryType": "traceql",
+                    "limit": 20
+                }
+            ],
+            "title": "🍕 Mario's Pizzeria - Recent Traces (Table View)",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Traces for HTTP POST operations (order creation, etc.) - Table view showing multiple traces",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "orange",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 0,
+                "y": 18
+            },
+            "id": 2,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\" && span.http.method=\"POST\"}",
+                    "refId": "A",
+                    "queryType": "traceql",
+                    "limit": 10
+                }
+            ],
+            "title": "📝 POST Request Traces (Orders, etc.)",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Traces for CQRS commands and queries from the Neuroglia framework - Table view",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 12,
+                "y": 18
+            },
+            "id": 3,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\" && name=~\".*Command.*|.*Query.*\"}",
+                    "refId": "A",
+                    "queryType": "traceql",
+                    "limit": 10
+                }
+            ],
+            "title": "🏗️ CQRS Operations Traces",
+            "type": "table"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 39,
+    "tags": [
+        "mario-pizzeria",
+        "traces",
+        "distributed-tracing"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-5m",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Mario's Pizzeria - Distributed Traces",
+    "uid": "mario-traces",
+    "version": 2,
+    "weekStart": ""
+}

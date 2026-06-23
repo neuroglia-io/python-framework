@@ -1,0 +1,17 @@
+{
+    "realm": "master",
+    "enabled": true,
+    "sslRequired": "none",
+    "registrationAllowed": false,
+    "loginWithEmailAllowed": true,
+    "duplicateEmailsAllowed": false,
+    "resetPasswordAllowed": true,
+    "editUsernameAllowed": false,
+    "bruteForceProtected": true,
+    "rememberMe": true,
+    "verifyEmail": false,
+    "loginTheme": "keycloak",
+    "adminTheme": "keycloak",
+    "emailTheme": "keycloak",
+    "accessTokenLifespan": 300
+}

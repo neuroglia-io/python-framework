@@ -1,0 +1,116 @@
+// Import Bootstrap
+@import "~bootstrap/scss/bootstrap";
+
+// Note: Bootstrap Icons are loaded separately via CDN or npm package
+// We'll use a simpler approach - import just the icon classes
+
+// Custom variables
+$primary-color: #0d6efd;
+$success-color: #198754;
+$warning-color: #ffc107;
+$danger-color: #dc3545;
+
+// Global styles
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+// Navbar customization
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+
+  i {
+    font-size: 1.5rem;
+    vertical-align: middle;
+  }
+}
+
+// Task cards
+.task-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.priority-high {
+    border-left-color: $danger-color;
+  }
+
+  &.priority-medium {
+    border-left-color: $warning-color;
+  }
+
+  &.priority-low {
+    border-left-color: $success-color;
+  }
+}
+
+// Status badges
+.badge {
+  &.status-pending {
+    background-color: #6c757d;
+  }
+
+  &.status-in_progress {
+    background-color: $primary-color;
+  }
+
+  &.status-completed {
+    background-color: $success-color;
+  }
+}
+
+// Priority badges
+.badge-priority {
+  &.high {
+    background-color: $danger-color;
+  }
+
+  &.medium {
+    background-color: $warning-color;
+  }
+
+  &.low {
+    background-color: $success-color;
+  }
+}
+
+// Loading spinner
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+// Login form
+#loginSection {
+  margin-top: 100px;
+
+  .card {
+    border: none;
+    border-radius: 12px;
+  }
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+
+  i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin-bottom: 0.5rem;
+  }
+}

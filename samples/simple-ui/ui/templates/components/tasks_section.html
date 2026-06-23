@@ -1,0 +1,19 @@
+<!-- Tasks Section Component -->
+<div id="tasksSection" class="d-none">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bi bi-list-task"></i> My Tasks</h2>
+            <p class="text-muted" id="taskDescription">Loading...</p>
+        </div>
+        <div class="col-auto" id="createTaskBtn" style="display: none;">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                <i class="bi bi-plus-circle"></i> Create Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Tasks Grid -->
+    <div id="tasksGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- Tasks will be loaded dynamically here -->
+    </div>
+</div>

@@ -383,6 +383,7 @@ FodyWeavers.xsd
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/*.sh
 *.code-workspace
 
 # Local History for Visual Studio Code
@@ -398,7 +399,42 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Build outputs
 dist/
 .DS_Store
 
+# Mario Pizzeria UI Build Artifacts
+samples/mario-pizzeria/static/dist/
+samples/mario-pizzeria/ui/.parcel-cache/
+*.js.map
+*.css.map
+
 .local_note.md
+old_*
+
+site*
+
+logs
+tmp
+.runtime
+
+.venv
+venv
+
+.env
+
+*.pid
+
+.env
+
+# data/
+samples/mario-pizzeria/data/
+/data/
+
+# Docker-compose incorrectly created folders (should only exist in deployment/)
+/prometheus/
+/tempo/
+/loki/
+
+# Legacy docker-compose files (moved to deployment/docker-compose/)
+docker-compose.dev.yml

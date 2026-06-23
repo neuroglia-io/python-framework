@@ -1,0 +1,134 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil"></i> Edit Profile
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="/profile/edit" id="profileForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="bi bi-person"></i> Full Name *
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="name"
+                            name="name"
+                            value="{{ profile.name if profile else name if name else '' }}"
+                            required
+                            maxlength="100"
+                            placeholder="Enter your full name"
+                        >
+                        <div class="invalid-feedback">
+                            Please provide your full name.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope"></i> Email Address *
+                        </label>
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            value="{{ profile.email if profile else email if email else '' }}"
+                            required
+                            placeholder="your.email@example.com"
+                        >
+                        <div class="invalid-feedback">
+                            Please provide a valid email address.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">
+                            <i class="bi bi-telephone"></i> Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            class="form-control"
+                            id="phone"
+                            name="phone"
+                            value="{{ profile.phone if profile else '' }}"
+                            placeholder="+1234567890"
+                            pattern="^\+?1?\d{9,15}$"
+                        >
+                        <small class="form-text text-muted">
+                            Optional. Format: +1234567890 (9-15 digits, optional + prefix)
+                        </small>
+                        <div class="invalid-feedback">
+                            Please provide a valid phone number (9-15 digits).
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="address" class="form-label">
+                            <i class="bi bi-geo-alt"></i> Delivery Address
+                        </label>
+                        <textarea
+                            class="form-control"
+                            id="address"
+                            name="address"
+                            rows="3"
+                            maxlength="200"
+                            placeholder="Enter your delivery address"
+                        >{{ profile.address if profile else '' }}</textarea>
+                        <small class="form-text text-muted">
+                            Optional. Your default delivery address for orders.
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                        <a href="/profile" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-3 text-center text-muted">
+            <small>
+                <i class="bi bi-info-circle"></i>
+                Fields marked with * are required
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    const form = document.getElementById('profileForm')
+
+    form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+    }, false)
+})()
+</script>
+{% endblock %}

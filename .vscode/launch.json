@@ -4,7 +4,7 @@
             "name": "Python: Remote Attach",
             "type": "python",
             "request": "attach",
-            "port": 5699,
+            "port": 5779,
             "host": "localhost",
             "pathMappings": [
                 {
@@ -25,6 +25,81 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "Python: Test Suite",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "args": [
+                "tests/",
+                "-v"
+            ],
+            "justMyCode": false
+        },
+        {
+            "name": "Python: MkDocs Serve",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "mkdocs",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "serve"
+            ],
+            "justMyCode": false
+        },
+        {
+            "name": "Mario's Pizzeria: Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/samples/mario-pizzeria/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/samples/mario-pizzeria",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "args": [
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8000"
+            ],
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "serverReadyAction": {
+                "pattern": "Started server process.*",
+                "uriFormat": "http://127.0.0.1:8000/api/docs",
+                "action": "debugWithChrome"
+            }
+        },
+        {
+            "name": "Mario's Pizzeria: Debug (Custom Port)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/samples/mario-pizzeria/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/samples/mario-pizzeria",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "args": [
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8001"
+            ],
+            "justMyCode": false,
+            "stopOnEntry": false
         }
     ]
 }

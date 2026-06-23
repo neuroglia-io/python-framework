@@ -1,0 +1,87 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-bell"></i> My Notifications
+                {% if unread_count > 0 %}
+                <span class="badge bg-danger rounded-pill ms-2">{{ unread_count }}</span>
+                {% endif %}
+            </h2>
+            <div>
+                <a href="/profile" class="btn btn-outline-primary">
+                    <i class="bi bi-person"></i> View Profile
+                </a>
+                <a href="/orders" class="btn btn-outline-success">
+                    <i class="bi bi-clock-history"></i> My Orders
+                </a>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        {% if notifications %}
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-bell-fill"></i> Recent Notifications
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% for notification in notifications %}
+                <div class="notification-item p-3 border-bottom {% if notification.status == 'unread' %}bg-light{% endif %}"
+                     data-notification-id="{{ notification.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="notification-content flex-grow-1">
+                            <h6 class="mb-1 fw-bold">
+                                {{ notification.title }}
+                                {% if notification.status == 'unread' %}
+                                <span class="badge bg-primary rounded-pill ms-2" style="font-size: 0.75em;">New</span>
+                                {% endif %}
+                            </h6>
+                            <p class="mb-2 text-muted">{{ notification.message }}</p>
+                            {% if notification.order_id %}
+                            <small class="text-muted">
+                                <i class="bi bi-box"></i> Order: {{ notification.order_id }}
+                            </small>
+                            {% endif %}
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i>
+                                    {% if notification.created_at %}
+                                        {{ notification.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% if notification.is_dismissible() %}
+                        <div class="notification-actions ms-3">
+                            <form method="post" action="/notifications/{{ notification.id }}/dismiss" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Dismiss notification">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <div class="mb-3" style="font-size: 3rem;">🔔</div>
+                <h5 class="mb-3">No Notifications Yet</h5>
+                <p class="text-muted mb-4">You don't have any notifications at the moment. Order updates will appear here!</p>
+                <a href="/menu" class="btn btn-primary">
+                    <i class="bi bi-list-ul"></i> Order Pizza Now
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

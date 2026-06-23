@@ -1,0 +1,129 @@
+{
+    "annotations": {
+        "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [
+        {
+            "asDropdown": false,
+            "icon": "external link",
+            "includeVars": false,
+            "keepTime": false,
+            "tags": [],
+            "targetBlank": true,
+            "title": "🔍 Explore Traces (Full Functionality)",
+            "tooltip": "Open Tempo Explore for detailed trace analysis",
+            "type": "link",
+            "url": "http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22query%22:%22%7Bresource.service.name%3D%5C%22mario-pizzeria%5C%22%7D%22,%22queryType%22:%22traceql%22%7D%5D,%22range%22:%7B%22from%22:%22now-15m%22,%22to%22:%22now%22%7D%7D"
+        }
+    ],
+    "panels": [
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Multiple traces displayed in table format (traces panel only works for single trace IDs)",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "table",
+                        "filterable": true,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 12,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "12.2.1",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "query": "{resource.service.name=\"mario-pizzeria\"}",
+                    "refId": "A",
+                    "queryType": "traceql",
+                    "limit": 20
+                }
+            ],
+            "title": "🍕 Mario's Pizzeria - Recent Traces (Table View)",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "text",
+                "uid": "-- Grafana --"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 12
+            },
+            "id": 2,
+            "options": {
+                "content": "## 🎯 How to Use Distributed Tracing\n\n### 📊 Table View (Above)\n- Shows **multiple traces** with basic information\n- Click on trace IDs to see detailed views\n- Filter and sort by columns\n\n### 🔍 Detailed Analysis\n- Click **\"Explore Traces\"** link above for full TraceQL functionality\n- Use Explore for advanced filtering, service maps, and detailed trace timelines\n- Copy trace IDs from table for individual trace analysis\n\n### ⚡ Performance Status\n- ✅ **Workstation**: Responsive (logging disabled)\n- ✅ **Debugging**: Available (debugpy port 5678)\n- ✅ **Traces**: Active collection and storage\n- ✅ **API**: Mario's service running normally\n\n### 🔧 Technical Notes\n- Traces panels only display **single traces** (by design)\n- Table view shows **multiple traces** from TraceQL queries\n- Use Explore interface for full distributed tracing analysis",
+                "mode": "markdown"
+            },
+            "pluginVersion": "12.2.1",
+            "title": "📚 Tracing Usage Guide",
+            "type": "text"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 39,
+    "tags": [
+        "mario-pizzeria",
+        "traces",
+        "working"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-15m",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Mario's Pizzeria - Working Traces Dashboard",
+    "uid": "mario-traces-working",
+    "version": 1,
+    "weekStart": ""
+}

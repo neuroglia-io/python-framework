@@ -1,16 +1,23 @@
 import importlib
 import inspect
 import pkgutil
+from collections.abc import Callable
 from types import ModuleType
-from typing import Callable, List, Type
+from typing import Type
 
 
 class TypeFinder:
-    ''' Represents an utility class that exposes methods to find and filter types '''
+    """Represents an utility class that exposes methods to find and filter types"""
 
-    def get_types(module: ModuleType, predicate: Callable[[Type], bool] = lambda t: True, include_sub_modules=True, include_sub_packages=False) -> List[Type]:
-        ''' Recursively finds all types contained in the specified module that match the specified predicate, if any '''
-        results: List[Type] = list[Type]()
+    @staticmethod
+    def get_types(
+        module: ModuleType,
+        predicate: Callable[[type], bool] = lambda t: True,
+        include_sub_modules=True,
+        include_sub_packages=False,
+    ) -> list[type]:
+        """Recursively finds all types contained in the specified module that match the specified predicate, if any"""
+        results: list[type] = list[Type]()
         results.extend([cls for _, cls in inspect.getmembers(module, inspect.isclass) if predicate(cls)])
         if include_sub_modules:
             for submodule in [submodule for _, submodule in inspect.getmembers(module, inspect.ismodule) if submodule.__name__.startswith(module.__name__)]:

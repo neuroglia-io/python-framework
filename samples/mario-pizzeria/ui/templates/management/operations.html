@@ -1,0 +1,632 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ title }} - Mario's Pizzeria{% endblock %}
+
+{% block head %}
+<style>
+    .operations-container {
+        padding: 2rem 0;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+        border-bottom: 3px solid var(--bs-primary);
+        padding-bottom: 1rem;
+    }
+
+    .page-header h1 {
+        color: var(--bs-primary);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Leaderboard Section */
+    .leaderboard-section {
+        margin-bottom: 3rem;
+    }
+
+    .billboard-card {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        border: 3px solid #ffc107;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(255, 193, 7, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .billboard-crown {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .billboard-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .billboard-name {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--bs-primary);
+        margin-bottom: 1rem;
+    }
+
+    .billboard-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .billboard-stat {
+        text-align: center;
+    }
+
+    .billboard-stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .billboard-stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        text-transform: uppercase;
+    }
+
+    /* Performance Cards */
+    .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .performance-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .performance-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        border-color: var(--bs-primary);
+    }
+
+    .performance-rank {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+    }
+
+    .rank-1 { background: #ffd700; color: #333; }
+    .rank-2 { background: #c0c0c0; color: #333; }
+    .rank-3 { background: #cd7f32; color: white; }
+    .rank-other { background: #e0e0e0; color: #666; }
+
+    .performance-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .performance-name {
+        flex: 1;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .performance-role {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: var(--bs-primary);
+        color: white;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .performance-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bs-primary);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    .performance-score {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f0f0f0;
+        text-align: center;
+    }
+
+    .score-bar {
+        width: 100%;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .score-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        transition: width 0.5s ease;
+    }
+
+    /* Customer Section */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0 1.5rem 0;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 8px;
+        color: white;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .customer-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .customer-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        border-color: #ffc107;
+    }
+
+    .customer-card.vip {
+        border-color: #ffd700;
+        background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+    }
+
+    .customer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .customer-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .vip-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .customer-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .customer-stat {
+        text-align: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .customer-stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--bs-primary);
+    }
+
+    .customer-stat-label {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    .favorite-pizza {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Kitchen Performance Summary */
+    .kitchen-summary {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .kitchen-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .kitchen-stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .kitchen-stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .kitchen-stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--bs-primary);
+    }
+
+    .kitchen-stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="operations-container container-fluid">
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1><i class="bi bi-people-fill"></i> Operations Monitor</h1>
+                <p class="page-subtitle">People performance and customer insights</p>
+            </div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-8">
+                        <label for="dateRange" class="form-label">
+                            <i class="bi bi-calendar-range"></i> Time Period
+                        </label>
+                        <select id="dateRange" class="form-select" onchange="updateTimeRange()">
+                            <option value="today" selected>Today</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="month">Last 30 Days</option>
+                            <option value="quarter">Last 90 Days</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="refreshData()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff of the Day Billboard -->
+    <div class="leaderboard-section">
+        {% if staff_performance and staff_performance|length > 0 %}
+        <div class="billboard-card">
+            <div class="billboard-crown">👑</div>
+            <div class="billboard-title">
+                Top {{ staff_performance[0].role|capitalize }}
+                {% if selected_period == 'today' %}
+                of the Day
+                {% elif selected_period == 'week' %}
+                (Last 7 Days)
+                {% elif selected_period == 'month' %}
+                (Last 30 Days)
+                {% elif selected_period == 'quarter' %}
+                (Last 90 Days)
+                {% else %}
+                (All Time)
+                {% endif %}
+            </div>
+            <div class="billboard-name">{{ staff_performance[0].staff_name }}</div>
+            <div class="billboard-stats">
+                <div class="billboard-stat">
+                    <div class="billboard-stat-value">{{ staff_performance[0].tasks_completed }}</div>
+                    <div class="billboard-stat-label">Completed</div>
+                </div>
+                <div class="billboard-stat">
+                    <div class="billboard-stat-value">${{ "%.2f"|format(staff_performance[0].total_revenue) }}</div>
+                    <div class="billboard-stat-label">Revenue</div>
+                </div>
+                <div class="billboard-stat">
+                    <div class="billboard-stat-value">{{ "%.0f"|format(staff_performance[0].performance_score) }}</div>
+                    <div class="billboard-stat-label">Score</div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="billboard-card">
+            <div class="billboard-crown">🏆</div>
+            <div class="billboard-title">Top Performer</div>
+            <div class="billboard-name">No Data Yet</div>
+            <p style="color: #666; margin-top: 1rem;">Complete some orders to see the leaderboard!</p>
+        </div>
+        {% endif %}
+
+        <!-- Top Performers Grid -->
+        <div class="section-header">
+            <h2>
+                <i class="bi bi-trophy-fill"></i>
+                {% if selected_period == 'today' %}
+                Today's Leaderboard
+                {% elif selected_period == 'week' %}
+                Leaderboard (Last 7 Days)
+                {% elif selected_period == 'month' %}
+                Leaderboard (Last 30 Days)
+                {% elif selected_period == 'quarter' %}
+                Leaderboard (Last 90 Days)
+                {% else %}
+                All-Time Leaderboard
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="performance-grid">
+            {% if staff_performance and staff_performance|length > 0 %}
+                {% for staff in staff_performance %}
+                <div class="performance-card">
+                    <div class="performance-header">
+                        <span class="performance-rank {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+                            #{{ loop.index }}
+                        </span>
+                        <div class="performance-name">{{ staff.staff_name }}</div>
+                        <span class="performance-role">{{ staff.role }}</span>
+                    </div>
+
+                    <div class="performance-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ staff.tasks_completed }}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ staff.tasks_in_progress }}</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${{ "%.0f"|format(staff.total_revenue) }}</div>
+                            <div class="stat-label">Revenue</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ "%.1f"|format(staff.average_time_minutes) }}m</div>
+                            <div class="stat-label">Avg Time</div>
+                        </div>
+                    </div>
+
+                    <div class="performance-score">
+                        <strong>Performance Score</strong>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: {{ staff.performance_score }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h4>No Performance Data</h4>
+                    <p>Staff performance will appear once orders are processed today</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Kitchen Performance Summary -->
+    {% if kitchen_performance %}
+    <div class="kitchen-summary">
+        <h3><i class="bi bi-speedometer2"></i> Kitchen Performance</h3>
+        <div class="kitchen-summary-grid">
+            <div class="kitchen-stat-card">
+                <div class="kitchen-stat-icon">🍕</div>
+                <div class="kitchen-stat-value">{{ kitchen_performance.total_orders_cooked }}</div>
+                <div class="kitchen-stat-label">Orders Cooked</div>
+            </div>
+            <div class="kitchen-stat-card">
+                <div class="kitchen-stat-icon">⏱️</div>
+                <div class="kitchen-stat-value">{{ "%.1f"|format(kitchen_performance.average_cooking_time_minutes) }}m</div>
+                <div class="kitchen-stat-label">Avg Cook Time</div>
+            </div>
+            <div class="kitchen-stat-card">
+                <div class="kitchen-stat-icon">✅</div>
+                <div class="kitchen-stat-value">{{ "%.0f"|format(kitchen_performance.on_time_percentage) }}%</div>
+                <div class="kitchen-stat-label">On Time</div>
+            </div>
+            <div class="kitchen-stat-card">
+                <div class="kitchen-stat-icon">🔥</div>
+                <div class="kitchen-stat-value">{{ kitchen_performance.peak_hour if kitchen_performance.peak_hour else 'N/A' }}</div>
+                <div class="kitchen-stat-label">Peak Hour</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top Customers Section -->
+    <div class="section-header">
+        <h2>
+            <i class="bi bi-star-fill"></i>
+            {% if selected_period == 'today' %}
+            Top Customers (Today)
+            {% elif selected_period == 'week' %}
+            Top Customers (Last 7 Days)
+            {% elif selected_period == 'month' %}
+            Top Customers (Last 30 Days)
+            {% elif selected_period == 'quarter' %}
+            Top Customers (Last 90 Days)
+            {% else %}
+            Top Customers (All Time)
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="performance-grid">
+        {% if top_customers and top_customers|length > 0 %}
+            {% for customer in top_customers %}
+            <div class="customer-card {% if customer.is_vip %}vip{% endif %}">
+                <div class="customer-header">
+                    <div class="customer-name">{{ customer.customer_name }}</div>
+                    {% if customer.is_vip %}
+                    <span class="vip-badge">⭐ VIP</span>
+                    {% endif %}
+                </div>
+
+                {% if customer.customer_email %}
+                <div style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                    <i class="bi bi-envelope"></i> {{ customer.customer_email }}
+                </div>
+                {% endif %}
+
+                <div class="customer-stats">
+                    <div class="customer-stat">
+                        <div class="customer-stat-value">{{ customer.total_orders }}</div>
+                        <div class="customer-stat-label">Orders</div>
+                    </div>
+                    <div class="customer-stat">
+                        <div class="customer-stat-value">${{ "%.2f"|format(customer.total_spent) }}</div>
+                        <div class="customer-stat-label">Total Spent</div>
+                    </div>
+                    <div class="customer-stat">
+                        <div class="customer-stat-value">${{ "%.2f"|format(customer.total_spent / customer.total_orders) }}</div>
+                        <div class="customer-stat-label">Avg Order</div>
+                    </div>
+                </div>
+
+                {% if customer.favorite_pizza %}
+                <div class="favorite-pizza">
+                    <strong>Favorite:</strong> {{ customer.favorite_pizza }}
+                </div>
+                {% endif %}
+
+                {% if customer.last_order_date %}
+                <div style="text-align: center; margin-top: 1rem; color: #666; font-size: 0.85rem;">
+                    Last order: {{ customer.last_order_date.strftime('%b %d, %Y') }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h4>No Customer Data</h4>
+                <p>Customer insights will appear once orders are placed</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Time range management
+    function getUrlParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    function updateTimeRange() {
+        const dateRange = document.getElementById('dateRange').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('period', dateRange);
+        window.location.href = url.toString();
+    }
+
+    function refreshData() {
+        location.reload();
+    }
+
+    // Set the current selection from URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const period = getUrlParameter('period');
+        if (period) {
+            const select = document.getElementById('dateRange');
+            if (select) {
+                select.value = period;
+            }
+        }
+    });
+
+    console.log('Operations Monitor loaded - People-centric view');
+
+    // Auto-refresh every 5 minutes to get updated stats
+    setTimeout(() => {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %}
